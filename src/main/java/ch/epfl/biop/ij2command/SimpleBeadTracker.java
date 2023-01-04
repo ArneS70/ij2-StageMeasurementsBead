@@ -7,11 +7,13 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.plugin.ZProjector;
 import ij.plugin.filter.MaximumFinder;
+import ij.plugin.frame.RoiManager;
 import ij.process.ImageStatistics;
 
 public class SimpleBeadTracker {
@@ -84,6 +86,8 @@ public class SimpleBeadTracker {
 	}
 	private void showRois() {
 			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
+			RoiManager rm=RoiManager.getRoiManager();
+			
 			if (display==null) return;
 			double []x=display.getColumn(SimpleBeadTracker.header[4]);
 			double []y=display.getColumn(SimpleBeadTracker.header[5]);
@@ -97,11 +101,12 @@ public class SimpleBeadTracker {
 				toTrack.setZ(zpos);
 				OvalRoi circle=new OvalRoi(xpos-diameter/2,ypos-diameter/2,diameter,diameter);
 				circle.setPosition(1, zpos, i);
-				Overlay over=new Overlay();
-				over.setStrokeWidth(3.0);
-				over.add(circle);
-				toTrack.setOverlay(over);
-				
+				rm.add(circle, 2);
+//				Overlay over=new Overlay();
+//				over.setStrokeWidth(3.0);
+//				over.add((Roi) circle.clone());
+//				toTrack.setOverlay(over);
+//				toTrack.show();
 						
 			}
 			toTrack.show();
