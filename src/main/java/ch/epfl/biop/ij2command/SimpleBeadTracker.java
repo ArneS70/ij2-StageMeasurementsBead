@@ -5,6 +5,7 @@ import java.awt.Polygon;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.Line;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
 import ij.gui.Roi;
@@ -14,6 +15,7 @@ import ij.measure.ResultsTable;
 import ij.plugin.ZProjector;
 import ij.plugin.filter.MaximumFinder;
 import ij.plugin.frame.RoiManager;
+import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
 public class SimpleBeadTracker {
@@ -50,7 +52,7 @@ public class SimpleBeadTracker {
     	
     }
 	public void analyzeStack() {
-		for (int f=0;f<frames;f+=1) {
+		for (int f=0;f<frames;f+=50) {
 			
 			ImageStack zStack=new ImageStack();
 			for (int s=0;s<slices;s++) {
@@ -73,16 +75,25 @@ public class SimpleBeadTracker {
 			this.yc=points.ypoints[0]*ImageCalibration.pixelHeight;
 			
 			OvalRoi circle=new OvalRoi(points.xpoints[0]-(int)(0.5*diameter),points.ypoints[0]-(int)(0.5*diameter),(int)diameter,(int)diameter,toProject);
-	//		Overlay over=new Overlay();
-	//		over.add(circle);
-	//		toProject.setOverlay(over);
-	//		toProject.show();
+	
 			toProject.setRoi(circle);
-	//		ZAxisProfiler zap=new ZAxisProfiler();
-	//	    zap.run("");
 			this.zc=measureZMax(toProject,circle);
+			int zpos=(int)Math.round(zc/zRes);
+			toTrack.setSlice(zpos);
+			fitXY(toTrack.getProcessor());
 			writeResults();
 		}
+	}
+	private void fitXY(ImageProcessor ip) {
+			double x1=(xc-0.75*diameter)/ImageCalibration.pixelWidth;
+			double x2=(xc+0.75*diameter)/ImageCalibration.pixelWidth;
+			double y1=yc/ImageCalibration.pixelHeight;
+			Line toFit=new Line (x1,y1,x2,y1);
+			
+			ImagePlus imp=new ImagePlus("Test",ip);
+			imp.setRoi(toFit);
+			imp.show();
+			SuperGaussFitter xpos=new SuperGaussFitter(ip,new Line (xc-diameter,yc,xc+diameter,yc)); 
 	}
 	private void showRois() {
 			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
