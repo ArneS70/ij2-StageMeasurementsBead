@@ -54,6 +54,7 @@ public class TrackBead implements Command {
     	
     	IJ.open(fileInput.getAbsolutePath());
  		ImagePlus imp=WindowManager.getCurrentImage();
+ 		imp.show();
  		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
@@ -62,38 +63,7 @@ public class TrackBead implements Command {
  		
  		
     }
-    private void measureStack(ImagePlus imp, OvalRoi roi) {
-    	int nSlices=imp.getImageStackSize();
-    	
-    	double [] zIntensity=new double [nSlices];
-    	double [] pos=new double [nSlices];
-    	imp.setRoi(roi);
-    	for (int s=0;s<nSlices;s++) {
-    		pos[s]=s*zRes;
-    		imp.setSlice(s);
-    		ImageStatistics stat=imp.getProcessor().getStatistics();
-    		zIntensity[s]=stat.mean;
-    	}
-//    	Plot Zposition=new Plot("Z axis plot", "Position", "Intensity", pos, zIntensity);
-//    	Zposition.show();
-    	CurveFitter zMax=new CurveFitter(pos,zIntensity);
-    	double initParam []= {0,400,11,3};
-    	zMax.doCustomFit("y=a+b*exp(-1*pow(abs(x-c),2)/(2*pow(d,2)))", initParam, false);
-//    	IJ.log(zMax.getResultString());
-    	double results[]=zMax.getParams();
-    	IJ.log("z max="+results[2]);
-    }
-    private void pasteImageDimension(int[] dimensions) {
-    	int length=dimensions.length;
-    	if (dimensions==null) return;
-    	this.width=dimensions[0];
-    	if (length>0) this.height=dimensions[1]; else return;
-    	
-    	if (length>1) this.channels=dimensions[2]; else return;
-    	if (length>2) this.slices=dimensions[3]; else return;
-    	if (length>3) this.frames=dimensions[4]; else return;
-    	
-    }
+   
     /**
      * This main function serves for development purposes.
      * It allows you to run the plugin immediately out of

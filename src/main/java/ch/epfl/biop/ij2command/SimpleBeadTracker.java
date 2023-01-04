@@ -26,12 +26,14 @@ public class SimpleBeadTracker {
 	
 	SimpleBeadTracker(ImagePlus imp,double beadDiameter){
 		this.toTrack=imp;
+		this.diameter=beadDiameter;
 		if (toTrack==null) return;
 		this.ImageCalibration=imp.getCalibration();
 		pasteImageDimension(imp.getDimensions());
 		zRes=ImageCalibration.pixelHeight;
 		analyzeStack();
 		results.show("BeadTrackingResults");
+		showRois();
 	}
 	
 	private void pasteImageDimension(int[] dimensions) {
@@ -69,10 +71,10 @@ public class SimpleBeadTracker {
 			this.yc=points.ypoints[0]*ImageCalibration.pixelHeight;
 			
 			OvalRoi circle=new OvalRoi(points.xpoints[0]-(int)(0.5*diameter),points.ypoints[0]-(int)(0.5*diameter),(int)diameter,(int)diameter,toProject);
-			Overlay over=new Overlay();
-			over.add(circle);
-			toProject.setOverlay(over);
-			toProject.show();
+	//		Overlay over=new Overlay();
+	//		over.add(circle);
+	//		toProject.setOverlay(over);
+	//		toProject.show();
 			toProject.setRoi(circle);
 	//		ZAxisProfiler zap=new ZAxisProfiler();
 	//	    zap.run("");
@@ -80,7 +82,30 @@ public class SimpleBeadTracker {
 			writeResults();
 		}
 	}
-
+	private void showRois() {
+			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
+			if (display==null) return;
+			double []x=display.getColumn(SimpleBeadTracker.header[4]);
+			double []y=display.getColumn(SimpleBeadTracker.header[5]);
+			double []z=display.getColumn(SimpleBeadTracker.header[2]);
+			int length=x.length;
+			for (int i=0;i<length;i++) {
+				double xpos=x[i]/ImageCalibration.pixelWidth;
+				double ypos=y[i]/ImageCalibration.pixelHeight;
+				int zpos=(int)Math.round(z[i]/zRes);
+				toTrack.setT(i);
+				toTrack.setZ(zpos);
+				OvalRoi circle=new OvalRoi(xpos-diameter/2,ypos-diameter/2,diameter,diameter);
+				circle.setPosition(1, zpos, i);
+				Overlay over=new Overlay();
+				over.setStrokeWidth(3.0);
+				over.add(circle);
+				toTrack.setOverlay(over);
+				
+						
+			}
+			toTrack.show();
+	}
 	private double measureZMax(ImagePlus imp, OvalRoi roi) {
 		int nSlices=imp.getImageStackSize();
 		
@@ -103,8 +128,8 @@ public class SimpleBeadTracker {
 	}
 	private void writeResults() {
 		results.incrementCounter();
-		results.addValue(SimpleBeadTracker.header[2], zc);
 		results.addValue(SimpleBeadTracker.header[4], xc);
 		results.addValue(SimpleBeadTracker.header[5], yc);
+		results.addValue(SimpleBeadTracker.header[2], zc);
 	}
 }
