@@ -26,6 +26,7 @@ public class SimpleBeadTracker {
 	private static final String [] header= {"z-offset","z-height","z-center","R^2","x-center","y-center"};
 	private double xc,yc,zc,r2,zoff,zheight,fwhm;
 	private ResultsTable results=new ResultsTable();
+	private ResultsTable resultsRefined=new ResultsTable();
 	
 	
 	SimpleBeadTracker(ImagePlus imp,double beadDiameter){
@@ -35,9 +36,7 @@ public class SimpleBeadTracker {
 		this.ImageCalibration=imp.getCalibration();
 		pasteImageDimension(imp.getDimensions());
 		zRes=ImageCalibration.pixelHeight;
-		analyzeStack();
-		results.show("BeadTrackingResults");
-		showRois();
+		
 	}
 	
 	private void pasteImageDimension(int[] dimensions) {
@@ -80,26 +79,45 @@ public class SimpleBeadTracker {
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
 			toTrack.setSlice(zpos);
-			fitXY(toTrack.getProcessor());
-			writeResults();
+			
+			writeResults(f);
+			fitXY(toTrack.getProcessor(),f,zpos);
 		}
+		results.show("BeadTrackingResults");
+		resultsRefined.show("BeadTrackingResults (update)");
 	}
-	private void fitXY(ImageProcessor ip) {
+	private void fitXY(ImageProcessor ip,int frame,int slice) {
 			double x1=(xc-0.75*diameter)/ImageCalibration.pixelWidth;
 			double x2=(xc+0.75*diameter)/ImageCalibration.pixelWidth;
 			double y1=yc/ImageCalibration.pixelHeight;
 			Line toFit=new Line (x1,y1,x2,y1);
 			
-			ImagePlus imp=new ImagePlus("Test",ip);
+			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
 			imp.setRoi(toFit);
 			imp.show();
-			SuperGaussFitter xpos=new SuperGaussFitter(ip,new Line (xc-diameter,yc,xc+diameter,yc)); 
+			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
+			double [] results=xpos.getResults();
+			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+			xc=(x1+results[2])*ImageCalibration.pixelWidth;
+			x1=xc/ImageCalibration.pixelWidth;
+			y1=(yc-0.75*diameter)/ImageCalibration.pixelHeight;
+			double y2=(yc+0.75*diameter)/ImageCalibration.pixelHeight;
+			
+			toFit=new Line (x1,y1,x1,y2);
+			imp.setRoi(toFit);
+			imp.show();
+			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
+			results=ypos.getResults();
+			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+			yc=(results[2]+y1)*ImageCalibration.pixelHeight;
+			writeResults(resultsRefined,frame);
 	}
-	private void showRois() {
+	public void showRois() {
 			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
 			RoiManager rm=RoiManager.getRoiManager();
 			
 			if (display==null) return;
+			double [] frame=display.getColumn("Frame"); 
 			double []x=display.getColumn(SimpleBeadTracker.header[4]);
 			double []y=display.getColumn(SimpleBeadTracker.header[5]);
 			double []z=display.getColumn(SimpleBeadTracker.header[2]);
@@ -108,10 +126,10 @@ public class SimpleBeadTracker {
 				double xpos=x[i]/ImageCalibration.pixelWidth;
 				double ypos=y[i]/ImageCalibration.pixelHeight;
 				int zpos=(int)Math.round(z[i]/zRes);
-				toTrack.setT(i);
-				toTrack.setZ(zpos);
+//				toTrack.setT(i);
+//				toTrack.setZ(zpos);
 				OvalRoi circle=new OvalRoi(xpos-diameter/2,ypos-diameter/2,diameter,diameter);
-				circle.setPosition(1, zpos, i);
+				circle.setPosition(1, zpos, (int)frame[i]);
 				rm.add(circle, 2);
 //				Overlay over=new Overlay();
 //				over.setStrokeWidth(3.0);
@@ -120,7 +138,7 @@ public class SimpleBeadTracker {
 //				toTrack.show();
 						
 			}
-			toTrack.show();
+//			toTrack.show();
 	}
 	private double measureZMax(ImagePlus imp, OvalRoi roi) {
 		int nSlices=imp.getImageStackSize();
@@ -142,10 +160,18 @@ public class SimpleBeadTracker {
 		double [] results=gf.getResults();
 		return results[2];
 	}
-	private void writeResults() {
+	private void writeResults(int frame) {
 		results.incrementCounter();
+		results.addValue("Frame",frame);
 		results.addValue(SimpleBeadTracker.header[4], xc);
 		results.addValue(SimpleBeadTracker.header[5], yc);
 		results.addValue(SimpleBeadTracker.header[2], zc);
+	}
+	private void writeResults(ResultsTable table, int frame) {
+		table.incrementCounter();
+		table.addValue("Frame",frame);
+		table.addValue(SimpleBeadTracker.header[4], xc);
+		table.addValue(SimpleBeadTracker.header[5], yc);
+		table.addValue(SimpleBeadTracker.header[2], zc);
 	}
 }

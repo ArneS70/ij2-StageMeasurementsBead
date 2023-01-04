@@ -60,6 +60,7 @@ public class TrackBead implements Command {
  		// calculate the bead diameter in pixels
  		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead);
  		track.analyzeStack();
+ 		track.showRois();
  		
  		
     }
