@@ -8,6 +8,7 @@ import ij.ImageStack;
 import ij.gui.Line;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
+import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
@@ -28,6 +29,7 @@ public class SimpleBeadTracker {
 	private ResultsTable results=new ResultsTable();
 	private ResultsTable resultsRefined=new ResultsTable();
 	private int gap=1;
+	private boolean showFit=false;
 	
 	
 	SimpleBeadTracker(ImagePlus imp,double beadDiameter){
@@ -98,7 +100,7 @@ public class SimpleBeadTracker {
 			imp.setRoi(toFit);
 //			imp.show();
 			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
-//			xpos.showFit();
+			if (showFit) xpos.showFit();
 			double [] results=xpos.getResults();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
 			xc=(x1+results[2])*ImageCalibration.pixelWidth;
@@ -110,12 +112,12 @@ public class SimpleBeadTracker {
 			imp.setRoi(toFit);
 //			imp.show();
 			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
-//			ypos.showFit();
+			if (showFit) ypos.showFit();
 			results=ypos.getResults();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
 			yc=(results[2]+y1)*ImageCalibration.pixelHeight;
 			writeResults(resultsRefined,frame);
-			imp.close();
+//			imp.close();
 	}
 	public void showRois(String tableName) {
 			ResultsTable display=ResultsTable.getResultsTable(tableName);
@@ -149,6 +151,12 @@ public class SimpleBeadTracker {
 		if (delta<frames) gap=delta;
 		else gap=frames;
 	}
+	public void showFit() {
+		this.showFit=true;
+	}
+	public void hideFit() {
+		this.showFit=false;
+	}
 	private double measureZMax(ImagePlus imp, OvalRoi roi) {
 		int nSlices=imp.getImageStackSize();
 		
@@ -163,9 +171,10 @@ public class SimpleBeadTracker {
 			zIntensity[s]=stat.mean;
 			
 		}
-	//	Plot Zposition=new Plot("Z axis plot", "Position", "Intensity", pos, zIntensity);
-	//	Zposition.show();
+//		Plot Zposition=new Plot("Z axis plot", "Position", "Intensity", pos, zIntensity);
+//		Zposition.show();
 		GaussFitter gf=new GaussFitter(pos,zIntensity);
+//		gf.fixAmplitude(nSlices);
 		double [] results=gf.getResults();
 		return results[2];
 	}

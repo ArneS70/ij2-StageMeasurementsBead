@@ -11,20 +11,21 @@ public class GaussFitter {
 		private double [] parameters;
 		private double fwhm;
 		
-		public final static String [] header= {"y0","height","center","sigma","R^2","FWHM"}; 
+		public final static String [] header= {"y0","height","center","sigma","R^2","FWHM"};
+		private String fitFunction="y=a+b*exp(-1*pow(abs(x-c),2)/(2*pow(d,2)))";
 		
 		GaussFitter(double []xvalues,double [] yvalues){
 			this.x=xvalues;
 			this.y=yvalues;
-			fitGauss();
+			
 		}
 		private void fitGauss() {
 			
-			String fitFunction="y=a+b*exp(-1*pow(abs(x-c),2)/(2*pow(d,2)))";
+			
 			
 			ArrayStatistics as=new ArrayStatistics(y);
 			double [] intParam= {
-					as.getMean(),
+					as.getMin(),
 					as.getMax()-as.getMin(),
 					new ArrayStatistics(x).getMean(),
 					2,2};
@@ -40,7 +41,11 @@ public class GaussFitter {
 			
 			
 		}
+		public void fixAmplitude(double amplitude) {
+			this.fitFunction.replace("b", ""+amplitude);
+		}
 		public double [] getResults() {
+			fitGauss();
 			return parameters;
 		}
 		

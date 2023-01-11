@@ -52,7 +52,10 @@ public class TrackBead implements Command {
 	@Parameter(label="Time gap")
     int gap;
 	
+	@Parameter(label="show Fit Window")
+    boolean showFit;
     @Override
+    
     public void run() {
     	
     	IJ.open(fileInput.getAbsolutePath());
@@ -63,6 +66,7 @@ public class TrackBead implements Command {
  		// calculate the bead diameter in pixels
  		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead);
  		track.setGap(gap);
+ 		if (showFit) track.showFit();
  		track.analyzeStack();
  		track.showRois("BeadTrackingResults (update)");
  		
