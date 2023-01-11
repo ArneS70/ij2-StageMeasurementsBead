@@ -10,20 +10,22 @@ public class SuperGaussFitter {
 	private double diameter;
 	
 	private ImageProcessor line_ip;
-	public final static String [] header= {"y0","height","center","sigma","super","R^2","Diameter"}; 
+	private boolean show=false;
+	public final static String [] header= {"y0","height","center","sigma","super","R^2","Diameter"};
+	String fitFunction="y=a+b*exp(-1*pow(abs(x-c),e)/(2*pow(d,e)))";
 	
 	SuperGaussFitter(ImageProcessor ip,Line l){
 		this.line_ip=ip;
 		this.line=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-		fitLine();
+		
 	}
 	private void setLine(Line l) {
 		this.line=line_ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-		fitLine();
+		
 	}
 	private void fitLine() {
 		double []x=xValues(line);
-		String fitFunction="y=a+b*exp(-1*pow(abs(x-c),e)/(2*pow(d,e)))";
+		
 		ArrayStatistics as=new ArrayStatistics(line);
 		double [] intParam= {
 				as.getMean(),
@@ -37,7 +39,7 @@ public class SuperGaussFitter {
 		this.parameters[5]=cf.getRSquared();
 		this.diameter=calcDiameter(0.5);
 		
-		cf.getPlot().show();
+		if (show) cf.getPlot().show();
 		
 		
 	}
@@ -52,6 +54,7 @@ public class SuperGaussFitter {
 		
 	}
 	public double [] getResults() {
+		fitLine();
 		return parameters;
 	}
 	
@@ -62,6 +65,15 @@ public class SuperGaussFitter {
 		double x1=-this.parameters[3]*Math.pow(2*Math.log(1/height),1/this.parameters[4])+this.parameters[2];
 		double x2=this.parameters[3]*Math.pow(2*Math.log(1/height),1/this.parameters[4])+this.parameters[2];
 		return x2-x1;
+	}
+	public void fixSuper(int fixSuper) {
+		fitFunction.replace("e", ""+fixSuper);
+	}
+	public void unfixAll() {
+		fitFunction="y=a+b*exp(-1*pow(abs(x-c),e)/(2*pow(d,e)))";
+	}
+	public void showFit() {
+		show=true;
 	}
 }
 

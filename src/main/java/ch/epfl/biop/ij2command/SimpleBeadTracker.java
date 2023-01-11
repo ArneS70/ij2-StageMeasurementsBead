@@ -59,6 +59,7 @@ public class SimpleBeadTracker {
 	 			zStack.addSlice(toTrack.getProcessor());
 	 			
 	 		}
+			
 			ImagePlus toProject=new ImagePlus("Z-stack t="+f,zStack);
 	//		toProject.getProcessor().blurGaussian(2);
 			ZProjector project=new ZProjector();
@@ -78,8 +79,8 @@ public class SimpleBeadTracker {
 			toProject.setRoi(circle);
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
-			toTrack.setSlice(zpos);
-			
+			toTrack.setZ(zpos);
+			toTrack.setT(f);
 			writeResults(f);
 			fitXY(toTrack.getProcessor(),f,zpos);
 		}
@@ -94,8 +95,9 @@ public class SimpleBeadTracker {
 			
 			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
 			imp.setRoi(toFit);
-			imp.show();
+//			imp.show();
 			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
+//			xpos.showFit();
 			double [] results=xpos.getResults();
 			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
 			xc=(x1+results[2])*ImageCalibration.pixelWidth;
@@ -105,12 +107,14 @@ public class SimpleBeadTracker {
 			
 			toFit=new Line (x1,y1,x1,y2);
 			imp.setRoi(toFit);
-			imp.show();
+//			imp.show();
 			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
+//			ypos.showFit();
 			results=ypos.getResults();
-			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
 			yc=(results[2]+y1)*ImageCalibration.pixelHeight;
 			writeResults(resultsRefined,frame);
+			imp.close();
 	}
 	public void showRois() {
 			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
