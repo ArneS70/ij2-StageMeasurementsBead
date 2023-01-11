@@ -49,6 +49,9 @@ public class TrackBead implements Command {
 	@Parameter(label="Bead size in um")
     int sizeBead;
 	
+	@Parameter(label="Time gap")
+    int gap;
+	
     @Override
     public void run() {
     	
@@ -59,8 +62,9 @@ public class TrackBead implements Command {
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
  		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead);
+ 		track.setGap(gap);
  		track.analyzeStack();
- 		track.showRois();
+ 		track.showRois("BeadTrackingResults (update)");
  		
  		
     }

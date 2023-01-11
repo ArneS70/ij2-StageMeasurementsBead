@@ -27,6 +27,7 @@ public class SimpleBeadTracker {
 	private double xc,yc,zc,r2,zoff,zheight,fwhm;
 	private ResultsTable results=new ResultsTable();
 	private ResultsTable resultsRefined=new ResultsTable();
+	private int gap=1;
 	
 	
 	SimpleBeadTracker(ImagePlus imp,double beadDiameter){
@@ -51,7 +52,7 @@ public class SimpleBeadTracker {
     	
     }
 	public void analyzeStack() {
-		for (int f=0;f<frames;f+=50) {
+		for (int f=0;f<frames;f+=gap) {
 			
 			ImageStack zStack=new ImageStack();
 			for (int s=0;s<slices;s++) {
@@ -99,7 +100,7 @@ public class SimpleBeadTracker {
 			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
 //			xpos.showFit();
 			double [] results=xpos.getResults();
-			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
 			xc=(x1+results[2])*ImageCalibration.pixelWidth;
 			x1=xc/ImageCalibration.pixelWidth;
 			y1=(yc-0.75*diameter)/ImageCalibration.pixelHeight;
@@ -116,8 +117,8 @@ public class SimpleBeadTracker {
 			writeResults(resultsRefined,frame);
 			imp.close();
 	}
-	public void showRois() {
-			ResultsTable display=ResultsTable.getResultsTable("BeadTrackingResults");
+	public void showRois(String tableName) {
+			ResultsTable display=ResultsTable.getResultsTable(tableName);
 			RoiManager rm=RoiManager.getRoiManager();
 			
 			if (display==null) return;
@@ -143,6 +144,10 @@ public class SimpleBeadTracker {
 						
 			}
 //			toTrack.show();
+	}
+	public void setGap(int delta) {
+		if (delta<frames) gap=delta;
+		else gap=frames;
 	}
 	private double measureZMax(ImagePlus imp, OvalRoi roi) {
 		int nSlices=imp.getImageStackSize();
