@@ -71,6 +71,7 @@ public class TrackBead implements Command {
  		track.showRois("BeadTrackingResults (update)");
  		
  		
+ 		
     }
    
     /**
