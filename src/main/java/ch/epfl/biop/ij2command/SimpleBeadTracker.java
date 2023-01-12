@@ -80,7 +80,7 @@ public class SimpleBeadTracker {
 			toTrack.setZ(zpos);
 			toTrack.setT(f);
 			writeResults(f);
-			fitXY(toTrack.getProcessor(),f,zpos);
+			fitXY(toTrack.getProcessor(),f,zpos,20,0);
 		}
 		results.show("BeadTrackingResults");
 		resultsRefined.show("BeadTrackingResults (update)");
@@ -102,6 +102,45 @@ public class SimpleBeadTracker {
 		
 		
 	}
+	private void fitXY(ImageProcessor ip,int frame,int slice,int maxIteration, double delta) {
+		double x1=(xc-0.75*diameter);
+		double x2=(xc+0.75*diameter);
+		double y1=yc;
+		Line toFit=new Line (x1,y1,x2,y1);
+		
+		ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
+		imp.setRoi(toFit);
+		imp.show();
+		for (int i=0;i<maxIteration;i++) {
+			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
+			if (showFit) xpos.showFit();
+			double [] results=xpos.getResults();
+	//		IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+			double xc_new=(x1+results[2]);
+			x1=xc_new;
+			y1=(yc-0.75*diameter);
+			double y2=(yc+0.75*diameter);
+			
+			toFit=new Line (x1,y1,x1,y2);
+			imp.setRoi(toFit);
+			imp.show();
+			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
+			if (showFit) ypos.showFit();
+			results=ypos.getResults();
+	//		IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+			double yc_new=(results[2]+y1);
+			
+			double diff=Math.pow(xc-xc_new, 2)+Math.pow(yc-yc_new,2);
+			IJ.log(""+diff);
+			x1=(xc_new-0.75*diameter);
+			x2=(xc_new+0.75*diameter);
+			yc=yc_new;
+			
+			
+		}
+		writeResults(resultsRefined,frame);
+		imp.close();
+}
 	private void fitXY(ImageProcessor ip,int frame,int slice) {
 			double x1=(xc-0.75*diameter);
 			double x2=(xc+0.75*diameter);
