@@ -52,9 +52,16 @@ public class TrackBead implements Command {
 	@Parameter(label="Time gap")
     int gap;
 	
+	@Parameter (choices= {SimpleBeadTracker.methodSimple,SimpleBeadTracker.methodEllipse,SimpleBeadTracker.methodGauss}, style="listBox") 
+	String method;
+	
 	@Parameter(label="show Fit Window")
     boolean showFit;
-    @Override
+	
+	@Parameter(label="show Rois")
+    boolean showRois;
+    
+	@Override
     
     public void run() {
     	
@@ -64,11 +71,11 @@ public class TrackBead implements Command {
  		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
- 		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead);
+ 		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead,method);
  		track.setGap(gap);
  		if (showFit) track.showFit();
  		track.analyzeStack();
- 		track.showRois("BeadTrackingResults (update)");
+ 		if (showRois) track.showRois("BeadTrackingResults--"+method);
  		
  		
  		

@@ -59,9 +59,10 @@ public class SuperGaussFitter {
 	}
 	
 	public double getDiameter() {
+		
 		return this.diameter;
 	}
-	public double calcDiameter(double height) {
+	private double calcDiameter(double height) {
 		double x1=-this.parameters[3]*Math.pow(2*Math.log(1/height),1/this.parameters[4])+this.parameters[2];
 		double x2=this.parameters[3]*Math.pow(2*Math.log(1/height),1/this.parameters[4])+this.parameters[2];
 		return x2-x1;
