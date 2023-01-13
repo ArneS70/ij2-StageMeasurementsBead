@@ -52,6 +52,7 @@ public class SimpleBeadTracker {
 		this.ImageCalibration=imp.getCalibration();
 		pasteImageDimension(imp.getDimensions());
 		zRes=ImageCalibration.pixelHeight;
+		analyzeStack();
 		results.show("BeadTrachingResults--"+methodSelection);
 		
 		
@@ -71,6 +72,11 @@ public class SimpleBeadTracker {
     	if (length>3) this.frames=dimensions[4]; else return;
     	
     }
+	public void run() {
+		if (methodSelection.contains("Simple")) {
+			findMaxima(toTrack);
+		}
+	}
 	public void analyzeStack() {
 		for (int f=0;f<frames;f+=gap) {
 			
@@ -95,11 +101,13 @@ public class SimpleBeadTracker {
 			toProject.setRoi(circle);
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
-			toTrack.setZ(zpos);
-			toTrack.setT(f);
-			writeResults(f);
-//			fitXY(toTrack.getProcessor(),f,zpos);
-			fitEllipse(toTrack.getProcessor().duplicate(),f);
+			if (!methodSelection.contains("Simple")) {
+				toTrack.setZ(zpos);
+				toTrack.setT(f);
+				writeResults(f);
+				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
+				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
+			} else writeResults(f); 
 		}
 		
 	}
