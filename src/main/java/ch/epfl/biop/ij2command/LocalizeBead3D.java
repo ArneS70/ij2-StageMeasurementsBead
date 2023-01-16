@@ -33,8 +33,8 @@ import net.imagej.ImageJ;
  * </p>
  */
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Track Bead")
-public class TrackBead implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Localize Bead 3D")
+public class LocalizeBead3D implements Command {
 
 	private int width;
 	private int height;
@@ -52,14 +52,19 @@ public class TrackBead implements Command {
 	@Parameter(label="Time gap")
     int gap;
 	
-	@Parameter (choices= {SimpleBeadTracker.methodSimple,SimpleBeadTracker.methodEllipse,SimpleBeadTracker.methodGauss}, style="listBox") 
+	@Parameter (choices= {SimpleBeadLocalizer.methodSimple,SimpleBeadLocalizer.methodEllipse,SimpleBeadLocalizer.methodGauss}, style="listBox") 
 	String method;
-	
-	@Parameter(label="show Fit Window")
-    boolean showFit;
 	
 	@Parameter(label="show Rois")
     boolean showRois;
+	
+	@Parameter(label="Summarize results")
+    boolean summarize;
+	
+	@Parameter(label="show Fit Window(s)")
+    boolean showFit;
+	
+	
     
 	@Override
     
@@ -71,12 +76,12 @@ public class TrackBead implements Command {
  		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
- 		SimpleBeadTracker track=new SimpleBeadTracker(imp,diameterBead,method);
+ 		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method);
  		track.setGap(gap);
  		if (showFit) track.showFit();
  		track.analyzeStack();
  		if (showRois) track.showRois("BeadTrackingResults--"+method);
- 		
+ 		if (summarize) track.summarizeResults(method).show("");
  		
  		
     }
@@ -94,6 +99,6 @@ public class TrackBead implements Command {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-        ij.command().run(TrackBead.class, true);
+        ij.command().run(LocalizeBead3D.class, true);
     }
 }

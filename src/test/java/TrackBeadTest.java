@@ -1,4 +1,4 @@
-import ch.epfl.biop.ij2command.TrackBead;
+import ch.epfl.biop.ij2command.LocalizeBead3D;
 import net.imagej.ImageJ;
 import org.junit.Assert;
 import org.junit.Test;
