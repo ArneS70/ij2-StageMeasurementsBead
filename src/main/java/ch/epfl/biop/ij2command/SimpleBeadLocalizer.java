@@ -22,7 +22,7 @@ import ij.process.ImageStatistics;
 
 public class SimpleBeadLocalizer {
 	
-	private static final String [] header= {"z-offset","z-height","z-center/um","R^2","x-center/um","y-center/um","x diameter/um","y diameter/um"};
+	private static final String [] header= {"x-center/um","y-center/um","z-center/um","x diameter/um","y diameter/um","z-offset","z-height","R^2"};
 	public static final String methodSimple= "Simple";
 	public static final String methodEllipse= "Ellipse";
 	public static final String methodGauss="SuperGauss Fit";
@@ -56,7 +56,7 @@ public class SimpleBeadLocalizer {
 		zRes=ImageCalibration.pixelHeight;
 		analyzeStack();
 		results.show("Bead Localizing Results--"+methodSelection);
-		summarizeResults("Bead Localizing Results--"+methodSelection).show("BeadLocalizingResults--Summary");
+		
 		
 		
 	}
@@ -228,19 +228,27 @@ public class SimpleBeadLocalizer {
 			
 			if (display==null) return;
 			double [] frame=display.getColumn("Frame"); 
-			double []x=display.getColumn(SimpleBeadLocalizer.header[4]);
-			double []y=display.getColumn(SimpleBeadLocalizer.header[5]);
+			double []x=display.getColumn(SimpleBeadLocalizer.header[0]);
+			double []y=display.getColumn(SimpleBeadLocalizer.header[1]);
 			double []z=display.getColumn(SimpleBeadLocalizer.header[2]);
-			double []diameter_x=convert(display.getColumn(SimpleBeadLocalizer.header[6]),1/ImageCalibration.pixelWidth);
-			double []diameter_y=convert(display.getColumn(SimpleBeadLocalizer.header[7]),1/ImageCalibration.pixelHeight);
+			double []diameter_x=null;
+			double []diameter_y=null;
+			OvalRoi circle=null;
+			if (!tableName.contains("Simple")) {
+				diameter_x=convert(display.getColumn(SimpleBeadLocalizer.header[3]),1/ImageCalibration.pixelWidth);
+				diameter_y=convert(display.getColumn(SimpleBeadLocalizer.header[4]),1/ImageCalibration.pixelHeight);
+			}
 			int length=x.length;
+			
 			for (int i=0;i<length;i++) {
 				double xpos=x[i]/ImageCalibration.pixelWidth;
 				double ypos=y[i]/ImageCalibration.pixelHeight;
 				int zpos=(int)Math.round(z[i]/zRes);
 //				toTrack.setT(i);
 //				toTrack.setZ(zpos);
-				OvalRoi circle=new OvalRoi(xpos-diameter_x[i]/2,ypos-diameter_y[i]/2,diameter_x[i],diameter_y[i]);
+				if (!tableName.contains("Simple")) {circle=new OvalRoi(xpos-diameter_x[i]/2,ypos-diameter_y[i]/2,diameter_x[i],diameter_y[i]);}
+				else {circle=new OvalRoi(xpos-0.5*diameter,ypos-0.5*diameter,diameter,diameter);};
+				
 				circle.setPosition(1, zpos, (int)frame[i]+1);
 				rm.add(circle, 2);
 //				Overlay over=new Overlay();
@@ -289,7 +297,7 @@ public class SimpleBeadLocalizer {
 		GaussFitter gf=new GaussFitter(pos,zIntensity);
 //		gf.fixAmplitude(nSlices);
 		double [] results=gf.getResults();
-		return results[2]*zRes;
+		return results[2];
 	}
 	public ResultsTable summarizeResults(String name) {
 		
@@ -298,8 +306,8 @@ public class SimpleBeadLocalizer {
 		
 		ResultsTable summary=new ResultsTable();
 		
-		double []x=input.getColumn(SimpleBeadLocalizer.header[4]);
-		double []y=input.getColumn(SimpleBeadLocalizer.header[5]);
+		double []x=input.getColumn(SimpleBeadLocalizer.header[0]);
+		double []y=input.getColumn(SimpleBeadLocalizer.header[1]);
 		double []z=input.getColumn(SimpleBeadLocalizer.header[2]);
 		ArrayStatistics as=new ArrayStatistics(x);
 		summary.incrementCounter();
@@ -325,15 +333,15 @@ public class SimpleBeadLocalizer {
 	private void writeResults(int frame) {
 		results.incrementCounter();
 		results.addValue("Frame",frame);
-		results.addValue(SimpleBeadLocalizer.header[4], xc);
-		results.addValue(SimpleBeadLocalizer.header[5], yc);
+		results.addValue(SimpleBeadLocalizer.header[0], xc);
+		results.addValue(SimpleBeadLocalizer.header[1], yc);
 		results.addValue(SimpleBeadLocalizer.header[2], zc);
 		if (this.methodSelection.contains(methodEllipse)||this.methodSelection.contains(methodGauss)) {
-			results.addValue(SimpleBeadLocalizer.header[6], fitDiameter_x);
-			results.addValue(SimpleBeadLocalizer.header[7], fitDiameter_y);
+			results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
+			results.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
 		}
-		double x0=results.getValue(SimpleBeadLocalizer.header[4],0);
-		double y0=results.getValue(SimpleBeadLocalizer.header[5],0);
+		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
+		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
 		double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
 		results.addValue("delta x",xc-x0);
 		results.addValue("delta y",yc-y0);
@@ -342,10 +350,10 @@ public class SimpleBeadLocalizer {
 	private void writeResults(ResultsTable table, int frame) {
 		table.incrementCounter();
 		table.addValue("Frame",frame);
-		table.addValue(SimpleBeadLocalizer.header[4], xc*ImageCalibration.pixelWidth);
-		table.addValue(SimpleBeadLocalizer.header[5], yc*ImageCalibration.pixelHeight);
+		table.addValue(SimpleBeadLocalizer.header[0], xc);
+		table.addValue(SimpleBeadLocalizer.header[1], yc);
 		table.addValue(SimpleBeadLocalizer.header[2], zc);
-		table.addValue(SimpleBeadLocalizer.header[6], fitDiameter_x*ImageCalibration.pixelWidth);
-		table.addValue(SimpleBeadLocalizer.header[7], fitDiameter_y*ImageCalibration.pixelWidth);
+		table.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
+		table.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
 	}
 }

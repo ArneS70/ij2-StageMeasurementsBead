@@ -80,8 +80,8 @@ public class LocalizeBead3D implements Command {
  		track.setGap(gap);
  		if (showFit) track.showFit();
  		track.analyzeStack();
- 		if (showRois) track.showRois("BeadTrackingResults--"+method);
- 		if (summarize) track.summarizeResults(method).show("");
+ 		if (showRois) track.showRois("Bead Localizing Results--"+method);
+ 		if (summarize) track.summarizeResults("Bead Localizing Results--"+method).show("Bead Localizing Results--Summary");
  		
  		
     }
