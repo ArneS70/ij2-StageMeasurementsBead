@@ -76,7 +76,7 @@ public class LocalizeBead3D implements Command {
  		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
- 		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method);
+ 		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method,gap);
  		track.setGap(gap);
  		if (showFit) track.showFit();
  		track.analyzeStack();
