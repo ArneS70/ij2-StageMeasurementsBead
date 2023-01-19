@@ -42,6 +42,7 @@ public class SimpleBeadLocalizer {
 	private double xc,yc,zc,r2,zoff,zheight,fwhm,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in calibrated coordinates =um
 	private ResultsTable results=new ResultsTable();
+	private ResultsTable summary=new ResultsTable();
 	private ResultsTable resultsRefined=new ResultsTable();
 	private int gap=1;
 	private boolean showFit=false;
@@ -64,7 +65,7 @@ public class SimpleBeadLocalizer {
 		
 //	}
 	public void run() {
-		analyzeStack();
+		if (this.frames>0) analyzeTimeStack();
 		showResults();
 	}
 	
@@ -88,7 +89,7 @@ public class SimpleBeadLocalizer {
 			findMaxima(toTrack);
 		}
 	}*/
-	public void analyzeStack() {
+	public void analyzeTimeStack() {
 		for (int f=0;f<frames;f+=gap) {
 			
 			ImageStack zStack=new ImageStack();
@@ -107,7 +108,7 @@ public class SimpleBeadLocalizer {
 			ImagePlus zproject=project.getProjection();
 			findMaxima(zproject);
 			
-			OvalRoi circle=new OvalRoi(xc-0.5*diameter,yc-0.5*diameter,diameter,diameter);
+			OvalRoi circle=new OvalRoi((xc/ImageCalibration.pixelWidth)-0.5*diameter,yc/ImageCalibration.pixelHeight-0.5*diameter,diameter,diameter);
 	
 			toProject.setRoi(circle);
 			this.zc=measureZMax(toProject,circle);
@@ -305,44 +306,58 @@ public class SimpleBeadLocalizer {
 		GaussFitter gf=new GaussFitter(pos,zIntensity);
 //		gf.fixAmplitude(nSlices);
 		
-		double [] results=gf.getResults();
-		return results[2];
+		double [] fitResults=gf.getResults();
+		return fitResults[2];
 	}
 	public ResultsTable summarizeResults(String name) {
 		
 		ResultsTable input=ResultsTable.getResultsTable(name);
 		if (input==null) {IJ.showMessage("No results table found");return null;};
 		
-		ResultsTable summary=new ResultsTable();
-		
-		double []x=input.getColumn(SimpleBeadLocalizer.header[0]);
-		double []y=input.getColumn(SimpleBeadLocalizer.header[1]);
-		double []z=input.getColumn(SimpleBeadLocalizer.header[2]);
+		double []x=input.getColumn("delta x");
+		double []y=input.getColumn("delta y");
+		double []z=input.getColumn("delta z");
 		ArrayStatistics as=new ArrayStatistics(x);
 		summary.incrementCounter();
-		summary.addValue("x mean/um", as.getMean());
-		summary.addValue("x stdev/um", as.getSTDEV());
-		summary.addValue("x min/um", as.getMean());
-		summary.addValue("x max/um", as.getMax());
-		summary.addValue("delta x max/um", as.getMax()-as.getMin());
+		summary.addValue("delta x mean/um", as.getMean());
+		summary.addValue("delta x stdev/um", as.getSTDEV());
+		summary.addValue("delta x min/um", as.getMin());
+		summary.addValue("delta x max/um", as.getMax());
+		
 		as=new ArrayStatistics(y);
-		summary.addValue("y mean/um", as.getMean());
-		summary.addValue("y stdev/um", as.getSTDEV());
-		summary.addValue("y min/um", as.getMean());
-		summary.addValue("y max/um", as.getMax());
-		summary.addValue("delta y max/um", as.getMax()-as.getMin());
+		summary.addValue("delta y mean/um", as.getMean());
+		summary.addValue("delta y stdev/um", as.getSTDEV());
+		summary.addValue("delta y min/um", as.getMean());
+		summary.addValue("delta y max/um", as.getMax());
+		
 		as=new ArrayStatistics(z);
-		summary.addValue("z mean/um", as.getMean());
-		summary.addValue("z stdev/um", as.getSTDEV());
-		summary.addValue("z min/um", as.getMean());
-		summary.addValue("z max/um", as.getMax());
-		summary.addValue("delta z max/um", as.getMax()-as.getMin());
+		summary.addValue("delta z mean/um", as.getMean());
+		summary.addValue("delta z stdev/um", as.getSTDEV());
+		summary.addValue("detla z min/um", as.getMin());
+		summary.addValue("delta z max/um", as.getMax());
+		
 		this.hasSummary=true;
 		return summary;
 	}
 	public void saveResults(String path, File file) {
-		IJ.log(path);
-		IJ.log(file.getName());
+		
+		String name=file.getName();
+		int stop=name.lastIndexOf(".");
+		String nameResultsFile=null;
+		if (stop>0) {
+			nameResultsFile=name.substring(0, stop);
+//			IJ.log(nameResultsFile);
+		} else nameResultsFile=name;
+		
+		if (this.hasResultsWindow) {
+			//path=path.replace(name, nameResultsFile+"_Results.txt");
+			results.save(path.replace(name, nameResultsFile+"_Results.txt"));
+		}
+		if (this.hasSummary) {
+			//path=path.replace(name, nameResultsFile+"_Results.txt");
+			results.save(path.replace(name, nameResultsFile+"_Results Summary.txt"));
+		}
+		
 	}
 	private boolean writeResults(int frame) {
 		results.incrementCounter();

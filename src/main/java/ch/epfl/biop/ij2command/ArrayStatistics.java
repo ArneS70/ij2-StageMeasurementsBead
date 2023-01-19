@@ -26,7 +26,7 @@ public class ArrayStatistics {
 		for (int i=0; i<size;i++) {
 			stdev+=Math.pow((array[i]-mean),2);
 		}
-		return Math.sqrt(stdev/(size-1));
+		return Math.sqrt(stdev/(size));
 	}
 	double getMin() {
 		int size=this.array.length;
