@@ -1,6 +1,7 @@
 package ch.epfl.biop.ij2command;
 
 import java.awt.Polygon;
+import java.io.File;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -26,11 +27,12 @@ public class SimpleBeadLocalizer {
 	public static final String methodSimple= "Simple";
 	public static final String methodEllipse= "Ellipse";
 	public static final String methodGauss="SuperGauss Fit";
-	private String methodSelection;
-	
+		
 	public static final String ResultTableSimple = "Bead Localization Results--Simple";
 	public static final String ResultTableEllipse="Bead Localization Results--Ellipse Fit";
 	public static final String ResultTableGauss ="Bead Localization Results--SuperGauss Fit";
+	
+	private String methodSelection;
 	
 	private ImagePlus toTrack;
 	private Calibration ImageCalibration;
@@ -43,6 +45,8 @@ public class SimpleBeadLocalizer {
 	private ResultsTable resultsRefined=new ResultsTable();
 	private int gap=1;
 	private boolean showFit=false;
+	private boolean hasResultsWindow=false;
+	private boolean hasSummary=false;
 	
 	
 	SimpleBeadLocalizer(ImagePlus imp,double beadDiameter, String method, int deltat){
@@ -54,16 +58,20 @@ public class SimpleBeadLocalizer {
 		this.ImageCalibration=imp.getCalibration();
 		pasteImageDimension(imp.getDimensions());
 		zRes=ImageCalibration.pixelHeight;
-		analyzeStack();
-		results.show("Bead Localizing Results--"+methodSelection);
-		
-		
 		
 	}
 //	String concat(String []) {
 		
 //	}
+	public void run() {
+		analyzeStack();
+		showResults();
+	}
 	
+	private void showResults() {
+		results.show("Bead Localizing Results--"+methodSelection);
+		this.hasResultsWindow=true;
+	}
 	private void pasteImageDimension(int[] dimensions) {
     	int length=dimensions.length;
     	if (dimensions==null) return;
@@ -75,11 +83,11 @@ public class SimpleBeadLocalizer {
     	if (length>3) this.frames=dimensions[4]; else return;
     	
     }
-	public void run() {
+/*	public void run() {
 		if (methodSelection.contains("Simple")) {
 			findMaxima(toTrack);
 		}
-	}
+	}*/
 	public void analyzeStack() {
 		for (int f=0;f<frames;f+=gap) {
 			
@@ -296,6 +304,7 @@ public class SimpleBeadLocalizer {
 //		Zposition.show();
 		GaussFitter gf=new GaussFitter(pos,zIntensity);
 //		gf.fixAmplitude(nSlices);
+		
 		double [] results=gf.getResults();
 		return results[2];
 	}
@@ -328,9 +337,14 @@ public class SimpleBeadLocalizer {
 		summary.addValue("z min/um", as.getMean());
 		summary.addValue("z max/um", as.getMax());
 		summary.addValue("delta z max/um", as.getMax()-as.getMin());
+		this.hasSummary=true;
 		return summary;
 	}
-	private void writeResults(int frame) {
+	public void saveResults(String path, File file) {
+		IJ.log(path);
+		IJ.log(file.getName());
+	}
+	private boolean writeResults(int frame) {
 		results.incrementCounter();
 		results.addValue("Frame",frame);
 		results.addValue(SimpleBeadLocalizer.header[0], xc);
@@ -346,8 +360,9 @@ public class SimpleBeadLocalizer {
 		results.addValue("delta x",xc-x0);
 		results.addValue("delta y",yc-y0);
 		results.addValue("delta z",zc-z0);
+		return true;
 	}
-	private void writeResults(ResultsTable table, int frame) {
+	private boolean writeResults(ResultsTable table, int frame) {
 		table.incrementCounter();
 		table.addValue("Frame",frame);
 		table.addValue(SimpleBeadLocalizer.header[0], xc);
@@ -355,5 +370,6 @@ public class SimpleBeadLocalizer {
 		table.addValue(SimpleBeadLocalizer.header[2], zc);
 		table.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
 		table.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
+		return true;
 	}
 }

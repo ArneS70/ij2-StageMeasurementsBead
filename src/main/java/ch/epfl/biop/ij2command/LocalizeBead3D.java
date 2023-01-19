@@ -64,6 +64,9 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="show Fit Window(s)")
     boolean showFit;
 	
+	@Parameter(label="save results Tables")
+    boolean saveResults;
+	
 	
     
 	@Override
@@ -71,6 +74,7 @@ public class LocalizeBead3D implements Command {
     public void run() {
     	
     	IJ.open(fileInput.getAbsolutePath());
+    	
  		ImagePlus imp=WindowManager.getCurrentImage();
  		imp.show();
  		zRes=imp.getCalibration().pixelDepth;
@@ -79,9 +83,10 @@ public class LocalizeBead3D implements Command {
  		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method,gap);
  		track.setGap(gap);
  		if (showFit) track.showFit();
- 		track.analyzeStack();
+ 		track.run();
  		if (showRois) track.showRois("Bead Localizing Results--"+method);
  		if (summarize) track.summarizeResults("Bead Localizing Results--"+method).show("Bead Localizing Results--Summary");
+ 		if (saveResults) track.saveResults(fileInput.getAbsolutePath(),fileInput.getAbsoluteFile());
  		
  		
     }
