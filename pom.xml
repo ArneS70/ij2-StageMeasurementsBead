@@ -19,7 +19,7 @@
 	<name>Biop Stage meaurements</name>
 	<description>A Maven project implementing meauring the drift of a microscopy stage.</description>
 	<url>http://biop.epfl.ch</url>
-	<inceptionYear>2022</inceptionYear>
+	<inceptionYear>2023</inceptionYear>
 	<organization>
 		<name>BIOP</name>
 		<url>http://biop.epfl.ch</url>
@@ -75,8 +75,8 @@
 			</roles>
 		</developer>
 		<developer>
-			<id>stoffelc</id>
-			<name>Claire Stoffel</name>
+			<id>ArneS70</id>
+			<name>Arne Seitz</name>
 			<url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
 			<roles>
 				<role>founder</role>
@@ -128,12 +128,7 @@
 			<roles><role>founder</role></roles>
 			<properties><id>ArneS70</id></properties>
 		</contributor>
-		<contributor>
-			<name>Claire Stoffel</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
-			<roles><role>founder</role></roles>
-			<properties><id>stoffelc</id></properties>
-		</contributor>
+		
 		<contributor>
 			<name>Rémy Dornier</name>
 			<url>http://biop.epfl.ch/INFO_Facility.html</url>
