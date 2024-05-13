@@ -34,17 +34,50 @@ import net.imagej.ImageJ;
 		
 		@Override
 		public void run() {
-			IJ.run("Bio-Formats Importer", "open=N:/temp-Arne/StageTest/USFA_Slide_Exp13.lsm color_mode=Default rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
+			//IJ.run("Bio-Formats Importer", "open=N:/temp-Arne/StageTest/USFA_Slide_Exp13.lsm color_mode=Default rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
 			ImagePlus imp=WindowManager.getCurrentImage();
-			ImageProcessor ip=imp.getProcessor();
-			ImageStatistics stats=new ImageStatistics();
-			for (int pos=0;pos<repetitions;pos++) {
-				Roi line=new Line(94+pos*lineLength, 500, 94+pos*lineLength, 540);
-				imp.setRoi(line);
-				stats=imp.getStatistics();
-				IJ.log("Mean: "+stats.mean);
-				IJ.log("Max: "+stats.max);
+			int h=imp.getHeight()-lineLength;
+			int w=imp.getWidth();
+			
+			int rimX=(w%repetitions)/2;
+			int rimY=lineLength/2+(h%repetitions)/2;
+			
+			int distX=w/repetitions;
+			int distY=h/repetitions;
+			
+			int slices=imp.getNSlices();
+			
+			
+			ResultsTable rt_xAxis=new ResultsTable();
+			ResultsTable rt_yAxis=new ResultsTable();
+			
+			for (int s=1;s<=slices;s++) {
+				
+				imp.setSliceWithoutUpdate(s);
+				ImageProcessor ip=imp.getProcessor();
+				
+				rt_xAxis.addRow();
+				rt_yAxis.addRow();
+				
+				for (int pos=0;pos<repetitions;pos++) {
+					Roi line=new Line(rimX+pos*distX, h/2-lineLength/2, rimX+pos*distX, h/2+lineLength/2);
+					ip.setRoi(line);
+					ImageStatistics statsX=ip.getStats();
+					rt_xAxis.addValue(pos, statsX.stdDev);
+					
+					//imp.setRoi(line);
+					
+					
+					line=new Line(w/2, rimY+pos*distY, w/2, rimY+pos*distY+lineLength);
+					ip.setRoi(line);
+					ImageStatistics statsY=ip.getStats();
+					rt_yAxis.addValue(pos, statsY.stdDev);
+					//imp.setRoi(line);
+				}
+				
 			}
+			rt_xAxis.show("Results x Axis");
+			rt_yAxis.show("Results y Axis");
 		/* 
 		if (analyseStack) slices=imp.getStackSize();
 		ImageStack stack=new ImageStack();
@@ -116,6 +149,7 @@ import net.imagej.ImageJ;
 */
 		public static void main(final String... args) throws Exception {
 			// create the ImageJ application context with all available services
+			
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
 			ij.command().run(USAF_BatchAnalyser.class, true);
