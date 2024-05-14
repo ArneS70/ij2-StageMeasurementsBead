@@ -10,6 +10,7 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.MaximumFinder;
@@ -36,6 +37,8 @@ import net.imagej.ImageJ;
 		public void run() {
 			//IJ.run("Bio-Formats Importer", "open=N:/temp-Arne/StageTest/USFA_Slide_Exp13.lsm color_mode=Default rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
 			ImagePlus imp=WindowManager.getCurrentImage();
+			Calibration cal=imp.getCalibration();
+			
 			int h=imp.getHeight()-lineLength;
 			int w=imp.getWidth();
 			
@@ -51,19 +54,25 @@ import net.imagej.ImageJ;
 			ResultsTable rt_xAxis=new ResultsTable();
 			ResultsTable rt_yAxis=new ResultsTable();
 			
+			
 			for (int s=1;s<=slices;s++) {
+				
+				rt_xAxis.addRow();
+				rt_yAxis.addRow();
+				
+				rt_xAxis.addValue("X",(s-1)*cal.pixelDepth);
+				rt_yAxis.addValue("X",(s-1)*cal.pixelDepth);
 				
 				imp.setSliceWithoutUpdate(s);
 				ImageProcessor ip=imp.getProcessor();
 				
-				rt_xAxis.addRow();
-				rt_yAxis.addRow();
+				
 				
 				for (int pos=0;pos<repetitions;pos++) {
 					Roi line=new Line(rimX+pos*distX, h/2-lineLength/2, rimX+pos*distX, h/2+lineLength/2);
 					ip.setRoi(line);
 					ImageStatistics statsX=ip.getStats();
-					rt_xAxis.addValue(pos, statsX.stdDev);
+					rt_xAxis.addValue(""+IJ.d2s((rimX+pos*distX)*cal.pixelWidth), statsX.stdDev);
 					
 					//imp.setRoi(line);
 					
@@ -71,9 +80,10 @@ import net.imagej.ImageJ;
 					line=new Line(w/2, rimY+pos*distY, w/2, rimY+pos*distY+lineLength);
 					ip.setRoi(line);
 					ImageStatistics statsY=ip.getStats();
-					rt_yAxis.addValue(pos, statsY.stdDev);
+					rt_yAxis.addValue(""+IJ.d2s((rimY+pos*distY)*cal.pixelHeight), statsY.stdDev);
 					//imp.setRoi(line);
 				}
+				
 				
 			}
 			rt_xAxis.show("Results x Axis");
