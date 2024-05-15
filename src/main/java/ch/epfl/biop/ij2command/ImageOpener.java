@@ -3,12 +3,15 @@ package ch.epfl.biop.ij2command;
 
 
 import java.io.File;
+import java.io.IOException;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ij.IJ;
+import ij.ImagePlus;
+import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
 
@@ -28,8 +31,17 @@ public class ImageOpener implements Command {
 	
 	    public void run() {
     	
-    	SimpleImageReader reader=new SimpleImageReader(fileInput.getAbsolutePath());
-    	IJ.log(""+reader.getChannels());
+    	//SimpleImageReader reader=new SimpleImageReader(fileInput.getAbsolutePath());
+    	//IJ.log(""+reader.getChannels());
+	    BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
+	    try {
+			ImagePlus [] imps=bfr.open();
+			IJ.log(""+imps.length);
+			imps[0].show();
+		} catch (FormatException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
  		
  		
     }
