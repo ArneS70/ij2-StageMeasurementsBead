@@ -1,22 +1,17 @@
 package ch.epfl.biop.ij2command;
-import java.io.File;
-import java.util.Arrays;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
-import ij.plugin.filter.MaximumFinder;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
-import ij.util.ArrayUtil;
 import net.imagej.ImageJ;
 
 /**
