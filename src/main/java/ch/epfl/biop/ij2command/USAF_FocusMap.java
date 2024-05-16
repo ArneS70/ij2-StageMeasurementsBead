@@ -8,6 +8,8 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ij.ImagePlus;
+import ij.WindowManager;
+import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
@@ -21,6 +23,8 @@ import net.imagej.ImageJ;
 			int repetitionX;
 			@Parameter(label="Repetitions y-Axis")
 			int repetitionY;
+			@Parameter(label="Save result tables?")
+			boolean save;
 
 		@Override
 		public void run() {
@@ -32,6 +36,7 @@ import net.imagej.ImageJ;
 				for (int n=0;n<num;n++) {
 					USAF_FocusAnalyser ufm=new USAF_FocusAnalyser(imps[n],lineLength,repetitionX,repetitionY);
 					ufm.run();
+					if (save) saveResults();
 				}
 				
 			} catch (FormatException | IOException e) {
@@ -39,6 +44,21 @@ import net.imagej.ImageJ;
 				e.printStackTrace();
 			}
 		    
+		}
+		void saveResults() {
+			String fileName=fileInput.getName();
+			int n=fileName.indexOf(".");
+			fileName=fileName.substring(0, n);
+			String path=fileInput.getAbsolutePath();
+			n=path.indexOf(fileName);
+			path=path.substring(0, n);
+			ResultsTable rt=ResultsTable.getResultsTable("Results x-Axis");
+			rt.save(path+fileName+"_xAxis.csv");
+			
+			rt=ResultsTable.getResultsTable("Results y-Axis");
+			rt.save(path+fileName+"_yAxis.csv");
+			WindowManager.closeAllWindows();
+			
 		}
 		/**
 		* This main function serves for development purposes.
