@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.ProfilePlot;
@@ -18,20 +19,20 @@ import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
 
 public class EdgeWidthAnalyser {
+	private static final int TOP=1,MIDDLE=2,BOTTOM=3;
 	private ImagePlus edgeWidth;
 	private ImageProcessor ip_ew;
 	private int[] maxTop,maxBottom;
+	private boolean showFit,showEdges;
+	private Roi cropRoi;
 	
 	EdgeWidthAnalyser(ImagePlus imp){
-		imp.setSliceWithoutUpdate(200);
+				
+		this.setRoi(100, MIDDLE);
 		
-		Roi roi=new Roi(0,470,1388,100);
-		imp.setRoi(roi);
-		//imp.show();
-		
+		imp.setRoi(cropRoi);
 		this.edgeWidth=imp.crop();
-		//this.edgeWidth.show();
-		
+				
 		this.ip_ew=this.edgeWidth.getProcessor();
 		
 		
@@ -40,16 +41,47 @@ public class EdgeWidthAnalyser {
 	private ImageProcessor detectEdges() {
 		ImageProcessor ip_edge=ip_ew.duplicate();
 		ip_edge=ip_edge.convertToFloat();
-		
-		
 		ip_edge.findEdges();
-		//ImagePlus imp=new ImagePlus("edge",ip_edge);
-		//imp.show();
+		
+		if (showEdges) {
+			ImagePlus imp=new ImagePlus("edge",ip_edge);
+			imp.show();
+		}
 		return ip_edge;
 	}
+	void setSlice(int slice) {
+		edgeWidth.setSliceWithoutUpdate(slice);
+	}
+	
+	void setRoi(int size,int position) {
+		int w=edgeWidth.getWidth();
+		int h=edgeWidth.getHeight();
+		if (size>h)size=h;
+		Roi roi=new Roi(0,0,0,0);
+		
+		if (position==EdgeWidthAnalyser.TOP) {
+			roi=new Roi(0,h/4,w,size);
+		}
+		if (position==EdgeWidthAnalyser.MIDDLE) {
+			roi=new Roi(0,h/2,w,size);
+		}
+		if (position==EdgeWidthAnalyser.MIDDLE) {
+			roi=new Roi(0,3*h/4,w,size);
+		}
+		this.cropRoi=roi;
+	}
+	void showFit() {
+		this.showFit=true;
+	}
+	void showEdges() {
+		this.showEdges=true;
+	}
 	void fitEdgeWidth(int length) {
+		
 		ResultsTable rt=new ResultsTable();
 		ResultsTable profiles=new ResultsTable();
+		
+		ImageStack fitWin=new ImageStack();
 		
 		double [] x=new double [length];
 		double scale=edgeWidth.getCalibration().pixelWidth;
@@ -94,19 +126,29 @@ public class EdgeWidthAnalyser {
 				
 			}
 			rt.addValue("R^2", cf.getRSquared());
-			cf.getPlot().show();
+			
+			if (showFit) fitWin.addSlice(cf.getPlot().getProcessor());
 			
 		}
 		rt.show("FitResults");
 		profiles.show("Profiles");
+		
+		if (showFit) new ImagePlus("Fit Windows",fitWin).show();
 	}
 	double [] getProfile(ImageProcessor ip, int lineWidth,double x1,double y1,double x2,double y2) {
-		double [] profile=ip.getLine(x1,y1-lineWidth/2.0,x2,y2-lineWidth/2.0);
+		y1=y1-lineWidth/2.0;
+		y2=y2-lineWidth/2.0;
+		
+		double [] profile=ip.getLine(x1,y1,x2,y2);
+		
+		
 		IJ.log(""+(y1-lineWidth/2.0));
 		int length=profile.length;
 		
 		for (int n=1;n<lineWidth;n++) {
-			double [] line =ip_ew.getLine(x1,y1-(lineWidth/2.0)+n,x2,y2-(lineWidth/2.0)+n);
+			double [] line =ip.getLine(x1,y1+n,x2,y2+n);
+
+			
 			//IJ.log(""+(y1-lineWidth/2.0+n));
 			for (int l=0;l<length;l++) {
 				profile[l]+=line[l];

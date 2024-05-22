@@ -24,6 +24,9 @@ import net.imagej.ImageJ;
 			
 			@Parameter(label="Save result tables?")
 			boolean save;
+			
+			@Parameter(label="Diplay Fit windows")
+			boolean fit;
 
 		@Override
 		public void run() {
@@ -34,6 +37,7 @@ import net.imagej.ImageJ;
 				
 				for (int n=0;n<num;n++) {
 					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imps[n]);
+					if (fit) ewa.showFit();
 					ewa.fitEdgeWidth(20);
 					//if (save) saveResults();
 				}
