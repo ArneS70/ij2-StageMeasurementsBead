@@ -17,8 +17,8 @@ import net.imagej.ImageJ;
 		public class EdgeWidth implements Command {
 			@Parameter(style="open")
 		    File fileInput;
-			@Parameter(label="Length line")
-			int lineLength;
+			@Parameter(label="Slice")
+			int slice;
 			@Parameter(label="Analysis window heigt")
 			int analysisHeight;
 			
@@ -27,6 +27,9 @@ import net.imagej.ImageJ;
 			
 			@Parameter(label="Diplay Fit windows")
 			boolean fit;
+			
+			@Parameter(label="Diplay Edge Detection")
+			boolean edge;
 
 		@Override
 		public void run() {
@@ -36,9 +39,10 @@ import net.imagej.ImageJ;
 				int num=imps.length;
 				
 				for (int n=0;n<num;n++) {
-					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imps[n]);
+					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imps[n],slice,analysisHeight);
 					if (fit) ewa.showFit();
-					ewa.fitEdgeWidth(20);
+					if (edge) ewa.showEdges();
+					ewa.fitEdgeWidth(210);
 					//if (save) saveResults();
 				}
 				
