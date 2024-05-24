@@ -25,11 +25,13 @@ public class EdgeWidthAnalyser {
 	private int[] maxTop,maxBottom;
 	private boolean showFit,showEdges;
 	private Roi cropRoi;
+	private double pixelWidth;
 	
 	EdgeWidthAnalyser(ImagePlus imp, int slice, int height){
 				
 		
 		this.input=imp;
+		this.pixelWidth=input.getCalibration().pixelWidth;
 		setSlice(slice);
 		this.setRoi(height, MIDDLE);
 		
@@ -89,10 +91,11 @@ public class EdgeWidthAnalyser {
 		ImageStack fitWin=new ImageStack();
 		
 		double [] x=new double [length];
-		double scale=crop.getCalibration().pixelWidth;
+		
 		for (int i=0;i<length;i++) {
-			x[i]=i*scale;
+			x[i]=i*pixelWidth;
 		}
+		profiles.setValues("x/um", x);
 		findMaxima();
 		ImageProcessor ip_maxima=detectEdges();
 		int max=maxTop.length;
@@ -104,13 +107,14 @@ public class EdgeWidthAnalyser {
 				
 			double line []=getProfile(ip_maxima,10,maxTop[n]-length/2,50,maxTop[n]+length/2,50);
 			
-			profiles.setValues(""+n, line);
+			profiles.setValues(""+IJ.d2s(maxTop[n]*pixelWidth,1), line);
 			
 			CurveFitter cf=new CurveFitter(x,line);
 			cf.doFit(CurveFitter.GAUSSIAN);
 			double []param=cf.getParams();
 			int num=cf.getNumParams();
 			
+			rt.addValue("position", maxTop[n]*pixelWidth);
 			for (int i=0;i<num;i++) {
 				rt.addValue("p"+i, param[i]);
 				
