@@ -6,6 +6,7 @@ import java.util.Arrays;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.ProfilePlot;
@@ -26,6 +27,9 @@ public class EdgeWidthAnalyser {
 	private boolean showFit,showEdges;
 	private Roi cropRoi;
 	private double pixelWidth;
+	private ResultsTable fitWidth=new ResultsTable();
+	private ResultsTable profiles=new ResultsTable();
+	private int analysisSlice;
 	
 	EdgeWidthAnalyser(ImagePlus imp, int slice, int height){
 				
@@ -55,7 +59,9 @@ public class EdgeWidthAnalyser {
 		return ip_edge;
 	}
 	void setSlice(int slice) {
+		IJ.log("Slice:"+slice);
 		if (slice>input.getStackSize()) slice=input.getStackSize();
+		this.analysisSlice=slice;
 		input.setSliceWithoutUpdate(slice);
 	}
 	
@@ -82,49 +88,68 @@ public class EdgeWidthAnalyser {
 	void showEdges() {
 		this.showEdges=true;
 	}
-	void fitEdgeWidth(int slice) {
+	int setFitLineLength(int[]maxima) {
+		int length=maxima.length;
+		double [] x=new double [length];
+		double [] y=new double [length];
 		
-		int length=20;
-		ResultsTable rt=new ResultsTable();
-		ResultsTable profiles=new ResultsTable();
+		for (int i=0;i<length;i++){
+			x[i]=i;
+			y[i]=maxima[i];
+		}
+		CurveFitter cf=new CurveFitter(x,y);
+		cf.doFit(CurveFitter.STRAIGHT_LINE);
+		double [] param=cf.getParams();
+		//cf.getPlot().show();
+		IJ.log("Edge distance:"+IJ.d2s(param[1],1)+" pixel");
+		return (int)(0.95*param[1]);
+		
+	}
+	void fitEdgeWidth() {
+		
+		
+		
 		
 		ImageStack fitWin=new ImageStack();
-		
+		findMaxima();
+		int length=setFitLineLength(maxTop);
 		double [] x=new double [length];
 		
 		for (int i=0;i<length;i++) {
 			x[i]=i*pixelWidth;
 		}
 		profiles.setValues("x/um", x);
-		findMaxima();
+		
 		ImageProcessor ip_maxima=detectEdges();
 		int max=maxTop.length;
 		
-		
+		int width=crop.getWidth();
 		for (int n=0;n<max;n+=2) {
 			
-			rt.addRow();
+			if (maxTop[n]-length/2>0 && maxTop[n]+length/2<width) {
+				fitWidth.addRow();
+					
+				double line []=getProfile(ip_maxima,10,maxTop[n]-length/2,50,maxTop[n]+length/2,50);
 				
-			double line []=getProfile(ip_maxima,10,maxTop[n]-length/2,50,maxTop[n]+length/2,50);
-			
-			profiles.setValues(""+IJ.d2s(maxTop[n]*pixelWidth,1), line);
-			
-			CurveFitter cf=new CurveFitter(x,line);
-			cf.doFit(CurveFitter.GAUSSIAN);
-			double []param=cf.getParams();
-			int num=cf.getNumParams();
-			
-			rt.addValue("position", maxTop[n]*pixelWidth);
-			for (int i=0;i<num;i++) {
-				rt.addValue("p"+i, param[i]);
+				profiles.setValues(""+IJ.d2s(maxTop[n]*pixelWidth,1), line);
 				
+				CurveFitter cf=new CurveFitter(x,line);
+				cf.doFit(CurveFitter.GAUSSIAN);
+				double []param=cf.getParams();
+				int num=cf.getNumParams();
+				
+				fitWidth.addValue("position", maxTop[n]*pixelWidth);
+				for (int i=0;i<num;i++) {
+					fitWidth.addValue("p"+i, param[i]);
+					
+				}
+				fitWidth.addValue("R^2", cf.getRSquared());
+				
+				if (showFit) fitWin.addSlice(cf.getPlot().getProcessor());
 			}
-			rt.addValue("R^2", cf.getRSquared());
-			
-			if (showFit) fitWin.addSlice(cf.getPlot().getProcessor());
-			
 		}
-		rt.show("FitResults");
+		fitWidth.show("FitResults");
+		
 		profiles.show("Profiles");
 		
 		if (showFit) new ImagePlus("Fit Windows",fitWin).show();
@@ -147,6 +172,45 @@ public class EdgeWidthAnalyser {
 			}
 		}
 		return profile;
+	}
+	void findVirtualFocus(boolean plot) {
+		double [] x=fitWidth.getColumn("position");
+		double [] y=fitWidth.getColumn("p3");
+		CurveFitter cf=new CurveFitter(x,y);
+		cf.doFit(CurveFitter.POLY3);
+		double [] param=cf.getParams();
+		if (plot) cf.getPlot().show();
+		if (WindowManager.getWindow("VirtualFocusResults")==null) {
+			ResultsTable rt=new ResultsTable();
+			rt.show("VirtualFocusResults");
+		}
+		ResultsTable rt=ResultsTable.getResultsTable("VirtualFocusResults");
+		double A=param[0];
+		double B=param[1];
+		double C=param[2];
+		double D=param[3];
+		
+		double p=2.0*C/(3.0*D);
+		double q=B/(3.0*D);
+		double x1=(-p/2.0)-Math.sqrt((p*p/4.0)-q);
+		double x2=(-p/2.0)+Math.sqrt((p*p/4.0)-q);
+
+		rt.addRow();
+		rt.addValue("File",input.getTitle());
+		rt.addValue("Slice",analysisSlice);
+		rt.addValue("A",A);
+		rt.addValue("B",B);
+		rt.addValue("C",C);
+		rt.addValue("D",D);
+		rt.addValue("R^2", cf.getRSquared());
+		rt.addValue("p",p);
+		rt.addValue("q",q);
+		rt.addValue("x1",x1*pixelWidth);
+		rt.addValue("x2",x2*pixelWidth);
+		
+		rt.show("VirtualFocusResults");
+		
+		
 	}
 	void findMaxima(){
 		ImageProcessor ip_maxima=detectEdges();

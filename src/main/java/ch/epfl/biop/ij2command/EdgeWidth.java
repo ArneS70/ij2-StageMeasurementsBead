@@ -30,6 +30,9 @@ import net.imagej.ImageJ;
 			
 			@Parameter(label="Diplay Edge Detection")
 			boolean edge;
+			
+			@Parameter(label="Diplay Virtual Focus Fit windows")
+			boolean focusFit;
 
 		@Override
 		public void run() {
@@ -42,7 +45,8 @@ import net.imagej.ImageJ;
 					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imps[n],slice,analysisHeight);
 					if (fit) ewa.showFit();
 					if (edge) ewa.showEdges();
-					ewa.fitEdgeWidth(210);
+					ewa.fitEdgeWidth();
+					ewa.findVirtualFocus(focusFit);
 					//if (save) saveResults();
 				}
 				
