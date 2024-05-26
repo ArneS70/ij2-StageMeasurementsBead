@@ -13,13 +13,14 @@ import ij.gui.ProfilePlot;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
+import ij.measure.UserFunction;
 import ij.plugin.Profiler;
 import ij.plugin.filter.Filters;
 import ij.plugin.filter.MaximumFinder;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
 
-public class EdgeWidthAnalyser {
+public class EdgeWidthAnalyser implements UserFunction{
 	private static final int TOP=1,MIDDLE=2,BOTTOM=3;
 	private ImagePlus crop,input;
 	private ImageProcessor ip_ew;
@@ -27,10 +28,14 @@ public class EdgeWidthAnalyser {
 	private boolean showFit,showEdges;
 	private Roi cropRoi;
 	private double pixelWidth;
+	private double edgeDistance;
 	private ResultsTable fitWidth=new ResultsTable();
 	private ResultsTable profiles=new ResultsTable();
 	private int analysisSlice;
 	
+	EdgeWidthAnalyser(){
+		
+	}
 	EdgeWidthAnalyser(ImagePlus imp, int slice, int height){
 				
 		
@@ -46,7 +51,45 @@ public class EdgeWidthAnalyser {
 		
 		
 	}
-	
+	void globalVirtualFocusFit(ResultsTable width) {
+		ResultsTable rt=ResultsTable.getResultsTable("VirtualFocusResults");
+		double [] x0=rt.getColumn("x0");
+		int numCol=width.getLastColumn();
+		int numRow=width.size();
+		double [] x=new double [numRow*numCol];
+		double [] y=new double [numRow*numCol];
+		
+		
+		
+		for (int i=1;i<numCol;i++) {
+			
+			
+			for (int r=0;r<numRow;r++) {
+				y[(i-1)*numRow+r]=width.getValueAsDouble(i, r);
+				
+				x[(i-1)*numRow+r]=width.getValueAsDouble(0, r)-x0[i];
+			}
+			
+			
+			
+		}
+		CurveFitter cf=new CurveFitter(x,y);
+		cf.doFit(CurveFitter.POLY2);
+		cf.getPlot().show();
+		double []param=cf.getParams();
+		double s=param[2];
+		double xc=param[1]/(-2*s);
+		double deltaY=param[0]-s*xc*xc;
+		x=width.getColumnAsDoubles(0);
+		
+		for (int i=1;i<numCol;i++) {
+			y=width.getColumnAsDoubles(i);
+			cf=new CurveFitter (x,y);
+			cf.doCustomFit("y=a*(x-b)^2", {deltaY,s,xc}, showEdges)
+		}
+		
+		
+	}
 	private ImageProcessor detectEdges() {
 		ImageProcessor ip_edge=ip_ew.duplicate();
 		ip_edge=ip_edge.convertToFloat();
@@ -102,9 +145,11 @@ public class EdgeWidthAnalyser {
 		double [] param=cf.getParams();
 		//cf.getPlot().show();
 		IJ.log("Edge distance:"+IJ.d2s(param[1],1)+" pixel");
+		this.edgeDistance=param[1]*pixelWidth;
 		return (int)(0.95*param[1]);
 		
 	}
+	
 	void fitEdgeWidth() {
 		
 		
@@ -118,6 +163,7 @@ public class EdgeWidthAnalyser {
 		for (int i=0;i<length;i++) {
 			x[i]=i*pixelWidth;
 		}
+		
 		profiles.setValues("x/um", x);
 		
 		ImageProcessor ip_maxima=detectEdges();
@@ -177,7 +223,10 @@ public class EdgeWidthAnalyser {
 		double [] x=fitWidth.getColumn("position");
 		double [] y=fitWidth.getColumn("p3");
 		CurveFitter cf=new CurveFitter(x,y);
-		cf.doFit(CurveFitter.POLY3);
+		
+		
+		cf.doFit(CurveFitter.POLY2);
+		
 		double [] param=cf.getParams();
 		if (plot) cf.getPlot().show();
 		if (WindowManager.getWindow("VirtualFocusResults")==null) {
@@ -185,28 +234,29 @@ public class EdgeWidthAnalyser {
 			rt.show("VirtualFocusResults");
 		}
 		ResultsTable rt=ResultsTable.getResultsTable("VirtualFocusResults");
-		double A=param[0];
-		double B=param[1];
-		double C=param[2];
-		double D=param[3];
+		double a=param[0];
+		double b=param[1];
+		double c=param[2];
+		double x0=-b/(2*c);
+//		double D=param[3];
 		
-		double p=2.0*C/(3.0*D);
-		double q=B/(3.0*D);
-		double x1=(-p/2.0)-Math.sqrt((p*p/4.0)-q);
-		double x2=(-p/2.0)+Math.sqrt((p*p/4.0)-q);
+//		double p=2.0*C/(3.0*D);
+//		double q=B/(3.0*D);
+//		double x1=(-p/2.0)-Math.sqrt((p*p/4.0)-q);
+//		double x2=(-p/2.0)+Math.sqrt((p*p/4.0)-q);
 
 		rt.addRow();
 		rt.addValue("File",input.getTitle());
 		rt.addValue("Slice",analysisSlice);
-		rt.addValue("A",A);
-		rt.addValue("B",B);
-		rt.addValue("C",C);
-		rt.addValue("D",D);
+		rt.addValue("a",a);
+		rt.addValue("b",b);
+		rt.addValue("c",c);
+//		rt.addValue("D",D);
 		rt.addValue("R^2", cf.getRSquared());
-		rt.addValue("p",p);
-		rt.addValue("q",q);
-		rt.addValue("x1",x1*pixelWidth);
-		rt.addValue("x2",x2*pixelWidth);
+		rt.addValue("x0",x0);
+//		rt.addValue("q",q);
+//		rt.addValue("x1",x1*pixelWidth);
+//		rt.addValue("x2",x2*pixelWidth);
 		
 		rt.show("VirtualFocusResults");
 		
@@ -230,5 +280,10 @@ public class EdgeWidthAnalyser {
 	}
 	ImageProcessor getProcessor() {
 		return this.ip_ew;
+	}
+	@Override
+	public double userFunction(double[] params, double x) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }
