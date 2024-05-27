@@ -20,7 +20,7 @@ import ij.plugin.filter.MaximumFinder;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.process.ImageProcessor;
 
-public class EdgeWidthAnalyser implements UserFunction{
+public class EdgeWidthAnalyser {
 	private static final int TOP=1,MIDDLE=2,BOTTOM=3;
 	private ImagePlus crop,input;
 	private ImageProcessor ip_ew;
@@ -52,7 +52,10 @@ public class EdgeWidthAnalyser implements UserFunction{
 		
 	}
 	void globalVirtualFocusFit(ResultsTable width) {
+		
+		ImageStack globalFitWin=new ImageStack();
 		ResultsTable rt=ResultsTable.getResultsTable("VirtualFocusResults");
+		ResultsTable globalFitResults=new ResultsTable();
 		double [] x0=rt.getColumn("x0");
 		int numCol=width.getLastColumn();
 		int numRow=width.size();
@@ -81,14 +84,31 @@ public class EdgeWidthAnalyser implements UserFunction{
 		double xc=param[1]/(-2*s);
 		double deltaY=param[0]-s*xc*xc;
 		x=width.getColumnAsDoubles(0);
-		
+		double [] initParam=new double [2];
+		initParam[0]=300;
+		initParam[1]=deltaY;
+//		initParam[2]=300;
+//		initParam[0]=0.7;
+//		initParam[1]=-0.15;
+//		initParam[2]=2e-6;;
 		for (int i=1;i<numCol;i++) {
 			y=width.getColumnAsDoubles(i);
 			cf=new CurveFitter (x,y);
-			cf.doCustomFit("y=a*(x-b)^2", {deltaY,s,xc}, showEdges)
+			
+			cf.doCustomFit("y=a+"+s+"*Math.pow(x-b,2)", initParam, false);
+//			cf.doCustomFit("y=a+b*x+c*x*x", initParam, false);
+			
+			
+			globalFitWin.addSlice(cf.getPlot().getProcessor());
+			double [] params=cf.getParams();
+			globalFitResults.addRow();
+			globalFitResults.addValue("i", i);
+			globalFitResults.addValue("delta y", params[0]);
+			globalFitResults.addValue("xc", params[1]);
+			
 		}
-		
-		
+		globalFitResults.show("Global Fit Results");
+		new ImagePlus("Global Fits",globalFitWin).show();
 	}
 	private ImageProcessor detectEdges() {
 		ImageProcessor ip_edge=ip_ew.duplicate();
@@ -281,9 +301,6 @@ public class EdgeWidthAnalyser implements UserFunction{
 	ImageProcessor getProcessor() {
 		return this.ip_ew;
 	}
-	@Override
-	public double userFunction(double[] params, double x) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
+	
+	
 }
