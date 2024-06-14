@@ -1,5 +1,13 @@
 package ch.epfl.biop.ij2command;
 
+/** This plugin analyses the line width from a Ronchi grating transmission image after the "Find Edges" command. The width is 
+ *  obtained via a Gaussian Fit.
+ * 	In case the specimen is tilted along the z axis the the width is a function of the y axis in the image. 
+ * 	As input it requires a stack of images (z-stack) and a the z-position to analyse. 
+ * 	 
+ *  Please send comments to arne.seitz@epfl.ch
+*/
+
 import java.io.File;
 import java.io.IOException;
 
@@ -15,26 +23,29 @@ import net.imagej.ImageJ;
 
 		@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF EdgeWidth")
 		public class EdgeWidth implements Command {
-			@Parameter(style="open")
+			@Parameter(style="open")							//File to analyse
 		    File fileInput;
-			@Parameter(label="Slice")
+			@Parameter(label="Slice")							//Slice to analyse
 			int slice;
-			@Parameter(label="Analysis window heigt")
+			@Parameter(label="Analysis window height")			//Height of analysis window
 			int analysisHeight;
 			
-			@Parameter(label="Save result tables?")
+			@Parameter(label="Save result tables?")				
 			boolean save;
 			
-			@Parameter(label="Diplay Fit windows")
+			@Parameter(label="Diplay Fit windows")				//Fit windows of Gaussian fit
 			boolean fit;
 			
-			@Parameter(label="Diplay Edge Detection")
+			@Parameter(label="Diplay Edge Detection")			//Show the cropped region that is used for the fitting the Gauss profiles.
 			boolean edge;
 			
-			@Parameter(label="Diplay Virtual Focus Fit windows")
+			@Parameter(label="Diplay Virtual Focus Fit windows")	//Virtual focus is defined as the minimal line width. 
 			boolean focusFit;
 
 		@Override
+		/**
+		 * Opens the image using Bioformats
+		 */
 		public void run() {
 			BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
 			try {
