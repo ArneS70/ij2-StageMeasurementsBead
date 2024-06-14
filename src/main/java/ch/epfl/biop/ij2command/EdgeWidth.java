@@ -39,23 +39,27 @@ import net.imagej.ImageJ;
 			@Parameter(label="Diplay Edge Detection")			//Show the cropped region that is used for the fitting the Gauss profiles.
 			boolean edge;
 			
-			@Parameter(label="Diplay Virtual Focus Fit windows")	//Virtual focus is defined as the minimal line width. 
+			@Parameter(label="Diplay Virtual Focus Fit windows")	//Virtual focus is defined as the position of the minimal line width. 
 			boolean focusFit;
+			
+			@Parameter(label="Process multiple stacks")			//Process all stacks in an image container 
+			boolean multipleStacks;
 
 		@Override
 		/**
-		 * Opens the image using Bioformats
+		 * Opens the image using Bioformats and passes it on the the EdgeWidthAnalyser
 		 */
 		public void run() {
 			BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
 			try {
 				ImagePlus [] imps=bfr.open();
-				int num=imps.length;
-				
+				int num=1;
+				if (multipleStacks) num=imps.length;
+								
 				for (int n=0;n<num;n++) {
 					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imps[n],slice,analysisHeight);
-					if (fit) ewa.showFit();
-					if (edge) ewa.showEdges();
+					if (fit) ewa.setShowFit(true);
+					if (edge) ewa.setShowEdges(true);
 					ewa.fitEdgeWidth();
 					ewa.findVirtualFocus(focusFit);
 					//if (save) saveResults();
