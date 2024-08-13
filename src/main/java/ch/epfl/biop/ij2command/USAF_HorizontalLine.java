@@ -7,8 +7,11 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.gui.Line;
+import ij.gui.Roi;
 import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
@@ -23,21 +26,22 @@ import net.imagej.ImageJ;
 
 		@Override
 		public void run() {
-			BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
-			try {
-				ImagePlus [] imps=bfr.open();
-				int num=imps.length;
+			
+				ImagePlus imp=WindowManager.getCurrentImage();
 				
-				for (int n=0;n<num;n++) {
-					USAF_FocusAnalyser ufm=new USAF_FocusAnalyser(imps[n],lineLength,repetitionX,repetitionY);
-					ufm.run();
-					if (save) saveResults();
-				}
-				
-			} catch (FormatException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				if (imp!=null) {
+					
+					Roi roi=imp.getRoi();
+					
+					if(roi.isLine()) {
+						int num=imp.getImageStackSize();
+						for (int n=0;n<num;n++) {
+							HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp,(Line)roi);
+							//hla.run();
+							if (save) saveResults();
+						}
+					} else IJ.showMessage("Line selection required");
+				} else IJ.showMessage("Please provide an image");
 		    
 		}
 		void saveResults() {
