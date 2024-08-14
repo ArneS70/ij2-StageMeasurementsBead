@@ -224,6 +224,12 @@
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.orangepalantir</groupId>
+			<artifactId>leastsquares</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 		<dependency>
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej-legacy</artifactId>

@@ -16,7 +16,8 @@ import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
-		@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Line")
+		
+	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Line")
 		public class USAF_HorizontalLine implements Command {
 			@Parameter(style="open")
 		    File fileInput;
@@ -27,6 +28,7 @@ import net.imagej.ImageJ;
 		@Override
 		public void run() {
 			
+				ResultsTable fitResults;
 				ImagePlus imp=WindowManager.getCurrentImage();
 				
 				if (imp!=null) {
@@ -34,16 +36,19 @@ import net.imagej.ImageJ;
 					Roi roi=imp.getRoi();
 					
 					if(roi.isLine()) {
+						
 						int num=imp.getImageStackSize();
 						for (int n=0;n<num;n++) {
+							imp.setSlice(n);
 							HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp,(Line)roi);
-							//hla.run();
+							hla.writeResultsTable();
 							if (save) saveResults();
 						}
 					} else IJ.showMessage("Line selection required");
 				} else IJ.showMessage("Please provide an image");
 		    
 		}
+		
 		void saveResults() {
 			String fileName=fileInput.getName();
 			int n=fileName.indexOf(".");
