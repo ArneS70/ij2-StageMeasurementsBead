@@ -1,5 +1,6 @@
 package ch.epfl.biop.ij2command;
 
+import java.awt.Rectangle;
 import java.io.File;
 
 import org.scijava.command.Command;
@@ -23,7 +24,7 @@ public class USAF_VerticalTiltAnalyser implements Command{
 		int grating;
 	
 		int repetition;
-		int distance;
+		double distance;
 		
 		@Override
 		public void run() {
@@ -31,11 +32,38 @@ public class USAF_VerticalTiltAnalyser implements Command{
 				ResultsTable fitResults,lineResults;
 				ImagePlus imp=WindowManager.getCurrentImage();
 				
+				
 				if (imp!=null) {
-					
 					Roi roi=imp.getRoi();
+					Rectangle r=roi.getBounds();
 					
-					if(roi.isLine()) {
+					
+					EdgeWidthAnalyser ewa=new EdgeWidthAnalyser(imp.crop());
+					ewa.findMaxima(10);
+					
+					int []maxTop=ewa.getTopMaxima();
+					int []maxBottom=ewa.getBottomMaxima();
+					
+					int length=maxTop.length;
+					int height=ewa.getHeight();
+					lineResults=new ResultsTable();
+					
+					int num=imp.getImageStackSize();
+					for (int n=0;n<num;n++) {
+						imp.setSlice(n);
+						for (int i=0;i<length-1;i+=2) {
+							Line analyse=new Line(r.x+(maxTop[i+1]+maxTop[i])/2, r.y+5, r.x+(maxBottom[i+1]+maxBottom[i])/2, r.y+height-5);
+							imp.setRoi(analyse);
+							LineAnalyser lineAnalyser=new LineAnalyser(imp,analyse);
+							lineResults.addValue("Line "+i,lineAnalyser.getMean());
+							
+							
+						}
+						lineResults.addRow();
+						lineResults.show("LineResults");
+					}
+/*					if(roi.isLine()) {
+						Line startLine=(Line)roi;
 						calculateRepetition(imp,(Line)roi);
 						lineResults=new ResultsTable();
 						lineResults.addValue("Slice", "");
@@ -44,8 +72,8 @@ public class USAF_VerticalTiltAnalyser implements Command{
 						
 						
 						int num=imp.getImageStackSize();
-						for (int n=0;n<5;n++) {
-							
+						for (int n=0;n<num;n++) {
+							Line analyse=startLine;
 							imp.setSlice(n);
 							lineResults.addValue("Slice", n);
 							lineResults.show("LineResults");
@@ -55,9 +83,10 @@ public class USAF_VerticalTiltAnalyser implements Command{
 									lineResults.addValue("Line "+r,"");
 									//if (r==0) lineResults.addRow();
 								}
-								Line analyse=(Line)roi;
-								analyse.x1d=analyse.x1d+r*distance;
-								analyse.x2d=analyse.x2d+r*distance;
+								
+								analyse.setLocation(analyse.x1d+distance, analyse.y1d);
+//								analyse.x1d=analyse.x1d+r*distance;
+//								analyse.x2d=analyse.x2d+r*distance;
 								LineAnalyser lineAnalyser=new LineAnalyser(imp,analyse);
 								
 								
@@ -69,7 +98,7 @@ public class USAF_VerticalTiltAnalyser implements Command{
 	//						if (save) saveResults();
 						}
 						lineResults.show("LineResults");
-					} else IJ.showMessage("Line selection required");
+					} else IJ.showMessage("Line selection required");*/
 				} else IJ.showMessage("Please provide an image");
 				
 		}
@@ -79,8 +108,8 @@ public class USAF_VerticalTiltAnalyser implements Command{
 			int width=imp.getWidth();
 			int xmax=0;
 			if (line.x1>line.x2) xmax=line.x1; else xmax=line.x2;
-			double gap=(1000.0/(double)grating)/imp.getCalibration().pixelWidth;
-			repetition=(int)((width-xmax)/gap);
+			distance=(1000.0/(double)grating)/imp.getCalibration().pixelWidth;
+			repetition=(int)((width-xmax)/distance);
 			
 			
 		}

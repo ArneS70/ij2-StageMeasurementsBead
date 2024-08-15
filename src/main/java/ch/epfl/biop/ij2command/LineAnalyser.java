@@ -28,6 +28,8 @@ public class LineAnalyser {
 		LineAnalyser(ImagePlus imp, Line inputLine){
 			
 			this.line=inputLine;
+			imp.setRoi(inputLine);
+			imp.draw();
 			this.width=imp.getWidth();
 			cal=imp.getCalibration();
 			ImageProcessor ip=imp.getProcessor();

@@ -26,10 +26,19 @@ public class EdgeWidthAnalyser {
 	private ResultsTable fitWidth=new ResultsTable();
 	private ResultsTable profiles=new ResultsTable();
 	private Roi cropRoi;
+	private int height;
 	/**
  * Constructors	
  */
 	EdgeWidthAnalyser(){
+		
+	}
+	EdgeWidthAnalyser(ImagePlus imp){
+		this.height=imp.getHeight();
+		this.pixelWidth=imp.getCalibration().pixelWidth;
+		this.setRoi(imp.getHeight(), MIDDLE,imp);
+		this.ip_edge=imp.getProcessor();
+		detectEdges();
 		
 	}
 	EdgeWidthAnalyser(ImagePlus imp, int slice, int height){
@@ -65,8 +74,8 @@ public class EdgeWidthAnalyser {
 		ip_edge.setLineWidth(linewidth);;
 		double [] lineTop=ip_edge.getLine(0, 10, w, 10);
 		double [] lineBottom=ip_edge.getLine(0, h-10, w, h-10);
-		this.maxTop=MaximumFinder.findMaxima(lineTop, 14000, false);
-		this.maxBottom=MaximumFinder.findMaxima(lineBottom, 12000, false);
+		this.maxTop=MaximumFinder.findMaxima(lineTop, 8000, false);
+		this.maxBottom=MaximumFinder.findMaxima(lineBottom, 8000, false);
 		Arrays.sort(this.maxTop);
 		Arrays.sort(this.maxBottom);
 		IJ.log("top: "+maxTop.length);
@@ -297,5 +306,14 @@ public class EdgeWidthAnalyser {
 		
 	}
 	
-	
+	int [] getTopMaxima() {
+		return maxTop;
+	}
+	int [] getBottomMaxima() {
+		return maxBottom;
+	}
+	int getHeight() {
+		return this.height;
+		
+	}
 }
