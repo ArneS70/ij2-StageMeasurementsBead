@@ -9,18 +9,62 @@ import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
 
-public class USAF_FocusAnalyser {
+public class FocusAnalyser {
 	
 	private ImagePlus imps;
 	private Calibration cal;
 	private int repX,repY,lineLength;
+	private boolean isHorizontal;
+	private Line horizonetalLine;
+	private ResultsTable focusMean;
 	
-	USAF_FocusAnalyser(ImagePlus imp,int line,int nx,int ny){
+	FocusAnalyser(ImagePlus imp,int line,int nx,int ny){
 		setImage(imp);
 		setLineLength(line);
 		setRepetitionX(nx);
 		setRepetitionY(ny);
 		cal=imp.getCalibration();
+	}
+	FocusAnalyser(ImagePlus imp, Line line){
+		setImage(imp);
+		cal=imp.getCalibration();
+		this.isHorizontal=true;
+		this.horizonetalLine=line;
+	}
+	void analyseLine(int rep) {
+		this.focusMean=new ResultsTable();
+		
+		int h=imps.getHeight();
+		int w=imps.getWidth();
+		double x1=this.horizonetalLine.x1d;
+		double x2=this.horizonetalLine.x2d;
+		double y1=this.horizonetalLine.y1d;
+		double y2=this.horizonetalLine.y1d;
+		double length=this.horizonetalLine.getLength();
+		int slices=imps.getNSlices();
+		
+		double dist=length/rep;							//distance between horizontal focus points in pixel
+		IJ.log("Distance focus points= "+IJ.d2s(dist*cal.pixelWidth)+" um");
+		
+		
+		for (int s=1;s<=slices;s+=20) {
+			focusMean.addRow();
+			imps.setSlice(s);
+			focusMean.addValue("z-slice",s);
+			ImageProcessor ip=imps.getProcessor();
+			for (int r=0;r<rep;r++) {
+				Line analyseLine=new Line(x1+r*dist,y1-5,x2+r*dist,y2+5);
+					ip.setRoi(analyseLine);
+					ImageStatistics statsX=ip.getStats();
+//					focusMean.addValue(""+IJ.d2s((x1+rep*dist)*cal.pixelWidth), statsX.mean);
+					focusMean.addValue(IJ.d2s((x1+r*dist)*cal.pixelWidth),statsX.mean);
+					
+					
+			}
+			
+		}
+		//focusMean.show("Horizontal Focus");
+		
 	}
 	void run() {
 		int h=imps.getHeight()-lineLength;
@@ -84,5 +128,8 @@ public class USAF_FocusAnalyser {
 	}
 	void setLineLength(int line){
 		this.lineLength=line;
+	}
+	ResultsTable getFocusResults() {
+		return focusMean;
 	}
 }

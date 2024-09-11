@@ -34,7 +34,7 @@ import net.imagej.ImageJ;
 				int num=imps.length;
 				
 				for (int n=0;n<num;n++) {
-					USAF_FocusAnalyser ufm=new USAF_FocusAnalyser(imps[n],lineLength,repetitionX,repetitionY);
+					FocusAnalyser ufm=new FocusAnalyser(imps[n],lineLength,repetitionX,repetitionY);
 					ufm.run();
 					if (save) saveResults();
 				}
