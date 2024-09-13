@@ -14,6 +14,7 @@ import ij.gui.Line;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
+import ij.process.ImageProcessor;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
@@ -28,6 +29,15 @@ import net.imagej.ImageJ;
 		
 		@Parameter(label="number of focus points")
 		int repetition;
+		
+		@Parameter(label="z-stack Start")
+		int start;
+		
+		@Parameter(label="z-stack End")
+		int end;
+		
+		@Parameter(label="z-stack Step")
+		int step;
 		
 		@Parameter(label="Show Fit window?")
 		boolean showFit;
@@ -46,11 +56,19 @@ import net.imagej.ImageJ;
 					
 					Roi roi=imp.getRoi();
 					
-					if(roi.isLine()) {
-						fa=new FocusAnalyser(imp,(Line)roi);
-						fa.analyseLine(repetition);
-					
-					} else IJ.showMessage("Line selection required");
+					if (roi!=null ) {
+						if(roi.isLine()) {
+							fa=new FocusAnalyser(imp,(Line)roi);
+							fa.setStart(start);
+							fa.setEnd(end);
+							fa.setStep(step);
+							fa.analyseLine(repetition);
+						
+						}
+					}else {
+						IJ.showMessage("Auto line selection");
+						setLine(imp);
+					}
 				} else IJ.showMessage("Please provide an image");
 		    
 				
@@ -63,10 +81,23 @@ import net.imagej.ImageJ;
 				CurveFitter cf=new CurveFitter(tableFit.getFitResults().getColumnAsDoubles(0),tableFit.getFitResults().getColumnAsDoubles(last));
 				cf.doFit(CurveFitter.STRAIGHT_LINE);
 				double [] param=cf.getParams();
-				IJ.log("Focus shift z-axis per slice: "+param[1]);
+				IJ.log("Focus shift z-axis  slice/um: "+param[1]);
+				double slope=param[1]*fa.getZstep();
+				IJ.log("Slope: "+slope);
+				double angle=180*Math.atan(slope)/Math.PI;
+				IJ.log("angle/deg: "+angle);
 				IJ.log("R^2: "+cf.getFitGoodness());
 				
 				if (showFit) cf.getPlot().show();
+		}
+		void setLine(ImagePlus imp) {
+			int slice=imp.getImageStackSize();
+			imp.setSlice(slice/2);
+			ImageProcessor ip_edge=imp.getProcessor().duplicate().convertToFloat();
+			ip_edge.findEdges();
+			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
+			la.findVerticalMaxima(10);
+			
 		}
 		
 /*		void saveResults() {

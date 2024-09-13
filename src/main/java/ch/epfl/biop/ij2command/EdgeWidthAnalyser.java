@@ -276,7 +276,7 @@ public class EdgeWidthAnalyser {
 		if (position==EdgeWidthAnalyser.MIDDLE) {
 			roi=new Roi(0,h/2,w,size);
 		}
-		if (position==EdgeWidthAnalyser.MIDDLE) {
+		if (position==EdgeWidthAnalyser.BOTTOM) {
 			roi=new Roi(0,3*h/4,w,size);
 		}
 		this.cropRoi=roi;

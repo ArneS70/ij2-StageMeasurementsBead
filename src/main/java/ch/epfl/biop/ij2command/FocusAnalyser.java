@@ -17,6 +17,7 @@ public class FocusAnalyser {
 	private boolean isHorizontal;
 	private Line horizonetalLine;
 	private ResultsTable focusMean;
+	private int start,end,step;
 	
 	FocusAnalyser(ImagePlus imp,int line,int nx,int ny){
 		setImage(imp);
@@ -47,7 +48,7 @@ public class FocusAnalyser {
 		IJ.log("Distance focus points= "+IJ.d2s(dist*cal.pixelWidth)+" um");
 		
 		
-		for (int s=1;s<=slices;s+=20) {
+		for (int s=start;s<=end;s+=step) {
 			focusMean.addRow();
 			imps.setSlice(s);
 			focusMean.addValue("z-slice",s);
@@ -63,7 +64,7 @@ public class FocusAnalyser {
 			}
 			
 		}
-		//focusMean.show("Horizontal Focus");
+		focusMean.show("Horizontal Focus");
 		
 	}
 	void run() {
@@ -83,7 +84,7 @@ public class FocusAnalyser {
 		ResultsTable rt_yAxis=new ResultsTable();
 		
 		
-		for (int s=1;s<=slices;s++) {
+		for (int s=start;s<=end;s+=step) {
 			IJ.log("Slices:"+s+"/"+slices);
 					
 			
@@ -117,6 +118,16 @@ public class FocusAnalyser {
 		rt_xAxis.show("Results x-Axis");
 		rt_yAxis.show("Results y-Axis");
 	}
+	void setStart(int set) {
+		this.start=set;
+	}
+	void setEnd(int set) {
+		if (set<=imps.getSlice()) this.end=set;
+		else this.end=imps.getNSlices();
+	}
+	void setStep(int set) {
+		this.step=set;
+	}
 	void setImage(ImagePlus imp) {
 		this.imps=imp;
 	}
@@ -131,5 +142,8 @@ public class FocusAnalyser {
 	}
 	ResultsTable getFocusResults() {
 		return focusMean;
+	}
+	double getZstep() {
+		return cal.pixelDepth;
 	}
 }
