@@ -131,32 +131,35 @@ public class LineAnalyser {
 			
 			
 		}
-		void findVerticalMaxima(int linewidth){
+		void findVerticalMaxima(int linewidth,int shift){
 			//ImageProcessor ip_maxima=ip_edge;
 			new ImagePlus("test",ip_line).show();
 			ip_line.setLineWidth(linewidth);
-			setProfile(this.LEFT);
-			double [] lineTop=ip_line.getLine(x1, y1, x2, y2);
-			profile=lineTop;
-			double maxTop=this.getMax();
-			double minTop=this.getMin();
+			setProfile(LineAnalyser.CENTER);
+			double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
+			profile=lineLeft;
+			double maxLeft=this.getMax();
+			double minLeft=this.getMin();
 			
-			setProfile(this.RIGHT);
-			double [] lineBottom=ip_line.getLine(x1, y1, x2, y2);
-			profile=lineBottom;
-			double maxBottom=this.getMax();
-			double minBottom=this.getMin();
+			setProfile(LineAnalyser.CENTER);
+			double [] lineRight=ip_line.getLine(x1+shift, y1, x2+shift, y2);
+			profile=lineRight;
+			double maxRight=this.getMax();
+			double minRight=this.getMin();
 
-			int prominence=(int)(0.5*(maxTop-minTop));
-			int [] topMaximum=MaximumFinder.findMaxima(lineTop, prominence, false);
-			prominence=(int)(0.5*(maxBottom-minBottom));
-			int [] bottomMaximum=MaximumFinder.findMaxima(lineBottom, prominence, false);
+			int prominence=(int)(0.5*(maxLeft-minLeft));
+			int [] leftMaximum=MaximumFinder.findMaxima(lineLeft, prominence, false);
+			prominence=(int)(0.5*(maxRight-minRight));
+			int [] rightMaximum=MaximumFinder.findMaxima(lineRight, prominence, false);
 			
-			Arrays.sort(topMaximum);
-			Arrays.sort(bottomMaximum);
-			IJ.log("top: "+topMaximum.length);
-			IJ.log("bottom: "+bottomMaximum.length);
+			Arrays.sort(leftMaximum);
+			Arrays.sort(rightMaximum);
+			IJ.log("top: "+leftMaximum.length);
+			IJ.log("bottom: "+rightMaximum.length);
 			
+			
+		}
+		private void maximatoLine(int []left,int []right) {
 			
 		}
 		
