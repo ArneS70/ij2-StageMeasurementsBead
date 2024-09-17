@@ -32,7 +32,7 @@ public class FocusAnalyser {
 		this.isHorizontal=true;
 		this.horizonetalLine=line;
 	}
-	void analyseLine(int rep) {
+	void analyseLine(int rep,int lineHeight) {
 		this.focusMean=new ResultsTable();
 		
 		int h=imps.getHeight();
@@ -54,7 +54,7 @@ public class FocusAnalyser {
 			focusMean.addValue("z-slice",s);
 			ImageProcessor ip=imps.getProcessor();
 			for (int r=0;r<rep;r++) {
-				Line analyseLine=new Line(x1+r*dist,y1-5,x2+r*dist,y2+5);
+				Line analyseLine=new Line(x1+r*dist,y1-lineHeight,x2+r*dist,y2+lineHeight);
 					ip.setRoi(analyseLine);
 					ImageStatistics statsX=ip.getStats();
 //					focusMean.addValue(""+IJ.d2s((x1+rep*dist)*cal.pixelWidth), statsX.mean);

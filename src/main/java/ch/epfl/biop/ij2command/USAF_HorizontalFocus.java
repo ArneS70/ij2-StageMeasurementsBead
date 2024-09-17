@@ -62,12 +62,16 @@ import net.imagej.ImageJ;
 							fa.setStart(start);
 							fa.setEnd(end);
 							fa.setStep(step);
-							fa.analyseLine(repetition);
+							fa.analyseLine(repetition,5);
 						
 						}
 					}else {
 						IJ.log("Auto line selection");
+						IJ.exit();
 						setLine(imp);
+						this.run();
+						
+						
 					}
 				} else IJ.showMessage("Please provide an image");
 		    
@@ -96,7 +100,21 @@ import net.imagej.ImageJ;
 			ImageProcessor ip_edge=imp.getProcessor().duplicate().convertToFloat();
 			ip_edge.findEdges();
 			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
-			la.findVerticalMaxima(10,50);
+			Roi [] lines=la.findVerticalMaxima(10,400);
+			int pos=lines.length/2;
+			ImageProcessor ip=imp.getProcessor();
+			ip.setRoi(lines[pos]);
+			double mean1=ip.getStatistics().mean;
+			
+			ip.setRoi(lines[pos+1]);
+			double mean2=ip.getStatistics().mean;
+			//IJ.log("m1="+mean1+"    m2="+mean2);
+			
+			if (mean1>mean2)imp.setRoi(lines[pos]); 
+			else imp.setRoi(lines[pos+1]);
+			
+			imp.updateAndDraw();
+			
 			
 		}
 		
@@ -128,7 +146,7 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_2");
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
 		

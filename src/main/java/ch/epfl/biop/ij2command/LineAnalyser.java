@@ -5,6 +5,7 @@ import java.util.Arrays;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.plugin.filter.MaximumFinder;
 import ij.process.ImageProcessor;
@@ -26,6 +27,7 @@ public class LineAnalyser {
 	private double linePositionX,linePositionY;
 	private ImageProcessor ip_line;
 	double x1=0,x2=width,y1=0,y2=height;
+	private ImagePlus imp;
 	
 	/**   
 	 * Constructors
@@ -40,6 +42,7 @@ public class LineAnalyser {
 			this.height=imp.getHeight();
 			this.ip_line=imp.getProcessor();
 			cal=imp.getCalibration();
+			this.imp=imp;
 		}
 		LineAnalyser(ImagePlus imp, Line inputLine){
 			
@@ -131,9 +134,9 @@ public class LineAnalyser {
 			
 			
 		}
-		void findVerticalMaxima(int linewidth,int shift){
+		Roi [] findVerticalMaxima(int linewidth,int shift){
 			//ImageProcessor ip_maxima=ip_edge;
-			new ImagePlus("test",ip_line).show();
+			//new ImagePlus("test",ip_line).show();
 			ip_line.setLineWidth(linewidth);
 			setProfile(LineAnalyser.CENTER);
 			double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
@@ -156,11 +159,17 @@ public class LineAnalyser {
 			Arrays.sort(rightMaximum);
 			IJ.log("top: "+leftMaximum.length);
 			IJ.log("bottom: "+rightMaximum.length);
+					
+			int len=leftMaximum.length;
+			Roi [] lines=new Roi [len];
 			
-			
-		}
-		private void maximatoLine(int []left,int []right) {
-			
+			//this.imp.show();
+			for (int i=1;i<len;i+=1) {
+				double middle=this.width/2.0;
+				lines[i]=new Line(middle-shift, (leftMaximum[i-1]+leftMaximum[i])/2.0, middle+shift, (rightMaximum[i-1]+rightMaximum[i])/2.0);
+				//this.imp.setRoi(lines[i],true);
+			}
+			return lines;
 		}
 		
 		double [] getProfile() {
