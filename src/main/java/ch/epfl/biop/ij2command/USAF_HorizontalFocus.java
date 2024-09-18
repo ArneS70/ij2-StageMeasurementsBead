@@ -69,6 +69,7 @@ import net.imagej.ImageJ;
 						if(roi.isLine()) {
 							
 							fa=new FocusAnalyser(imp,setLineLength(imp));
+							setStackSize(imp);
 							fa.setStart(1);
 							fa.setEnd(imp.getImageStackSize());
 							fa.setStep(step);
@@ -83,8 +84,32 @@ import net.imagej.ImageJ;
 		    
 			
 		}
-		void setStackSize(FocusAnalyser fa) {
+		int [] setStackSize(ImagePlus stack) {
+			Line l= (Line)stack.getRoi();
+			int stackSize=stack.getStackSize();
+			stack.setSliceWithoutUpdate(stackSize/2);
+			double [] profile=stack.getProcessor().getLine(l.x1d, l.y1, l.x2, l.y2);
+			double max=new ArrayStatistics(profile).getMax();
+			double value=0;
+			int start=0;
+			int end=stackSize;
+			int pos=0;
+			do {
+				stack.setSliceWithoutUpdate(pos);
+				value=stack.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d)[0];
+				pos+=1;
+			}while (value<0.5*max);
+			start=pos;
+			pos=end;
+			do {
+				stack.setSliceWithoutUpdate(pos);
+				profile=stack.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d);
+				value=profile[profile.length-1];
+				pos-=1;
+			}while (value<0.9*max);
+			end=pos;
 			
+			return new int []{start,end};
 		}
 		Line setLineLength(ImagePlus imp_l) {
 			Line l= (Line)imp_l.getRoi();
