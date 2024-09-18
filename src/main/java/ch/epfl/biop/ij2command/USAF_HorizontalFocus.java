@@ -77,7 +77,7 @@ import net.imagej.ImageJ;
 		    
 				
 				tableFit=new TableFitter(fa.getFocusResults());
-				tableFit.fitTable();
+				tableFit.fitTable(CurveFitter.POLY5);
 				tableFit.getFitResults().show("Table Fit Results");
 				
 				int last=tableFit.getFitResults().getLastColumn();
@@ -101,7 +101,7 @@ import net.imagej.ImageJ;
 			ip_edge.findEdges();
 			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
 			Roi [] lines=la.findVerticalMaxima(10,400);
-			int pos=lines.length/2;
+			int pos=1+lines.length/2;
 			ImageProcessor ip=imp.getProcessor();
 			ip.setRoi(lines[pos]);
 			double mean1=ip.getStatistics().mean;
@@ -146,7 +146,9 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_2");
+			//IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_2");
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
 		

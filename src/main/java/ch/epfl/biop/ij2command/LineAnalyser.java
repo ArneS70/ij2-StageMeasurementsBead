@@ -7,6 +7,7 @@ import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Roi;
 import ij.measure.Calibration;
+import ij.measure.CurveFitter;
 import ij.plugin.filter.MaximumFinder;
 import ij.process.ImageProcessor;
 
@@ -62,38 +63,27 @@ public class LineAnalyser {
 		}
 		
 		void setProfile(int pos) {
-			x1=0;x2=width;y1=0;y2=height;
+			x1=1;x2=width-1;y1=1;y2=height-1;
 			
 			switch (pos) {
 				case 1:
-					y1=y2=0.05*height;
-					x1=0.05*width;
-					x2=0.95*width;
+					y1=y2=1;
 					break;
 				case 2:
 					y1=y2=0.5*height;
-					x1=0.05*width;
-					x2=0.95*width;
 					break;
 				case 3:
-					y1=y2=0.95*height;
-					x1=0.05*width;
-					x2=0.95*width;
+					y1=y2=height-1;
 					break;
 				case 4:
-					x1=x2=0.05*width;
-					y1=0.05*height;
-					y2=0.95*height;
+					x1=x2=1;
 					break;
 				case 5:
 					x1=x2=0.5*width;
-					y1=0.05*height;
-					y2=0.95*height;
 					break;
 				case 6:
-					x1=x2=0.95*width;
-					y1=0.05*height;
-					y2=0.95*height;
+					x1=x2=width-1;
+					
 					break;
 			}
 		}
@@ -134,6 +124,31 @@ public class LineAnalyser {
 			
 			
 		}
+		double calulateVertcalSpacing(int linewidth){
+			ip_line.setLineWidth(linewidth);
+			setProfile(LineAnalyser.CENTER);
+			double [] line=ip_line.getLine(x1, y1, x2, y2);
+			profile=line;
+			double max=this.getMax();
+			double min=this.getMin();
+			int prominence=(int)(0.5*(max-min));
+			int [] points=MaximumFinder.findMaxima(line, prominence, false);
+			
+			int length=points.length;
+			double []x=new double[length];
+			double []y=new double[length];
+			for (int i=0;i<length;i++){
+				x[i]=i;
+				y[i]=points[i];
+			}
+			
+			CurveFitter cf=new CurveFitter(x,y);
+			cf.doFit(CurveFitter.STRAIGHT_LINE);
+			double []param=cf.getParams();
+			return param[1];
+			
+			
+		}
 		Roi [] findVerticalMaxima(int linewidth,int shift){
 			//ImageProcessor ip_maxima=ip_edge;
 			//new ImagePlus("test",ip_line).show();
@@ -161,12 +176,21 @@ public class LineAnalyser {
 			IJ.log("bottom: "+rightMaximum.length);
 					
 			int len=leftMaximum.length;
-			Roi [] lines=new Roi [len];
+			Roi [] lines=new Roi [len-1];
 			
 			//this.imp.show();
 			for (int i=1;i<len;i+=1) {
 				double middle=this.width/2.0;
-				lines[i]=new Line(middle-shift, (leftMaximum[i-1]+leftMaximum[i])/2.0, middle+shift, (rightMaximum[i-1]+rightMaximum[i])/2.0);
+				double left=((leftMaximum[i-1]+leftMaximum[i])/2.0);
+				double right=((rightMaximum[i-1]+rightMaximum[i])/2.0);
+				double slope=(left-right)/(2.0*shift);
+				
+				double p1=left+slope*(middle-shift);
+				double p2=right-slope*(middle-shift);
+				
+				
+				//IJ.log(""+slope+"   "+p1+"    "+p2);
+				lines[i-1]=new Line(0,p1,this.width,p2);
 				//this.imp.setRoi(lines[i],true);
 			}
 			return lines;

@@ -45,6 +45,58 @@ public class TableFitter {
 		checkResults();
 		//fitParameters.show("Fit Parameters");
 	}
+	void fitTable(int function) {
+		
+		int columns=results.getLastColumn();
+		double [] x=results.getColumnAsDoubles(0);
+		this.xmax=x[x.length-1];
+		
+		fitParameters=new ResultsTable();
+		for (int i=1;i<columns;i++) {
+			fitParameters.addRow();
+			fitParameters.addValue("y/um", Double.parseDouble(results.getColumnHeading(i)));
+			double y []=results.getColumnAsDoubles(i);
+			
+			CurveFitter cf=new CurveFitter(x, y);
+			cf.doFit(function);
+			double [] parameters=cf.getParams();
+			int numParam=parameters.length;
+			
+			
+			double step=(this.xmax-x[0])/(10*x.length);
+			double max=0;
+			double xmax=x[0];
+			for (double iter=x[0];iter<this.xmax;iter+=step) {
+				double val=cf.f(iter);
+				if (val>max) {
+					max=val;
+					xmax=iter;
+				}
+			}
+			
+			
+			
+			
+			
+			
+			
+			
+			for (int n=0;n<numParam;n++) {
+				fitParameters.addValue(""+n, parameters[n]);
+			}
+			
+			
+			fitParameters.addValue("xmax", xmax);
+			
+			
+			
+			
+			if (showFit) cf.getPlot().show();
+			
+		}
+		
+		//fitParameters.show("Fit Parameters");
+	}
 	private void checkResults() {
 		double [] x1=fitParameters.getColumnAsDoubles(5);
 				
