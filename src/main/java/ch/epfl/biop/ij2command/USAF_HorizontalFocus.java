@@ -21,19 +21,17 @@ import net.imagej.ImageJ;
 		
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Foccus")
 		public class USAF_HorizontalFocus implements Command {
-//			@Parameter(style="open")
-//		    File fileInput;
+
+		@Parameter(style="open")
+	    File fileInput;
 			
-//			@Parameter(label="Save result tables?")
-//			boolean save;
-		
 		@Parameter(label="number of focus points")
 		int repetition;
 		
-		@Parameter(label="z-stack Start")
+//		@Parameter(label="z-stack Start")
 		int start;
 		
-		@Parameter(label="z-stack End")
+//		@Parameter(label="z-stack End")
 		int end;
 		
 		@Parameter(label="z-stack Step")
@@ -42,57 +40,50 @@ import net.imagej.ImageJ;
 		@Parameter(label="Show Fit window?")
 		boolean showFit;
 
+		@Parameter(label="Save result tables?")
+		boolean save;
+		
+		@Parameter(label="Variable Line length?")
+		boolean lineOptimize;
+		
 		@Override
 		public void run() {
-			
 				ResultsTable fitResults=null;
-				TableFitter tableFit=null;
+				
 				FocusAnalyser fa=null;
+				
 				ImagePlus imp=WindowManager.getCurrentImage();
+				if (imp==null) {
+					IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+					imp=WindowManager.getCurrentImage();
+				}
+				
 				IJ.log("===============================================================");
 				IJ.log("File: "+imp.getTitle());
 				
 				if (imp!=null) {
-					
+					if (imp.getRoi()==null) setLine(imp);
 					Roi roi=imp.getRoi();
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
 							fa=new FocusAnalyser(imp,(Line)roi);
-							fa.setStart(start);
-							fa.setEnd(end);
+							fa.setStart(1);
+							fa.setEnd(imp.getImageStackSize());
 							fa.setStep(step);
 							fa.analyseLine(repetition,5);
+							fitTableResults(fa);
 						
 						}
-					}else {
-						IJ.log("Auto line selection");
-						IJ.exit();
-						setLine(imp);
-						this.run();
+					}	
 						
-						
-					}
-				} else IJ.showMessage("Please provide an image");
+					
+				} 
 		    
-				
-				tableFit=new TableFitter(fa.getFocusResults());
-				tableFit.fitTable(CurveFitter.POLY5);
-				tableFit.getFitResults().show("Table Fit Results");
-				
-				int last=tableFit.getFitResults().getLastColumn();
-				
-				CurveFitter cf=new CurveFitter(tableFit.getFitResults().getColumnAsDoubles(0),tableFit.getFitResults().getColumnAsDoubles(last));
-				cf.doFit(CurveFitter.STRAIGHT_LINE);
-				double [] param=cf.getParams();
-				IJ.log("Focus shift z-axis  slice/um: "+param[1]);
-				double slope=param[1]*fa.getZstep();
-				IJ.log("Slope: "+slope);
-				double angle=180*Math.atan(slope)/Math.PI;
-				IJ.log("angle/deg: "+angle);
-				IJ.log("R^2: "+cf.getFitGoodness());
-				
-				if (showFit) cf.getPlot().show();
+			
+		}
+		void setLineLength(ImagePlus imp) {
+			
 		}
 		void setLine(ImagePlus imp) {
 			int slice=imp.getImageStackSize();
@@ -116,6 +107,26 @@ import net.imagej.ImageJ;
 			imp.updateAndDraw();
 			
 			
+		}
+		void fitTableResults(FocusAnalyser fa) {		
+			
+			TableFitter tableFit=new TableFitter(fa.getFocusResults());
+			tableFit.fitTable(CurveFitter.POLY5);
+			tableFit.getFitResults().show("Table Fit Results");
+			
+			int last=tableFit.getFitResults().getLastColumn();
+			
+			CurveFitter cf=new CurveFitter(tableFit.getFitResults().getColumnAsDoubles(0),tableFit.getFitResults().getColumnAsDoubles(last));
+			cf.doFit(CurveFitter.STRAIGHT_LINE);
+			double [] param=cf.getParams();
+			IJ.log("Focus shift z-axis  slice/um: "+param[1]);
+			double slope=param[1]*fa.getZstep();
+			IJ.log("Slope: "+slope);
+			double angle=180*Math.atan(slope)/Math.PI;
+			IJ.log("angle/deg: "+angle);
+			IJ.log("R^2: "+cf.getFitGoodness());
+			
+			if (showFit) cf.getPlot().show();
 		}
 		
 /*		void saveResults() {
