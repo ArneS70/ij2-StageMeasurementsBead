@@ -119,7 +119,9 @@ public class FocusAnalyser {
 		rt_yAxis.show("Results y-Axis");
 	}
 	void setStart(int set) {
+		if (set<0) set=1;
 		this.start=set;
+		
 	}
 	void setEnd(int set) {
 		if (set<=imps.getSlice()) this.end=set;

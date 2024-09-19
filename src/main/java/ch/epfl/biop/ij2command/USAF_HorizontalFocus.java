@@ -69,9 +69,9 @@ import net.imagej.ImageJ;
 						if(roi.isLine()) {
 							
 							fa=new FocusAnalyser(imp,setLineLength(imp));
-							setStackSize(imp);
-							fa.setStart(1);
-							fa.setEnd(imp.getImageStackSize());
+							int[] param=setStackSize(imp);
+							fa.setStart(param[0]);
+							fa.setEnd(param[1]);
 							fa.setStep(step);
 							fa.analyseLine(repetition,5);
 							fitTableResults(fa);
@@ -85,9 +85,34 @@ import net.imagej.ImageJ;
 			
 		}
 		int [] setStackSize(ImagePlus stack) {
-			Line l= (Line)stack.getRoi();
+
+			
+			Line line= (Line)stack.getRoi();
+			int width=stack.getWidth();
 			int stackSize=stack.getStackSize();
-			stack.setSliceWithoutUpdate(stackSize/2);
+			double difMin=0;
+			int min=0;
+			for (int i=1;i<=stackSize-1;i+=20) {
+				stack.setSliceWithoutUpdate(i);
+				ImageProcessor ip=stack.getProcessor();
+				double [] profileLeft=ip.getLine(0, line.y1d, 20, line.y2d);
+				double [] profileRight=ip.getLine(width-20, line.y1d, width-1, line.y2d);
+				double diff=Math.abs(new ArrayStatistics(profileLeft).getMean()-new ArrayStatistics(profileRight).getMean());
+				if (i==1) {difMin=diff;}
+				else {
+					if (diff<difMin) 
+						{difMin=diff; min=i;}
+				}
+				
+			}
+			if (difMin<stackSize/2) {
+				start=1;end=2*min;
+			} else {
+				
+				end=stackSize-1;start=stackSize-2*min;
+			}
+			
+/*			stack.setSliceWithoutUpdate(stackSize/2);
 			double [] profile=stack.getProcessor().getLine(l.x1d, l.y1, l.x2, l.y2);
 			double max=new ArrayStatistics(profile).getMax();
 			double value=0;
@@ -108,7 +133,7 @@ import net.imagej.ImageJ;
 				pos-=1;
 			}while (value<0.9*max);
 			end=pos;
-			
+*/			
 			return new int []{start,end};
 		}
 		Line setLineLength(ImagePlus imp_l) {
@@ -136,6 +161,11 @@ import net.imagej.ImageJ;
 			
 			return l;
 		}
+		/*
+		*
+		*Changing the line length is not recommended as it makes the fitting less reliable. It is better to change the start of the focus points
+		*along the line.
+		*/
 		void setLine(ImagePlus imp) {
 			int slice=imp.getImageStackSize();
 			imp.setSlice(slice/2);
