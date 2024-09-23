@@ -1,5 +1,6 @@
 package ch.epfl.biop.ij2command;
 
+import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
 
@@ -37,11 +38,17 @@ import net.imagej.ImageJ;
 		@Parameter(label="z-stack Step")
 		int step;
 		
+		@Parameter(label="Analysis line length (vetical)")
+		int lineLength;
+		
 		@Parameter(label="Show Fit window?")
 		boolean showFit;
 
 		@Parameter(label="Save result tables?")
 		boolean save;
+		
+//		@Parameter(label="Results Index")
+//		String text;
 		
 		@Parameter(label="Variable Line length?")
 		boolean lineOptimize;
@@ -73,8 +80,9 @@ import net.imagej.ImageJ;
 							fa.setStart(param[0]);
 							fa.setEnd(param[1]);
 							fa.setStep(step);
-							fa.analyseLine(repetition,5);
+							fa.analyseLine(repetition,lineLength);
 							fitTableResults(fa);
+							if (save) saveResults();
 						
 						}
 					}	
@@ -189,6 +197,17 @@ import net.imagej.ImageJ;
 			
 			
 		}
+		void LogtoTable() {
+			if (WindowManager.getWindow("Focus Results")==null) {
+				ResultsTable focus=new ResultsTable();
+				focus.show("Focus Results");
+			};
+			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
+			focus.addRow();
+			focus.addValue("File", fileInput.getName());
+			focus.addValue("Repetition", this.repetition);
+			
+		}
 		void fitTableResults(FocusAnalyser fa) {		
 			
 			TableFitter tableFit=new TableFitter(fa.getFocusResults());
@@ -210,21 +229,32 @@ import net.imagej.ImageJ;
 			if (showFit) cf.getPlot().show();
 		}
 		
-/*		void saveResults() {
+		void saveResults() {
 			String fileName=fileInput.getName();
 			int n=fileName.indexOf(".");
 			fileName=fileName.substring(0, n);
 			String path=fileInput.getAbsolutePath();
 			n=path.indexOf(fileName);
 			path=path.substring(0, n);
-			ResultsTable rt=ResultsTable.getResultsTable("Results x-Axis");
-			rt.save(path+fileName+"_xAxis.csv");
+			ResultsTable rt=ResultsTable.getResultsTable("Table Fit Results");
+			rt.save(path+fileName+"_TableFits.csv");
 			
-			rt=ResultsTable.getResultsTable("Results y-Axis");
-			rt.save(path+fileName+"_yAxis.csv");
-			WindowManager.closeAllWindows();
+			rt=ResultsTable.getResultsTable("Horizontal Focus");
+			rt.save(path+fileName+"_HorizontalFocus.csv");
+			closeNonImageWindows();
 			
-		}	*/
+			
+			
+			
+		}
+		void closeNonImageWindows() {
+			Window [] win=WindowManager.getAllNonImageWindows();
+			int num=win.length;
+			
+			for (int i=0;i<num;i++) {
+				win[i].dispose();
+			}
+		}
 		/**
 		* This main function serves for development purposes.
 		* It allows you to run the plugin immediately out of
@@ -239,7 +269,7 @@ import net.imagej.ImageJ;
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
 			//IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_2");
-			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
