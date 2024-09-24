@@ -56,8 +56,8 @@ import net.imagej.ImageJ;
 //		@Parameter(label="Results Index")
 //		String text;
 		
-		@Parameter(label="Variable Line length?")
-		boolean lineOptimize;
+//		@Parameter(label="Variable Line length?")
+//		boolean lineOptimize;
 		
 		Calibration cal;
 		ResultsTable focusResults;
@@ -95,8 +95,8 @@ import net.imagej.ImageJ;
 				
 				IJ.log("===============================================================");
 				this.filePath=IJ.getDirectory("file");
-				this.fileName=imp.getTitle().substring(filePath.length());
-				
+				//this.fileName=imp.getTitle().substring(filePath.length());
+				this.fileName=imp.getTitle();
 				
 				IJ.log("File: "+fileName);
 				IJ.log("Path: "+filePath);
