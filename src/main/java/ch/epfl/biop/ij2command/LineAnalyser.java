@@ -172,8 +172,8 @@ public class LineAnalyser {
 			
 			Arrays.sort(leftMaximum);
 			Arrays.sort(rightMaximum);
-			IJ.log("top: "+leftMaximum.length);
-			IJ.log("bottom: "+rightMaximum.length);
+			IJ.log("left: "+leftMaximum.length);
+			IJ.log("right: "+rightMaximum.length);
 					
 			int len=leftMaximum.length;
 			Roi [] lines=new Roi [len-1];

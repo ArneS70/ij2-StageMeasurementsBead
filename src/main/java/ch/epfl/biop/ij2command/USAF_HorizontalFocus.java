@@ -23,8 +23,8 @@ import net.imagej.ImageJ;
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Foccus")
 		public class USAF_HorizontalFocus implements Command {
 
-		@Parameter(style="open")
-	    File fileInput;
+//		@Parameter(style="open")
+//	    File fileInput;
 			
 		@Parameter(label="number of focus points")
 		int repetition;
@@ -61,14 +61,21 @@ import net.imagej.ImageJ;
 				
 				ImagePlus imp=WindowManager.getCurrentImage();
 				if (imp==null) {
-					IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-					imp=WindowManager.getCurrentImage();
+					//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+					//imp=WindowManager.getCurrentImage();
+					IJ.log("Please provide an image");
+					return;
 				}
 				
 				IJ.log("===============================================================");
-				IJ.log("File: "+imp.getTitle());
+				String fileName=imp.getTitle();
+				IJ.log("File: "+fileName);
 				
 				if (imp!=null) {
+					int stack=imp.getImageStackSize();
+					int z=imp.getNSlices();
+					int frames=stack/z;
+					
 					if (imp.getRoi()==null) setLine(imp);
 					Roi roi=imp.getRoi();
 					
@@ -80,9 +87,11 @@ import net.imagej.ImageJ;
 							fa.setStart(param[0]);
 							fa.setEnd(param[1]);
 							fa.setStep(step);
+							LogToTable(fileName);
 							fa.analyseLine(repetition,lineLength);
 							fitTableResults(fa);
 							if (save) saveResults();
+							
 						
 						}
 					}	
@@ -92,6 +101,7 @@ import net.imagej.ImageJ;
 		    
 			
 		}
+		
 		int [] setStackSize(ImagePlus stack) {
 
 			
@@ -197,15 +207,18 @@ import net.imagej.ImageJ;
 			
 			
 		}
-		void LogtoTable() {
+		void LogToTable(String file) {
 			if (WindowManager.getWindow("Focus Results")==null) {
 				ResultsTable focus=new ResultsTable();
 				focus.show("Focus Results");
 			};
 			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
 			focus.addRow();
-			focus.addValue("File", fileInput.getName());
+			focus.addValue("File", file);
 			focus.addValue("Repetition", this.repetition);
+			focus.addValue("z step", this.step);
+			focus.addValue("line length", this.lineLength);
+			focus.show("Focus Results");
 			
 		}
 		void fitTableResults(FocusAnalyser fa) {		
@@ -219,21 +232,32 @@ import net.imagej.ImageJ;
 			CurveFitter cf=new CurveFitter(tableFit.getFitResults().getColumnAsDoubles(0),tableFit.getFitResults().getColumnAsDoubles(last));
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
 			double [] param=cf.getParams();
+			
+			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
+			
 			IJ.log("Focus shift z-axis  slice/um: "+param[1]);
+			focus.addValue("Focus shift", param[1]);
+			
 			double slope=param[1]*fa.getZstep();
 			IJ.log("Slope: "+slope);
+			focus.addValue("Slope", slope);
 			double angle=180*Math.atan(slope)/Math.PI;
 			IJ.log("angle/deg: "+angle);
+			focus.addValue("angle/deg", angle);
 			IJ.log("R^2: "+cf.getFitGoodness());
+			focus.addValue("R^2", cf.getFitGoodness());
+			
+			focus.show("Focus Results");
 			
 			if (showFit) cf.getPlot().show();
 		}
 		
 		void saveResults() {
-			String fileName=fileInput.getName();
+/*			String fileName=imp.getTitle();
 			int n=fileName.indexOf(".");
 			fileName=fileName.substring(0, n);
-			String path=fileInput.getAbsolutePath();
+			String path=imp.getPa
+					fileName.getAbsolutePath();
 			n=path.indexOf(fileName);
 			path=path.substring(0, n);
 			ResultsTable rt=ResultsTable.getResultsTable("Table Fit Results");
@@ -242,7 +266,7 @@ import net.imagej.ImageJ;
 			rt=ResultsTable.getResultsTable("Horizontal Focus");
 			rt.save(path+fileName+"_HorizontalFocus.csv");
 			closeNonImageWindows();
-			
+*/			
 			
 			
 			
@@ -268,8 +292,8 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			//IJ.run("Bio-Formats", "open=X:/StageTest/240812/UASF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_2");
-			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=X:/StageTest/240923/UASF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
