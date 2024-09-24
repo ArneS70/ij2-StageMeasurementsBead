@@ -10,9 +10,12 @@ import org.scijava.plugin.Plugin;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
+import ij.gui.Plot;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
@@ -43,6 +46,9 @@ import net.imagej.ImageJ;
 		
 		@Parameter(label="Show Fit window?")
 		boolean showFit;
+		
+		@Parameter(label="Save Fit window?")
+		boolean saveFitWindow;
 
 		@Parameter(label="Save result tables?")
 		boolean save;
@@ -53,13 +59,26 @@ import net.imagej.ImageJ;
 		@Parameter(label="Variable Line length?")
 		boolean lineOptimize;
 		
+		Calibration cal;
+		ResultsTable focusResults;
+		ResultsTable fitResults=null;
+		FocusAnalyser fa=null;
+		ImageStack stack;
+		String fileName, filePath;
+		int counter;
+		Plot focusFit;
+		Line focusLine;
+		
 		@Override
 		public void run() {
-				ResultsTable fitResults=null;
 				
-				FocusAnalyser fa=null;
+				
+				
+				
+				this.getResultsTable();
 				
 				ImagePlus imp=WindowManager.getCurrentImage();
+				
 				if (imp==null) {
 					//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 					//imp=WindowManager.getCurrentImage();
@@ -67,9 +86,20 @@ import net.imagej.ImageJ;
 					return;
 				}
 				
+				if (imp.getStackSize()==1) {
+					IJ.log("Please provide an image stack");
+					return;
+				}
+				stack=imp.getStack();
+				cal=imp.getCalibration();
+				
 				IJ.log("===============================================================");
-				String fileName=imp.getTitle();
+				this.filePath=IJ.getDirectory("file");
+				this.fileName=imp.getTitle().substring(filePath.length());
+				
+				
 				IJ.log("File: "+fileName);
+				IJ.log("Path: "+filePath);
 				
 				if (imp!=null) {
 					int stack=imp.getImageStackSize();
@@ -155,29 +185,29 @@ import net.imagej.ImageJ;
 			return new int []{start,end};
 		}
 		Line setLineLength(ImagePlus imp_l) {
-			Line l= (Line)imp_l.getRoi();
+			focusLine= (Line)imp_l.getRoi();
 			int stackSize=imp_l.getStackSize();
 			imp_l.setSlice(stackSize/2);
-			double [] profile=imp_l.getProcessor().getLine(l.x1d, l.y1, l.x2, l.y2);
+			double [] profile=imp_l.getProcessor().getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
 			double max=new ArrayStatistics(profile).getMax();
 			double value=0;
 			imp_l.setSlice(0);
 			ImageProcessor ip=imp_l.getProcessor();
 			do {
-				l.x1d=l.x1d+10;
-				profile=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-				value=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d)[0];
+				focusLine.x1d=focusLine.x1d+10;
+				profile=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
+				value=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d)[0];
 			}while (value<0.9*max);
 			
 			imp_l.setSlice(stackSize);
 			ip=imp_l.getProcessor();
 			do {
-				l.x2d=l.x2d-10;
-				profile=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-				value=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d)[profile.length-1];
+				focusLine.x2d=focusLine.x2d-10;
+				profile=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
+				value=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d)[profile.length-1];
 			}while (value<0.9*max);
 			
-			return l;
+			return focusLine;
 		}
 		/*
 		*
@@ -207,17 +237,31 @@ import net.imagej.ImageJ;
 			
 			
 		}
-		void LogToTable(String file) {
+		private void getResultsTable() {
 			if (WindowManager.getWindow("Focus Results")==null) {
-				ResultsTable focus=new ResultsTable();
-				focus.show("Focus Results");
+				ResultsTable focusResults=new ResultsTable();
+				focusResults.show("Focus Results");
+				this.counter=0;
+				return;
 			};
+			this.focusResults=ResultsTable.getResultsTable("Focus Results");
+			this.counter=this.focusResults.getCounter();
+		}
+		void LogToTable(String file) {
+			
 			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
 			focus.addRow();
+			focus.addValue("#", this.counter);
 			focus.addValue("File", file);
 			focus.addValue("Repetition", this.repetition);
 			focus.addValue("z step", this.step);
 			focus.addValue("line length", this.lineLength);
+			focus.addValue("x1", this.focusLine.x1d);
+			focus.addValue("y1", this.focusLine.y1d);
+			focus.addValue("x2", this.focusLine.x2d);
+			focus.addValue("y2", this.focusLine.y2d);
+			
+			
 			focus.show("Focus Results");
 			
 		}
@@ -235,8 +279,13 @@ import net.imagej.ImageJ;
 			
 			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
 			
-			IJ.log("Focus shift z-axis  slice/um: "+param[1]);
-			focus.addValue("Focus shift", param[1]);
+			IJ.log("Focus shift z-axis  per slice: "+param[1]);
+			focus.addValue("Focus shift per slice/um", param[1]);
+			
+			double zShift=param[1]*cal.pixelDepth;
+			IJ.log("Focus shift z-axis  absolut: "+zShift);
+			focus.addValue("Focus shift absolut", zShift);
+			
 			
 			double slope=param[1]*fa.getZstep();
 			IJ.log("Slope: "+slope);
@@ -248,25 +297,39 @@ import net.imagej.ImageJ;
 			focus.addValue("R^2", cf.getFitGoodness());
 			
 			focus.show("Focus Results");
-			
-			if (showFit) cf.getPlot().show();
+			ImagePlus fitWin;
+			if (showFit) {
+				this.focusFit=cf.getPlot();
+				fitWin=focusFit.show().getImagePlus();
+				fitWin.setTitle(fileName+" "+IJ.pad(counter, 3)+".tif");
+				fitWin.show();
+				
+			}
+			if (saveFitWindow) {
+				
+				IJ.save(filePath+fileName+" "+IJ.pad(counter, 3)+".tif");
+				WindowManager.getFrame(fileName+" "+IJ.pad(counter, 3)+".tif").dispose();
+				
+			}
 		}
 		
 		void saveResults() {
-/*			String fileName=imp.getTitle();
-			int n=fileName.indexOf(".");
-			fileName=fileName.substring(0, n);
-			String path=imp.getPa
-					fileName.getAbsolutePath();
-			n=path.indexOf(fileName);
-			path=path.substring(0, n);
+			
+			int n=this.fileName.indexOf(".");
+			String saveName=this.fileName.substring(0, n);
+			
+//			n=this.filePath.indexOf(saveName);
+//			String savePath=this.filePath.substring(0, n);
 			ResultsTable rt=ResultsTable.getResultsTable("Table Fit Results");
-			rt.save(path+fileName+"_TableFits.csv");
+			rt.save(filePath+saveName+"_TableFits_"+IJ.pad(counter, 3)+".csv");
+			WindowManager.getFrame("Table Fit Results").dispose();
+			
 			
 			rt=ResultsTable.getResultsTable("Horizontal Focus");
-			rt.save(path+fileName+"_HorizontalFocus.csv");
-			closeNonImageWindows();
-*/			
+			rt.save(filePath+fileName+"_HorizontalFocus_"+IJ.pad(counter, 3)+".csv");
+			WindowManager.getFrame("Horizontal Focus").dispose();
+			
+			
 			
 			
 			
@@ -292,7 +355,7 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			IJ.run("Bio-Formats", "open=X:/StageTest/240923/UASF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 
 			ij.command().run(USAF_HorizontalFocus.class, true);
