@@ -95,8 +95,11 @@ import net.imagej.ImageJ;
 				
 				IJ.log("===============================================================");
 				this.filePath=IJ.getDirectory("file");
-				//this.fileName=imp.getTitle().substring(filePath.length());
 				this.fileName=imp.getTitle();
+				
+				if (fileName.startsWith(filePath)) 
+					this.fileName=imp.getTitle().substring(filePath.length());
+				
 				
 				IJ.log("File: "+fileName);
 				IJ.log("Path: "+filePath);
@@ -111,11 +114,13 @@ import net.imagej.ImageJ;
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
-							
-							fa=new FocusAnalyser(imp,setLineLength(imp));
-							int[] param=setStackSize(imp);
-							fa.setStart(param[0]);
-							fa.setEnd(param[1]);
+							this.focusLine=(Line)roi;
+							fa=new FocusAnalyser(imp,this.focusLine);
+//							int[] param=setStackSize(imp);
+//							fa.setStart(param[0]);
+//							fa.setEnd(param[1]);
+							fa.setStart(1);
+							fa.setEnd(z);
 							fa.setStep(step);
 							LogToTable(fileName);
 							fa.analyseLine(repetition,lineLength);
