@@ -9,10 +9,12 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
-public class HorizontalLineAnalyser {
-	
 
+public class HorizontalLineAnalyser {
+	static final int Gauss=1, AsymGauss=2;
+	int method;
 	Asym2SigFitter a2s;
+	GaussFitter gf;
 	ResultsTable fitResults;
 /**   
  * Constructors
@@ -42,18 +44,31 @@ public class HorizontalLineAnalyser {
 			
 		}
 */		
-		a2s=new Asym2SigFitter(x,profile);
+		this.gf=new GaussFitter(x,profile);
+		this.method=HorizontalLineAnalyser.Gauss;
 		
-		
-		a2s.fit();
+//		a2s=new Asym2SigFitter(x,profile);
+//		a2s.fit();
 	}
 	void writeResultsTable() {
-		int length=Asym2SigFitter.header.length;
-		double [] results=a2s.getResults(false);
-		for (int i=0;i<length;i++) {
-			fitResults.addValue(Asym2SigFitter.header[i], results[i]);
+		if (method==1) {
+			int length=GaussFitter.header.length;
+			
+			double [] results=gf.getResults();
+			for (int i=0;i<length;i++) {
+				fitResults.addValue(GaussFitter.header[i], results[i]);
+			}
+			fitResults.updateResults();
 		}
-		fitResults.updateResults();
+		if (method==2) {
+			int length=Asym2SigFitter.header.length;
+		
+			double [] results=a2s.getResults(false);
+			for (int i=0;i<length;i++) {
+				fitResults.addValue(Asym2SigFitter.header[i], results[i]);
+			}
+			fitResults.updateResults();
+		}
 	}
 	double [] getResults() {
 		return a2s.getResults(false);
