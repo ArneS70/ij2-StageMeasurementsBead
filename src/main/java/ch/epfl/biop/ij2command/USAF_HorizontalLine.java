@@ -19,8 +19,12 @@ import net.imagej.ImageJ;
 		
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Line")
 		public class USAF_HorizontalLine implements Command {
-			@Parameter(style="open")
-		    File fileInput;
+
+			ImagePlus fileInput;
+			String fileName, filePath;
+
+			//			@Parameter(style="open")
+//		    File fileInput;
 			
 			@Parameter(label="Save result tables?")
 			boolean save;
@@ -29,20 +33,27 @@ import net.imagej.ImageJ;
 		public void run() {
 			
 				ResultsTable fitResults;
-				ImagePlus imp=WindowManager.getCurrentImage();
+				this.fileInput=WindowManager.getCurrentImage();
 				
-				if (imp!=null) {
+				if (fileInput!=null) {
 					
-					Roi roi=imp.getRoi();
+					this.filePath=IJ.getDirectory("file");
+					this.fileName=fileInput.getTitle();
 					
-					if(roi.isLine()) {
-						
-						int num=imp.getImageStackSize();
-						for (int n=0;n<num;n++) {
-							imp.setSlice(n);
-							HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp,(Line)roi);
-							hla.writeResultsTable();
-							if (save) saveResults();
+					if (fileName.startsWith(filePath)) 
+						this.fileName=fileInput.getTitle().substring(filePath.length());
+					Roi roi=fileInput.getRoi();
+					
+					if (roi!=null ) {
+						if(roi.isLine()) {
+							
+							int num=fileInput.getImageStackSize();
+							for (int n=0;n<num;n++) {
+								fileInput.setSlice(n);
+								HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
+								hla.writeResultsTable(FitterFunction.Gauss);
+								if (save) saveResults();
+							}
 						}
 					} else IJ.showMessage("Line selection required");
 				} else IJ.showMessage("Please provide an image");
@@ -50,17 +61,17 @@ import net.imagej.ImageJ;
 		}
 		
 		void saveResults() {
-			String fileName=fileInput.getName();
+			
 			int n=fileName.indexOf(".");
 			fileName=fileName.substring(0, n);
-			String path=fileInput.getAbsolutePath();
-			n=path.indexOf(fileName);
-			path=path.substring(0, n);
+			
+			n=filePath.indexOf(fileName);
+			filePath=filePath.substring(0, n);
 			ResultsTable rt=ResultsTable.getResultsTable("Results x-Axis");
-			rt.save(path+fileName+"_xAxis.csv");
+			rt.save(filePath+fileName+"_xAxis.csv");
 			
 			rt=ResultsTable.getResultsTable("Results y-Axis");
-			rt.save(path+fileName+"_yAxis.csv");
+			rt.save(filePath+fileName+"_yAxis.csv");
 			WindowManager.closeAllWindows();
 			
 		}
@@ -77,6 +88,9 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
+			
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			ij.command().run(USAF_HorizontalLine.class, true);
 		}
 		

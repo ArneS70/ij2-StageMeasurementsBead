@@ -11,11 +11,11 @@ import ij.process.ImageProcessor;
 
 
 public class HorizontalLineAnalyser {
-	static final int Gauss=1, AsymGauss=2;
+	double [] profile;
+	double [] xvalues;
 	int method;
-	Asym2SigFitter a2s;
-	GaussFitter gf;
-	ResultsTable fitResults;
+	FitterFunction fitFunc;
+	ResultsTable fitResults=new ResultsTable();
 /**   
  * Constructors
  */
@@ -26,13 +26,13 @@ public class HorizontalLineAnalyser {
 		
 		Calibration cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
-		double [] profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
+		this.profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
 		int profileLength=profile.length;
-		double [] x=new double [profileLength];
+		this.xvalues=new double [profileLength];
 		double pixelSize=cal.pixelWidth;
 		
 		for (int n=0;n<profileLength;n++) {
-			x[n]=n*pixelSize;
+			xvalues[n]=n*pixelSize;
 		}
 /*		int count=profileLength/10;
 		double [] redX =new double [count];
@@ -44,34 +44,42 @@ public class HorizontalLineAnalyser {
 			
 		}
 */		
-		this.gf=new GaussFitter(x,profile);
-		this.method=HorizontalLineAnalyser.Gauss;
+		
 		
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
-	void writeResultsTable() {
-		if (method==1) {
+	void writeResultsTable(int method) {
+		if (method==FitterFunction.Gauss) {
 			int length=GaussFitter.header.length;
+			this.fitFunc=new GaussFitter(xvalues,profile);
 			
-			double [] results=gf.getResults();
-			for (int i=0;i<length;i++) {
+			this.method=FitterFunction.Gauss;	
+			
+			double [] results=((GaussFitter) fitFunc).getResults();
+			
+			fitResults.addRow();
+			for (int i=0;i<length-1;i++) {
+				
 				fitResults.addValue(GaussFitter.header[i], results[i]);
 			}
 			fitResults.updateResults();
 		}
 		if (method==2) {
-			int length=Asym2SigFitter.header.length;
+//			int length=Asym2SigFitter.header.length;
 		
-			double [] results=a2s.getResults(false);
-			for (int i=0;i<length;i++) {
-				fitResults.addValue(Asym2SigFitter.header[i], results[i]);
+			this.fitFunc=new Asym2SigFitter(xvalues,profile);
+			this.method=FitterFunction.AsymGauss;
+			
+//			double [] results=a2s.getResults(false);
+//			for (int i=0;i<length;i++) {
+//				fitResults.addValue(Asym2SigFitter.header[i], results[i]);
 			}
 			fitResults.updateResults();
 		}
-	}
-	double [] getResults() {
-		return a2s.getResults(false);
-	}
+//	}
+//	double [] getResults() {
+//		return a2s.getResults(false);
+//	}
 }
 

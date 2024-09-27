@@ -15,11 +15,8 @@ import ij.gui.Line;
 	import ij.process.ImageProcessor;
 
 
-	public class Asym2SigFitter {
+	public class Asym2SigFitter extends FitterFunction{
 
-			private double [] x;
-			private double [] y;
-			private double [] parameters;
 			private double fwhm;
 			
 			public final static String [] header= {"y0","height","center","w1","w2","w3","R^2","FWHM"};
@@ -27,16 +24,10 @@ import ij.gui.Line;
 					
 			
 			Asym2SigFitter(double []xvalues,double [] yvalues){
-				this.x=xvalues;
-				this.y=yvalues;
-				
+				super(xvalues,yvalues,FitterFunction.AsymGauss);
 			}
 
-			
 			void fit(boolean show) {
-				
-				
-				
 				ArrayStatistics as=new ArrayStatistics(y);
 /*				double [] intParam= {
 						as.getMin(),
@@ -49,8 +40,8 @@ import ij.gui.Line;
 				CurveFitter cf=new CurveFitter(x, y);
 				
 				cf.doCustomFit(fitFunction, intParam, false);
-				this.parameters=cf.getParams();
-				this.parameters[6]=cf.getRSquared();
+//				this.parameters=cf.getParams();
+//				this.parameters[6]=cf.getRSquared();
 //				this.fwhm=calcFWHM(this.parameters[3]);
 				
 				if (show) cf.getPlot().show();
@@ -60,10 +51,10 @@ import ij.gui.Line;
 			public void fixAmplitude(double amplitude) {
 				this.fitFunction.replace("b", ""+amplitude);
 			}
-			public double [] getResults(boolean show) {
-				fit(show);
-				return parameters;
-			}
+//			public double [] getResults(boolean show) {
+//				fit(show);
+//				return parameters;
+//			}
 			
 			public double getFWHM() {
 				return this.fwhm;

@@ -4,58 +4,44 @@ import ij.measure.CurveFitter;
 import ij.process.ImageProcessor;
 
 
-public class GaussFitter {
+public class GaussFitter extends FitterFunction{
 
-		private double [] x;
-		private double [] y;
-		private double [] parameters;
+		
 		private double fwhm;
 		
 		public final static String [] header= {"y0","height","center","sigma","R^2","FWHM"};
 		private String fitFunction="y=a+b*exp(-1*pow(abs(x-c),2)/(2*pow(d,2)))";
 		
 		GaussFitter(double []xvalues,double [] yvalues){
-			this.x=xvalues;
-			this.y=yvalues;
-			
-		}
-		private void fitGauss() {
-			
-			
-			
-			ArrayStatistics as=new ArrayStatistics(y);
-			double [] intParam= {
-					as.getMin(),
-					as.getMax()-as.getMin(),
-					new ArrayStatistics(x).getMean(),
-					2,2};
-			
-			CurveFitter cf=new CurveFitter(x, y);
-			
-			cf.doCustomFit(fitFunction, intParam, false);
-			this.parameters=cf.getParams();
-			this.parameters[4]=cf.getRSquared();
-			this.fwhm=calcFWHM(this.parameters[3]);
-			
-//			cf.getPlot().show();
-			
-			
-		}
-		public void fixAmplitude(double amplitude) {
-			this.fitFunction.replace("b", ""+amplitude);
-		}
-		public double [] getResults() {
-			fitGauss();
-			return parameters;
+			super(xvalues,yvalues,FitterFunction.Gauss);
 		}
 		
+		public String fixAmplitude(double amplitude) {
+			return this.fitFunction.replace("b", ""+amplitude);
+		}
+		
+		public String fixOffset(double amplitude) {
+			return this.fitFunction.replace("a", ""+amplitude);
+		}
+		void initParameters() {
+			double []xStat=super.getMeanMinMax(super.x);
+			double []yStat=super.getMeanMinMax(super.y);
+			super.setInitParameters(new double [] {yStat[1],yStat[2]-yStat[1],xStat[0],2,2});
+		}
 		public double getFWHM() {
 			return this.fwhm;
 		}
 		public double calcFWHM(double sigma) {
-			
 			return 2*sigma*Math.sqrt(Math.log(4));
 		}
+		double [] getResults() {
+			initParameters();
+			return super.getParameter(fitFunction);
+		};
+		double [] getResults(String custom) {
+			initParameters();
+			return super.getParameter(custom);
+		};
 	}
 
 
