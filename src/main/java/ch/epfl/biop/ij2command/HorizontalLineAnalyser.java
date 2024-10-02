@@ -13,9 +13,12 @@ import ij.process.ImageProcessor;
 public class HorizontalLineAnalyser {
 	double [] profile;
 	double [] xvalues;
-	int method;
-	FitterFunction fitFunc;
-	ResultsTable fitResults;
+	Line inputLine;
+	private int method,zstep=1;
+	private ImagePlus input;
+	private Calibration cal;
+	private FitterFunction fitFunc;
+	private ResultsTable fitResults, profileTableValues;
 /**   
  * Constructors
  */
@@ -23,8 +26,9 @@ public class HorizontalLineAnalyser {
 		
 	}
 	HorizontalLineAnalyser(ImagePlus imp, Line line){
-		
-		Calibration cal=imp.getCalibration();
+		this.input=imp;
+		this inputLine=line;
+		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
 		this.profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
 		int profileLength=profile.length;
@@ -52,56 +56,71 @@ public class HorizontalLineAnalyser {
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
-	void writeResultsTable(int method) {
-		if (method==FitterFunction.Gauss) {
-			int length=GaussFitter.header.length;
-			this.fitFunc=new GaussFitter(xvalues,profile);
-			
-			this.method=FitterFunction.Gauss;	
-			
-			double [] results=((GaussFitter) fitFunc).getResults();
-			fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
-			fitResults.addRow();
-			for (int i=0;i<length-1;i++) {
-				
-				fitResults.addValue(GaussFitter.header[i], results[i]);
-			}
-			fitResults.updateResults();
-		}
-		if (method==FitterFunction.AsymGauss) {
-//			int length=Asym2SigFitter.header.length;
+	void writeFitResultsTable(int method, boolean profileTable) {
 		
-			this.fitFunc=new Asym2SigFitter(xvalues,profile);
-			this.method=FitterFunction.AsymGauss;
-			
-//			double [] results=a2s.getResults(false);
-//			for (int i=0;i<length;i++) {
-//				fitResults.addValue(Asym2SigFitter.header[i], results[i]);
-//			}
-			fitResults.updateResults();
-		}
-		if (method==FitterFunction.Poly3) {
-			int length=Poly3Fitter.header.length;
-			this.fitFunc=new Poly3Fitter(xvalues,profile);
-			fitFunc.setHeader(Poly3Fitter.header);
-			this.method=FitterFunction.Poly3;
-			
-			double [] results=this.fitFunc.getParameter();
-			
-			fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
-			fitResults.addRow();
-			for (int i=0;i<length-1;i++) {
-				
-				fitResults.addValue(""+i, results[i]);
-				//fitResults.addValue(fitFunc.header[i], results[i]);
-			}
-			fitResults.addValue("max", fitFunc.getMax());
+		int slices=input.getNSlices();
 		
-//		double [] results=a2s.getResults(false);
-//		for (int i=0;i<length;i++) {
-//			fitResults.addValue(Asym2SigFitter.header[i], results[i]);
-		}
+		for (int n=1;n<=slices;n+=zstep) {
+			
+			input.setSliceWithoutUpdate(n);
+			this.profile=input.getProcessor().getLine((double)inputLine.x1,(double)inputLine.y1,(double)inputLine.x2,(double)inputLine.y2);
+			if (method==FitterFunction.Gauss) {
+				int length=GaussFitter.header.length;
+				this.fitFunc=new GaussFitter(xvalues,profile);
+				this.method=FitterFunction.Gauss;	
+				double [] results=((GaussFitter) fitFunc).getResults();
+				fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
+				fitResults.addRow();
+				for (int i=0;i<length-1;i++) {
+					fitResults.addValue(GaussFitter.header[i], results[i]);
+				}
+				fitResults.updateResults();
+			}
+			
+			if (method==FitterFunction.AsymGauss) {
+				this.fitFunc=new Asym2SigFitter(xvalues,profile);
+				this.method=FitterFunction.AsymGauss;
+				fitResults.updateResults();
+			}
+			if (method==FitterFunction.Poly3) {
+				int length=Poly3Fitter.header.length;
+				this.fitFunc=new Poly3Fitter(xvalues,profile);
+				fitFunc.setHeader(Poly3Fitter.header);
+				this.method=FitterFunction.Poly3;
+				double [] results=this.fitFunc.getParameter();
+				
+				fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
+				fitResults.addRow();
+				int counter=fitResults.getCounter();
+				for (int i=0;i<length-1;i++) {
+					fitResults.addValue("z / um", counter*cal.pixelDepth);
+					fitResults.addValue("p"+i, results[i]);
+					//fitResults.addValue(fitFunc.header[i], results[i]);
+				}
+				fitResults.addValue("max", fitFunc.getMax());
+		
+		
+			if (profileTable) {
+				this.profileTableValues=ResultsTable.getResultsTable("Z Profiles");
+				
+				if (this.profileTableValues==null) {
+					this.profileTableValues=new ResultsTable();
+					this.profileTableValues.setValues("x", this.xvalues);
+					this.profileTableValues.setValues(""+n*cal.pixelDepth, this.profile);
+					
+				} else {	
+					
+					this.profileTableValues.setValues(""+n*cal.pixelDepth, this.profile);
+					
+				};
+				
+				profileTableValues.show("Z Profiles");
+				
+			}
+			
 			fitResults.show("Horizontal Line Fits");
+		}
+	}
 	}
 //	}
 //	double [] getResults() {
