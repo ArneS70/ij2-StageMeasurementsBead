@@ -26,6 +26,9 @@ import net.imagej.ImageJ;
 			//			@Parameter(style="open")
 //		    File fileInput;
 			
+			@Parameter(label="z-step")
+			int zstep;
+			
 			@Parameter(label="Save result tables?")
 			boolean save;
 
@@ -48,10 +51,12 @@ import net.imagej.ImageJ;
 						if(roi.isLine()) {
 							
 							int num=fileInput.getImageStackSize();
-							for (int n=0;n<num;n++) {
+							for (int n=1;n<=num;n+=zstep) {
 								fileInput.setSlice(n);
+								IJ.log("===================================");
+								IJ.log("Slice: "+n);
 								HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
-								hla.writeResultsTable(FitterFunction.Gauss);
+								hla.writeResultsTable(FitterFunction.Poly3);
 								if (save) saveResults();
 							}
 						}
@@ -89,8 +94,8 @@ import net.imagej.ImageJ;
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
 			
-			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			ij.command().run(USAF_HorizontalLine.class, true);
 		}
 		

@@ -15,7 +15,7 @@ public class HorizontalLineAnalyser {
 	double [] xvalues;
 	int method;
 	FitterFunction fitFunc;
-	ResultsTable fitResults=new ResultsTable();
+	ResultsTable fitResults;
 /**   
  * Constructors
  */
@@ -34,6 +34,9 @@ public class HorizontalLineAnalyser {
 		for (int n=0;n<profileLength;n++) {
 			xvalues[n]=n*pixelSize;
 		}
+		fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
+		if (fitResults==null) fitResults=new ResultsTable();
+		fitResults.show("Horizontal Line Fits");
 /*		int count=profileLength/10;
 		double [] redX =new double [count];
 		double [] redProf =new double [count];
@@ -57,7 +60,7 @@ public class HorizontalLineAnalyser {
 			this.method=FitterFunction.Gauss;	
 			
 			double [] results=((GaussFitter) fitFunc).getResults();
-			
+			fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
 			fitResults.addRow();
 			for (int i=0;i<length-1;i++) {
 				
@@ -65,7 +68,7 @@ public class HorizontalLineAnalyser {
 			}
 			fitResults.updateResults();
 		}
-		if (method==2) {
+		if (method==FitterFunction.AsymGauss) {
 //			int length=Asym2SigFitter.header.length;
 		
 			this.fitFunc=new Asym2SigFitter(xvalues,profile);
@@ -74,9 +77,32 @@ public class HorizontalLineAnalyser {
 //			double [] results=a2s.getResults(false);
 //			for (int i=0;i<length;i++) {
 //				fitResults.addValue(Asym2SigFitter.header[i], results[i]);
-			}
+//			}
 			fitResults.updateResults();
 		}
+		if (method==FitterFunction.Poly3) {
+			int length=Poly3Fitter.header.length;
+			this.fitFunc=new Poly3Fitter(xvalues,profile);
+			fitFunc.setHeader(Poly3Fitter.header);
+			this.method=FitterFunction.Poly3;
+			
+			double [] results=this.fitFunc.getParameter();
+			
+			fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
+			fitResults.addRow();
+			for (int i=0;i<length-1;i++) {
+				
+				fitResults.addValue(""+i, results[i]);
+				//fitResults.addValue(fitFunc.header[i], results[i]);
+			}
+			fitResults.addValue("max", fitFunc.getMax());
+		
+//		double [] results=a2s.getResults(false);
+//		for (int i=0;i<length;i++) {
+//			fitResults.addValue(Asym2SigFitter.header[i], results[i]);
+		}
+			fitResults.show("Horizontal Line Fits");
+	}
 //	}
 //	double [] getResults() {
 //		return a2s.getResults(false);
