@@ -86,8 +86,8 @@ import net.imagej.ImageJ;
 					return;
 				}
 				
-				if (imp.getStackSize()==1) {
-					IJ.log("Please provide an image stack");
+				if (imp.getNSlices()==1) {
+					IJ.log("Please provide an z-stack");
 					return;
 				}
 				stack=imp.getStack();

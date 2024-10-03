@@ -6,6 +6,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Plot;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
@@ -14,21 +15,28 @@ import ij.process.ImageProcessor;
 public class HorizontalLineAnalyser {
 	double [] profile;
 	double [] xvalues;
-	Line inputLine;
+	Line horizontalLine;
 	private int method,zstep=1;
-	private ImagePlus input;
+	private ImagePlus inputImage;
 	private Calibration cal;
 	private FitterFunction fitFunc;
 	private ResultsTable fitResults, profileTableValues;
 /**   
  * Constructors
  */
-	HorizontalLineAnalyser(){
-		
+	HorizontalLineAnalyser(ImagePlus imp){
+		this.inputImage=imp;
+		setLine();
+		this.cal=imp.getCalibration();
+		ImageProcessor ip=imp.getProcessor();
+		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
+		int profileLength=profile.length;
+		this.xvalues=new double [profileLength];
+		double pixelSize=cal.pixelWidth;
 	}
 	HorizontalLineAnalyser(ImagePlus imp, Line line){
-		this.input=imp;
-		this.inputLine=line;
+		this.inputImage=imp;
+		this.horizontalLine=line;
 		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
 		this.profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
@@ -57,17 +65,42 @@ public class HorizontalLineAnalyser {
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
+	void setLine() {
+		
+			int slice=inputImage.getImageStackSize();
+			inputImage.setSlice(slice/2);
+			ImageProcessor ip_edge=inputImage.getProcessor().duplicate().convertToFloat();
+			ip_edge.findEdges();
+			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
+			Roi [] lines=la.findVerticalMaxima(10,400);
+			int pos=1+lines.length/2;
+			ImageProcessor ip=inputImage.getProcessor();
+			ip.setRoi(lines[pos]);
+			double mean1=ip.getStatistics().mean;
+			
+			ip.setRoi(lines[pos+1]);
+			double mean2=ip.getStatistics().mean;
+			//IJ.log("m1="+mean1+"    m2="+mean2);
+			
+			if (mean1>mean2) {inputImage.setRoi(lines[pos]);horizontalLine=(Line)lines[pos];}
+			else {inputImage.setRoi(lines[pos+1]);horizontalLine=(Line)lines[pos+1];}
+			
+			inputImage.updateAndDraw();
+			
+			
+		
+	}
 	void writeFitResultsTable(int method, boolean profileTable) {
 		
-		int slices=input.getNSlices();
+		int slices=inputImage.getNSlices();
 		
 		for (int n=1;n<=slices;n+=zstep) {
 			
 			IJ.log("===================================");
 			IJ.log("Slice: "+n);
 			
-			input.setSliceWithoutUpdate(n);
-			this.profile=input.getProcessor().getLine((double)inputLine.x1,(double)inputLine.y1,(double)inputLine.x2,(double)inputLine.y2);
+			inputImage.setSliceWithoutUpdate(n);
+			this.profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
 /*			if (method==FitterFunction.Gauss) {
 				int length=GaussFitter.header.length;
 				this.fitFunc=new GaussFitter(xvalues,profile);
