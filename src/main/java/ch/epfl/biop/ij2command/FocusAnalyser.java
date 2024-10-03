@@ -20,6 +20,9 @@ public class FocusAnalyser {
 	private int start,end,step;
 	private String titleFocusMap;
 	
+	FocusAnalyser(){
+		
+	}
 	FocusAnalyser(ImagePlus imp,int line,int nx,int ny){
 		setImage(imp);
 		setAnalysisLineLength(line);
@@ -27,11 +30,13 @@ public class FocusAnalyser {
 		setRepetitionY(ny);
 		cal=imp.getCalibration();
 	}
+	
 	FocusAnalyser(ImagePlus imp, Line line){
 		setImage(imp);
 		cal=imp.getCalibration();
 		this.isHorizontal=true;
 		this.horizonetalLine=line;
+		
 	}
 	void analyseHorizontalLine(int rep,int lineHeight) {
 		this.focusMap=new ResultsTable();
@@ -73,6 +78,9 @@ public class FocusAnalyser {
 	}
 	void showFocusMap() {
 		focusMap.show(this.titleFocusMap);
+	}
+	void setLine(Line line) {
+		this.horizonetalLine=line;
 	}
 	void run() {
 		int h=imps.getHeight()-analysisLineLength;

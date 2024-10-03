@@ -13,9 +13,9 @@ import ij.process.ImageProcessor;
 
 
 public class HorizontalLineAnalyser {
-	double [] profile;
-	double [] xvalues;
-	Line horizontalLine;
+	private double [] profile;
+	private double [] xvalues;
+	private Line horizontalLine;
 	private int method,zstep=1;
 	private ImagePlus inputImage;
 	private Calibration cal;
@@ -26,7 +26,7 @@ public class HorizontalLineAnalyser {
  */
 	HorizontalLineAnalyser(ImagePlus imp){
 		this.inputImage=imp;
-		setLine();
+		this.setHorizontalLine();
 		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
 		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
@@ -65,7 +65,7 @@ public class HorizontalLineAnalyser {
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
-	void setLine() {
+	void setHorizontalLine() {
 		
 			int slice=inputImage.getImageStackSize();
 			inputImage.setSlice(slice/2);
@@ -89,6 +89,9 @@ public class HorizontalLineAnalyser {
 			
 			
 		
+	}
+	Line getHorizontalLIne() {
+		return this.horizontalLine;
 	}
 	void writeFitResultsTable(int method, boolean profileTable) {
 		

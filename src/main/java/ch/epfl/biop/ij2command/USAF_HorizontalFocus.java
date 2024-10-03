@@ -105,17 +105,23 @@ import net.imagej.ImageJ;
 				IJ.log("Path: "+filePath);
 				
 				if (imp!=null) {
+					FocusAnalyser fa=new FocusAnalyser();
+					HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp);
+					hla.setHorizontalLine();
+					
+					
 					int stack=imp.getImageStackSize();
 					int z=imp.getNSlices();
 					int frames=imp.getNFrames();
 					
-					if (imp.getRoi()==null) setLine(imp);
+					if (imp.getRoi()==null) fa=new FocusAnalyser(imp,hla.getHorizontalLIne());
 					Roi roi=imp.getRoi();
+					
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
 							this.focusLine=(Line)roi;
-							fa=new FocusAnalyser(imp,this.focusLine);
+							fa=new FocusAnalyser(imp,(Line)roi);
 //							int[] param=setStackSize(imp);
 //							fa.setStart(param[0]);
 //							fa.setEnd(param[1]);
@@ -189,6 +195,7 @@ import net.imagej.ImageJ;
 */			
 			return new int []{start,end};
 		}
+		/*
 		Line setLineLength(ImagePlus imp_l) {
 			focusLine= (Line)imp_l.getRoi();
 			int stackSize=imp_l.getStackSize();
@@ -214,11 +221,11 @@ import net.imagej.ImageJ;
 			
 			return focusLine;
 		}
-		/*
+		
 		*
 		*Changing the line length is not recommended as it makes the fitting less reliable. It is better to change the start of the focus points
 		*along the line.
-		*/
+		
 		void setLine(ImagePlus imp) {
 			int slice=imp.getImageStackSize();
 			imp.setSlice(slice/2);
@@ -242,6 +249,7 @@ import net.imagej.ImageJ;
 			
 			
 		}
+		*/
 		private void getResultsTable() {
 			if (WindowManager.getWindow("Focus Results")==null) {
 				ResultsTable focusResults=new ResultsTable();
