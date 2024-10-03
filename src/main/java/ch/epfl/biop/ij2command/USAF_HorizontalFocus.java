@@ -107,7 +107,7 @@ import net.imagej.ImageJ;
 				if (imp!=null) {
 					int stack=imp.getImageStackSize();
 					int z=imp.getNSlices();
-					int frames=stack/z;
+					int frames=imp.getNFrames();
 					
 					if (imp.getRoi()==null) setLine(imp);
 					Roi roi=imp.getRoi();
@@ -123,7 +123,7 @@ import net.imagej.ImageJ;
 							fa.setEnd(z);
 							fa.setStep(step);
 							LogToTable(fileName);
-							fa.analyseLine(repetition,lineLength);
+							fa.analyseHorizontalLine(repetition,lineLength);
 							fitTableResults(fa);
 							if (save) saveResults();
 							
@@ -272,7 +272,7 @@ import net.imagej.ImageJ;
 		}
 		void fitTableResults(FocusAnalyser fa) {		
 			
-			TableFitter tableFit=new TableFitter(fa.getFocusResults());
+			TableFitter tableFit=new TableFitter(fa.getFocusMap());
 			tableFit.fitTable(CurveFitter.POLY5);
 			tableFit.getFitResults().show("Table Fit Results");
 			
