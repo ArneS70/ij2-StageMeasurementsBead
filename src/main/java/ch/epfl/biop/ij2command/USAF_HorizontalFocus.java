@@ -171,85 +171,10 @@ import net.imagej.ImageJ;
 				end=stackSize-1;start=stackSize-2*min;
 			}
 			
-/*			stack.setSliceWithoutUpdate(stackSize/2);
-			double [] profile=stack.getProcessor().getLine(l.x1d, l.y1, l.x2, l.y2);
-			double max=new ArrayStatistics(profile).getMax();
-			double value=0;
-			int start=0;
-			int end=stackSize;
-			int pos=0;
-			do {
-				stack.setSliceWithoutUpdate(pos);
-				value=stack.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d)[0];
-				pos+=1;
-			}while (value<0.5*max);
-			start=pos;
-			pos=end;
-			do {
-				stack.setSliceWithoutUpdate(pos);
-				profile=stack.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-				value=profile[profile.length-1];
-				pos-=1;
-			}while (value<0.9*max);
-			end=pos;
-*/			
+	
 			return new int []{start,end};
 		}
-		/*
-		Line setLineLength(ImagePlus imp_l) {
-			focusLine= (Line)imp_l.getRoi();
-			int stackSize=imp_l.getStackSize();
-			imp_l.setSlice(stackSize/2);
-			double [] profile=imp_l.getProcessor().getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
-			double max=new ArrayStatistics(profile).getMax();
-			double value=0;
-			imp_l.setSlice(0);
-			ImageProcessor ip=imp_l.getProcessor();
-			do {
-				focusLine.x1d=focusLine.x1d+10;
-				profile=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
-				value=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d)[0];
-			}while (value<0.9*max);
-			
-			imp_l.setSlice(stackSize);
-			ip=imp_l.getProcessor();
-			do {
-				focusLine.x2d=focusLine.x2d-10;
-				profile=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d);
-				value=ip.getLine(focusLine.x1d, focusLine.y1d, focusLine.x2d, focusLine.y2d)[profile.length-1];
-			}while (value<0.9*max);
-			
-			return focusLine;
-		}
 		
-		*
-		*Changing the line length is not recommended as it makes the fitting less reliable. It is better to change the start of the focus points
-		*along the line.
-		
-		void setLine(ImagePlus imp) {
-			int slice=imp.getImageStackSize();
-			imp.setSlice(slice/2);
-			ImageProcessor ip_edge=imp.getProcessor().duplicate().convertToFloat();
-			ip_edge.findEdges();
-			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
-			Roi [] lines=la.findVerticalMaxima(10,400);
-			int pos=1+lines.length/2;
-			ImageProcessor ip=imp.getProcessor();
-			ip.setRoi(lines[pos]);
-			double mean1=ip.getStatistics().mean;
-			
-			ip.setRoi(lines[pos+1]);
-			double mean2=ip.getStatistics().mean;
-			//IJ.log("m1="+mean1+"    m2="+mean2);
-			
-			if (mean1>mean2)imp.setRoi(lines[pos]); 
-			else imp.setRoi(lines[pos+1]);
-			
-			imp.updateAndDraw();
-			
-			
-		}
-		*/
 		private void getResultsTable() {
 			if (WindowManager.getWindow("Focus Results")==null) {
 				ResultsTable focusResults=new ResultsTable();
