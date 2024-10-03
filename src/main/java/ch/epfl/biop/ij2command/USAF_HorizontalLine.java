@@ -11,7 +11,9 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Line;
+import ij.gui.Plot;
 import ij.gui.Roi;
+import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
@@ -31,11 +33,22 @@ import net.imagej.ImageJ;
 			
 			@Parameter(label="Save result tables?")
 			boolean save;
+			
+			@Parameter(label="Summarize results?")
+			boolean summarize;
+			
+			@Parameter(label="Show Plot")
+			boolean show;
+			
+			@Parameter(label="Save & close Plot")
+			boolean savePlot;
+			
+			Line toAnalyse;
 
 		@Override
 		public void run() {
 			
-				ResultsTable fitResults;
+				
 				this.fileInput=WindowManager.getCurrentImage();
 				
 				if (fileInput!=null) {
@@ -49,16 +62,18 @@ import net.imagej.ImageJ;
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
+							toAnalyse=(Line)roi;
+							HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
+							hla.setZstep(zstep);
+							hla.writeFitResultsTable(FitterFunction.Poly3, true);
 							
-							int num=fileInput.getImageStackSize();
-							for (int n=1;n<=num;n+=zstep) {
-								fileInput.setSlice(n);
-								IJ.log("===================================");
-								IJ.log("Slice: "+n);
-								HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
-								hla.writeFitResultsTable(FitterFunction.Poly3, true);
-								if (save) saveResults();
+							if (summarize) {
+								LogToTable();
+								getSlope();
+								
 							}
+							if (save) saveResults();
+							
 						}
 					} else IJ.showMessage("Line selection required");
 				} else IJ.showMessage("Please provide an image");
@@ -67,17 +82,63 @@ import net.imagej.ImageJ;
 		
 		void saveResults() {
 			
-			int n=fileName.indexOf(".");
-			fileName=fileName.substring(0, n);
+			ResultsTable rt=ResultsTable.getResultsTable("Horizontal Line Fits");
+			rt.save(filePath+fileName+"_HorizLineFits.csv");
+			rt.reset();
+			WindowManager.getFrame("Horizontal Line Fits").dispose();
+			//rt.show("Horizontal Line Fits");
 			
-			n=filePath.indexOf(fileName);
-			filePath=filePath.substring(0, n);
-			ResultsTable rt=ResultsTable.getResultsTable("Results x-Axis");
-			rt.save(filePath+fileName+"_xAxis.csv");
+			rt=ResultsTable.getResultsTable("Line Profiles");
+			rt.save(filePath+fileName+"_HorizLineProfiles.csv");
+			rt.reset();
+			//rt.show("Line Profiles");
+			WindowManager.getFrame("Line Profiles").dispose();
 			
-			rt=ResultsTable.getResultsTable("Results y-Axis");
-			rt.save(filePath+fileName+"_yAxis.csv");
-			WindowManager.closeAllWindows();
+		}
+		void getSlope(){
+			ResultsTable rt=ResultsTable.getResultsTable("Horizontal Line Fits");
+			int counter=rt.getCounter();
+			CurveFitter cf=new CurveFitter(rt.getColumn("z / um"),rt.getColumn("max"));
+			cf.doFit(CurveFitter.STRAIGHT_LINE);
+			double []param=cf.getParams();
+			if (show) {
+				Plot focusFit=cf.getPlot();
+				ImagePlus fitWin=focusFit.show().getImagePlus();
+				fitWin.setTitle(fileName+" "+IJ.pad(counter, 3)+".tif");
+				fitWin.show(); 
+				
+				if (savePlot) {
+					IJ.save(filePath+fileName+" "+IJ.pad(counter, 3)+".tif");
+					WindowManager.getFrame(fileName+" "+IJ.pad(counter, 3)+".tif").dispose();
+				};
+			}
+			
+			ResultsTable lineMax=ResultsTable.getResultsTable("Line Maxima Results");
+			lineMax.addValue("p1", param[0]);
+			lineMax.addValue("p2", param[1]);
+			lineMax.addValue("SumResSquare", param[2]);
+			lineMax.addValue("R^2", cf.getFitGoodness());
+			lineMax.show("Line Maxima Results");
+			
+		}
+		void LogToTable() {
+			
+			ResultsTable lineMax=ResultsTable.getResultsTable("Line Maxima Results");
+			if ((lineMax)==null) lineMax=new ResultsTable();
+			int counter=lineMax.getCounter();
+			lineMax.addRow();
+			lineMax.addValue("#", counter);
+			lineMax.addValue("File", fileName);
+			
+			lineMax.addValue("z step", this.zstep);
+			
+			lineMax.addValue("x1", this.toAnalyse.x1d);
+			lineMax.addValue("y1", this.toAnalyse.y1d);
+			lineMax.addValue("x2", this.toAnalyse.x2d);
+			lineMax.addValue("y2", this.toAnalyse.y2d);
+			
+			
+			lineMax.show("Line Maxima Results");
 			
 		}
 		/**

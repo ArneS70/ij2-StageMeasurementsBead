@@ -2,6 +2,7 @@ package ch.epfl.biop.ij2command;
 
 import java.util.Arrays;
 
+import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Plot;
@@ -27,7 +28,7 @@ public class HorizontalLineAnalyser {
 	}
 	HorizontalLineAnalyser(ImagePlus imp, Line line){
 		this.input=imp;
-		this inputLine=line;
+		this.inputLine=line;
 		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
 		this.profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
@@ -62,9 +63,12 @@ public class HorizontalLineAnalyser {
 		
 		for (int n=1;n<=slices;n+=zstep) {
 			
+			IJ.log("===================================");
+			IJ.log("Slice: "+n);
+			
 			input.setSliceWithoutUpdate(n);
 			this.profile=input.getProcessor().getLine((double)inputLine.x1,(double)inputLine.y1,(double)inputLine.x2,(double)inputLine.y2);
-			if (method==FitterFunction.Gauss) {
+/*			if (method==FitterFunction.Gauss) {
 				int length=GaussFitter.header.length;
 				this.fitFunc=new GaussFitter(xvalues,profile);
 				this.method=FitterFunction.Gauss;	
@@ -76,7 +80,7 @@ public class HorizontalLineAnalyser {
 				}
 				fitResults.updateResults();
 			}
-			
+*/			
 			if (method==FitterFunction.AsymGauss) {
 				this.fitFunc=new Asym2SigFitter(xvalues,profile);
 				this.method=FitterFunction.AsymGauss;
@@ -101,26 +105,29 @@ public class HorizontalLineAnalyser {
 		
 		
 			if (profileTable) {
-				this.profileTableValues=ResultsTable.getResultsTable("Z Profiles");
+				this.profileTableValues=ResultsTable.getResultsTable("Line Profiles");
 				
 				if (this.profileTableValues==null) {
 					this.profileTableValues=new ResultsTable();
 					this.profileTableValues.setValues("x", this.xvalues);
-					this.profileTableValues.setValues(""+n*cal.pixelDepth, this.profile);
+					this.profileTableValues.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 				} else {	
 					
-					this.profileTableValues.setValues(""+n*cal.pixelDepth, this.profile);
+					this.profileTableValues.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 				};
 				
-				profileTableValues.show("Z Profiles");
+				profileTableValues.show("Line Profiles");
 				
 			}
 			
 			fitResults.show("Horizontal Line Fits");
 		}
 	}
+	}
+	void setZstep(int step) {
+		this.zstep=step;
 	}
 //	}
 //	double [] getResults() {
