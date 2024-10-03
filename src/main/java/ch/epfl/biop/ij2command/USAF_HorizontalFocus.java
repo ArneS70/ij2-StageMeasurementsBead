@@ -1,5 +1,6 @@
 package ch.epfl.biop.ij2command;
 
+import java.awt.AWTEvent;
 import java.awt.Window;
 import java.io.File;
 import java.io.IOException;
@@ -26,16 +27,26 @@ import net.imagej.ImageJ;
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Foccus")
 		public class USAF_HorizontalFocus implements Command {
 
-//		@Parameter(style="open")
-//	    File fileInput;
-			
+		private Calibration cal;
+		private ResultsTable summaryResults;
+		private ResultsTable fitResults=null;
+		private FocusAnalyser fa=null;
+		private ImagePlus imp;
+		private ImageStack stack;
+		private String fileName, filePath;
+		private int counter;
+		private Plot focusFit;
+		private Line focusLine;
+		final static String titleResults="Horizontal Focus Results";
+		final static String titleSummary="Summary Horizontal Focus Results";
+		
 		@Parameter(label="number of focus points")
 		int repetition;
 		
-//		@Parameter(label="z-stack Start")
+		@Parameter(label="z-stack Start")
 		int start;
 		
-//		@Parameter(label="z-stack End")
+		@Parameter(label="z-stack End")
 		int end;
 		
 		@Parameter(label="z-stack Step")
@@ -53,31 +64,20 @@ import net.imagej.ImageJ;
 		@Parameter(label="Save result tables?")
 		boolean save;
 		
+//		@Parameter(label="Summarize results?")           Is needed to save the Focus Results properly. 
+//		boolean summarize;
+		
 //		@Parameter(label="Results Index")
 //		String text;
 		
 //		@Parameter(label="Variable Line length?")
 //		boolean lineOptimize;
 		
-		Calibration cal;
-		ResultsTable focusResults;
-		ResultsTable fitResults=null;
-		FocusAnalyser fa=null;
-		ImageStack stack;
-		String fileName, filePath;
-		int counter;
-		Plot focusFit;
-		Line focusLine;
-		
 		@Override
 		public void run() {
 				
-				
-				
-				
-				this.getResultsTable();
-				
-				ImagePlus imp=WindowManager.getCurrentImage();
+				this.getSummaryTable();
+				this.imp=WindowManager.getCurrentImage();
 				
 				if (imp==null) {
 					//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
@@ -90,33 +90,19 @@ import net.imagej.ImageJ;
 					IJ.log("Please provide an z-stack");
 					return;
 				}
+				
 				stack=imp.getStack();
 				cal=imp.getCalibration();
-				
-				IJ.log("===============================================================");
-				this.filePath=IJ.getDirectory("file");
-				this.fileName=imp.getTitle();
-				
-				if (fileName.startsWith(filePath)) 
-					this.fileName=imp.getTitle().substring(filePath.length());
-				
-				
-				IJ.log("File: "+fileName);
-				IJ.log("Path: "+filePath);
+				logFileNames();
 				
 				if (imp!=null) {
 					FocusAnalyser fa=new FocusAnalyser();
 					HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp);
-					hla.setHorizontalLine();
 					
-					
-					int stack=imp.getImageStackSize();
 					int z=imp.getNSlices();
-					int frames=imp.getNFrames();
-					
-					if (imp.getRoi()==null) fa=new FocusAnalyser(imp,hla.getHorizontalLIne());
+										
+					if (imp.getRoi()==null) {hla.setHorizontalLine();fa=new FocusAnalyser(imp,hla.getHorizontalLIne());}
 					Roi roi=imp.getRoi();
-					
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
@@ -132,18 +118,30 @@ import net.imagej.ImageJ;
 							fa.analyseHorizontalLine(repetition,lineLength);
 							fitTableResults(fa);
 							if (save) saveResults();
-							
-						
 						}
 					}	
-						
-					
 				} 
-		    
-			
+		}
+		void timeLapseAnalysis() {
+			int stack=imp.getImageStackSize();
+			int z=imp.getNSlices();
+			int frames=imp.getNFrames();
 		}
 		
-		int [] setStackSize(ImagePlus stack) {
+		void logFileNames() {
+			IJ.log("===============================================================");
+			this.filePath=IJ.getDirectory("file");
+			this.fileName=imp.getTitle();
+			
+			if (fileName.startsWith(filePath)) 
+				this.fileName=imp.getTitle().substring(filePath.length());
+			
+			
+			IJ.log("File: "+fileName);
+			IJ.log("Path: "+filePath);
+		}
+		
+/*		int [] setStackSize(ImagePlus stack) {
 
 			
 			Line line= (Line)stack.getRoi();
@@ -174,20 +172,20 @@ import net.imagej.ImageJ;
 	
 			return new int []{start,end};
 		}
-		
-		private void getResultsTable() {
-			if (WindowManager.getWindow("Focus Results")==null) {
+*/		
+		private void getSummaryTable() {
+			if (WindowManager.getWindow(this.titleSummary)==null) {
 				ResultsTable focusResults=new ResultsTable();
-				focusResults.show("Focus Results");
+				focusResults.show(this.titleSummary);
 				this.counter=0;
 				return;
 			};
-			this.focusResults=ResultsTable.getResultsTable("Focus Results");
-			this.counter=this.focusResults.getCounter();
+			this.summaryResults=ResultsTable.getResultsTable(this.titleSummary);
+			this.counter=this.summaryResults.getCounter();
 		}
 		void LogToTable(String file) {
 			
-			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
+			ResultsTable focus=ResultsTable.getResultsTable(this.titleSummary);
 			focus.addRow();
 			focus.addValue("#", this.counter);
 			focus.addValue("File", file);
@@ -200,42 +198,45 @@ import net.imagej.ImageJ;
 			focus.addValue("y2", this.focusLine.y2d);
 			
 			
-			focus.show("Focus Results");
+			focus.show(this.titleSummary);
 			
 		}
 		void fitTableResults(FocusAnalyser fa) {		
 			
+			
 			TableFitter tableFit=new TableFitter(fa.getFocusMap());
 			tableFit.fitTable(CurveFitter.POLY5);
-			tableFit.getFitResults().show("Table Fit Results");
+			tableFit.getFitResults().show(this.titleResults);
 			
 			int last=tableFit.getFitResults().getLastColumn();
 			
 			CurveFitter cf=new CurveFitter(tableFit.getFitResults().getColumnAsDoubles(0),tableFit.getFitResults().getColumnAsDoubles(last));
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
-			double [] param=cf.getParams();
 			
-			ResultsTable focus=ResultsTable.getResultsTable("Focus Results");
+			double [] param=cf.getParams();
+			double zShift=param[1]*cal.pixelDepth;
+			double slope=param[1]*fa.getZstep();
+			double angle=180*Math.atan(slope)/Math.PI;
 			
 			IJ.log("Focus shift z-axis  per slice: "+param[1]);
-			focus.addValue("Focus shift per slice/um", param[1]);
-			
-			double zShift=param[1]*cal.pixelDepth;
 			IJ.log("Focus shift z-axis  absolut: "+zShift);
-			focus.addValue("Focus shift absolut", zShift);
-			
-			
-			double slope=param[1]*fa.getZstep();
 			IJ.log("Slope: "+slope);
-			focus.addValue("Slope", slope);
-			double angle=180*Math.atan(slope)/Math.PI;
 			IJ.log("angle/deg: "+angle);
-			focus.addValue("angle/deg", angle);
 			IJ.log("R^2: "+cf.getFitGoodness());
-			focus.addValue("R^2", cf.getFitGoodness());
 			
-			focus.show("Focus Results");
+			
+			
+				ResultsTable focus=ResultsTable.getResultsTable(this.titleSummary);
+				focus.addValue("Focus shift per slice/um", param[1]);
+				focus.addValue("Focus shift absolut", zShift);
+				focus.addValue("Slope", slope);
+				focus.addValue("angle/deg", angle);
+				focus.addValue("R^2", cf.getFitGoodness());
+				focus.show(this.titleSummary);
+			
+			
 			ImagePlus fitWin;
+			
 			if (showFit) {
 				this.focusFit=cf.getPlot();
 				fitWin=focusFit.show().getImagePlus();
@@ -258,14 +259,13 @@ import net.imagej.ImageJ;
 			
 //			n=this.filePath.indexOf(saveName);
 //			String savePath=this.filePath.substring(0, n);
-			ResultsTable rt=ResultsTable.getResultsTable("Table Fit Results");
-			rt.save(filePath+saveName+"_TableFits_"+IJ.pad(counter, 3)+".csv");
-			WindowManager.getFrame("Table Fit Results").dispose();
+			ResultsTable rt=ResultsTable.getResultsTable(this.titleResults);
+			rt.save(filePath+saveName+"_TableFits_"+IJ.pad(counter, 4)+".csv");
+
 			
-			
-			rt=ResultsTable.getResultsTable("Horizontal Focus");
-			rt.save(filePath+fileName+"_HorizontalFocus_"+IJ.pad(counter, 3)+".csv");
-			WindowManager.getFrame("Horizontal Focus").dispose();
+//			rt=ResultsTable.getResultsTable("Horizontal Focus");
+//			rt.save(filePath+fileName+"_HorizontalFocus_"+IJ.pad(counter, 4)+".csv");
+//			WindowManager.getFrame("Horizontal Focus").dispose();
 			
 			
 			
@@ -293,8 +293,8 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}

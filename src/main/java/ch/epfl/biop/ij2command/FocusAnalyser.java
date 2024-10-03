@@ -2,9 +2,11 @@ package ch.epfl.biop.ij2command;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Roi;
 import ij.measure.Calibration;
+import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;
@@ -73,6 +75,7 @@ public class FocusAnalyser {
 		}
 		
 	}
+	
 	ResultsTable getFocusMap() {
 		return this.focusMap;
 	}
