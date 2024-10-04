@@ -25,7 +25,7 @@ import net.imagej.ImageJ;
 			ImagePlus fileInput;
 			String fileName, filePath;
 
-			//			@Parameter(style="open")
+//			@Parameter(style="open")
 //		    File fileInput;
 			
 			@Parameter(label="z-step")
@@ -50,6 +50,9 @@ import net.imagej.ImageJ;
 			
 				
 				this.fileInput=WindowManager.getCurrentImage();
+				ResultsTable lineFits=new ResultsTable();
+				lineFits.show("Horizontal Line Fits");
+				
 				
 				if (fileInput!=null) {
 					
@@ -59,23 +62,25 @@ import net.imagej.ImageJ;
 					if (fileName.startsWith(filePath)) 
 						this.fileName=fileInput.getTitle().substring(filePath.length());
 					Roi roi=fileInput.getRoi();
-					
+					HorizontalLineAnalyser hla=null;
 					if (roi!=null ) {
 						if(roi.isLine()) {
 							toAnalyse=(Line)roi;
-							HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
-							hla.setZstep(zstep);
-							hla.writeFitResultsTable(FitterFunction.Poly3, true);
-							
-							if (summarize) {
-								LogToTable();
-								getSlope();
-								
-							}
-							if (save) saveResults();
-							
+							hla=new HorizontalLineAnalyser(fileInput,(Line)roi);
 						}
-					} else IJ.showMessage("Line selection required");
+					} else {
+						hla=new HorizontalLineAnalyser(fileInput);
+						hla.setHorizontalLine();
+					}
+					hla.setZstep(zstep);
+					hla.writeFitResultsTable(FitterFunction.Poly3, true);
+					
+					if (summarize) {
+						LogToTable();
+						getSlope();
+						
+					}
+					if (save) saveResults();
 				} else IJ.showMessage("Please provide an image");
 		    
 		}
@@ -97,6 +102,7 @@ import net.imagej.ImageJ;
 		}
 		void getSlope(){
 			ResultsTable rt=ResultsTable.getResultsTable("Horizontal Line Fits");
+			
 			int counter=rt.getCounter();
 			CurveFitter cf=new CurveFitter(rt.getColumn("z / um"),rt.getColumn("max"));
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
@@ -125,6 +131,7 @@ import net.imagej.ImageJ;
 			
 			ResultsTable lineMax=ResultsTable.getResultsTable("Line Maxima Results");
 			if ((lineMax)==null) lineMax=new ResultsTable();
+//			ResultsTable lineMax=new ResultsTable();
 			int counter=lineMax.getCounter();
 			lineMax.addRow();
 			lineMax.addValue("#", counter);
@@ -155,8 +162,8 @@ import net.imagej.ImageJ;
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
 			
-			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			ij.command().run(USAF_HorizontalLine.class, true);
 		}
 		

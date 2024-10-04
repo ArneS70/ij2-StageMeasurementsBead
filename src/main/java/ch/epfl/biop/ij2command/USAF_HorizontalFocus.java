@@ -31,10 +31,11 @@ import net.imagej.ImageJ;
 		private ResultsTable summaryResults;
 		private ResultsTable fitResults=null;
 		private FocusAnalyser fa=null;
-		private ImagePlus imp;
+		public ImagePlus fileInput;
 		private ImageStack stack;
 		private String fileName, filePath;
 		private int counter;
+		private int [] parameters;
 		private Plot focusFit;
 		private Line focusLine;
 		final static String titleResults="Horizontal Focus Results";
@@ -75,66 +76,76 @@ import net.imagej.ImageJ;
 		
 		@Override
 		public void run() {
+				HorizontalFocus hf=new HorizontalFocus(WindowManager.getCurrentImage(), repetition, start, end, step, lineLength, showFit, save, save);
 				
+				parameters=new int [] {start,end,repetition};
 				this.getSummaryTable();
-				this.imp=WindowManager.getCurrentImage();
+				this.fileInput=WindowManager.getCurrentImage();
 				
-				if (imp==null) {
+				if (fileInput==null) {
 					//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 					//imp=WindowManager.getCurrentImage();
 					IJ.log("Please provide an image");
 					return;
 				}
 				
-				if (imp.getNSlices()==1) {
+				if (fileInput.getNSlices()==1) {
 					IJ.log("Please provide an z-stack");
 					return;
 				}
 				
-				stack=imp.getStack();
-				cal=imp.getCalibration();
+				stack=fileInput.getStack();
+				cal=fileInput.getCalibration();
 				logFileNames();
-				
-				if (imp!=null) {
+				if (fileInput.getNFrames()>1) {
+					HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(fileInput.getZ(),fileInput.getT());
+					hft.analyseTimeLapse();
+				} else {
+				if (fileInput!=null) {
 					FocusAnalyser fa=new FocusAnalyser();
-					HorizontalLineAnalyser hla=new HorizontalLineAnalyser(imp);
+					HorizontalLineAnalyser hla=new HorizontalLineAnalyser(fileInput);
 					
-					int z=imp.getNSlices();
+					int z=fileInput.getNSlices();
 										
-					if (imp.getRoi()==null) {hla.setHorizontalLine();fa=new FocusAnalyser(imp,hla.getHorizontalLIne());}
-					Roi roi=imp.getRoi();
+					if (fileInput.getRoi()==null) {hla.setHorizontalLine();fa=new FocusAnalyser(fileInput,hla.getHorizontalLIne());}
+					Roi roi=fileInput.getRoi();
 					
 					if (roi!=null ) {
 						if(roi.isLine()) {
+							fa=new FocusAnalyser(fileInput,(Line)roi);
 							this.focusLine=(Line)roi;
-							fa=new FocusAnalyser(imp,(Line)roi);
-//							int[] param=setStackSize(imp);
-//							fa.setStart(param[0]);
-//							fa.setEnd(param[1]);
-							fa.setStart(1);
-							fa.setEnd(z);
-							fa.setStep(step);
-							LogToTable(fileName);
-							fa.analyseHorizontalLine(repetition,lineLength);
-							fitTableResults(fa);
-							if (save) saveResults();
+							
+						} else {
+							hla.setHorizontalLine();
+							fa=new FocusAnalyser(fileInput,hla.getHorizontalLIne());
 						}
-					}	
-				} 
+					}
+					fa=new FocusAnalyser(fileInput,(Line)roi);
+//					int[] param=setStackSize(imp);
+//					fa.setStart(param[0]);
+//					fa.setEnd(param[1]);
+					fa.setStart(1);
+					fa.setEnd(z);
+					fa.setStep(step);
+					LogToTable(fileName);
+					fa.analyseHorizontalLine(repetition,lineLength);
+					fitTableResults(fa);
+					if (save) saveResults();
+				}}
 		}
 		void timeLapseAnalysis() {
-			int stack=imp.getImageStackSize();
-			int z=imp.getNSlices();
-			int frames=imp.getNFrames();
+			int stack=fileInput.getImageStackSize();
+			int z=fileInput.getNSlices();
+			int frames=fileInput.getNFrames();
 		}
 		
 		void logFileNames() {
 			IJ.log("===============================================================");
 			this.filePath=IJ.getDirectory("file");
-			this.fileName=imp.getTitle();
+			this.fileName=fileInput.getTitle();
 			
 			if (fileName.startsWith(filePath)) 
-				this.fileName=imp.getTitle().substring(filePath.length());
+				this.fileName=fileInput.getTitle().substring(filePath.length());
 			
 			
 			IJ.log("File: "+fileName);
@@ -280,6 +291,12 @@ import net.imagej.ImageJ;
 				win[i].dispose();
 			}
 		}
+		void setStart(int value) {
+			this.start=value;
+		}
+		void setend(int value) {
+			this.end=value;
+		}
 		/**
 		* This main function serves for development purposes.
 		* It allows you to run the plugin immediately out of
@@ -293,8 +310,8 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}

@@ -35,6 +35,8 @@ public class HorizontalLineAnalyser {
 		double pixelSize=cal.pixelWidth;
 	}
 	HorizontalLineAnalyser(ImagePlus imp, Line line){
+		profileTableValues=new ResultsTable();
+		profileTableValues.show("Line Profiles");
 		this.inputImage=imp;
 		this.horizontalLine=line;
 		this.cal=imp.getCalibration();

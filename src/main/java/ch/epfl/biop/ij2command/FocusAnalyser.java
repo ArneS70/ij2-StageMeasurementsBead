@@ -59,7 +59,7 @@ public class FocusAnalyser {
 		
 		for (int s=start;s<=end;s+=step) {
 			focusMap.addRow();
-			imps.setSlice(s);
+			imps.setSliceWithoutUpdate(s);
 			focusMap.addValue("z-slice",s);
 			ImageProcessor ip=imps.getProcessor();
 			for (int r=0;r<rep;r++) {
