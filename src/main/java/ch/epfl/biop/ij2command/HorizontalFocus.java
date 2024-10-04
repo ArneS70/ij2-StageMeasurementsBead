@@ -20,7 +20,7 @@ public class HorizontalFocus {
 	private Line horizontalLine;
 	private Calibration cal;
 	private int repetition,start,end,zstep,lineLength,counter;
-	private boolean showFit,savePlot,saveTable,allStack;
+	private boolean showFit,savePlot,saveTable,allStack,ignoreTime=false;
 	private String filePath,fileName;
 	private ResultsTable summaryResults;
 	private Plot focusFitPlot;
@@ -47,8 +47,8 @@ public class HorizontalFocus {
 			
 			cal=inputImage.getCalibration();
 			logFileNames();
-			if (inputImage.getNFrames()>1) {
-				HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(inputImage.getZ(),inputImage.getT());
+			if (inputImage.getNFrames()>1&&!ignoreTime) {
+				HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(this);
 				hft.analyseTimeLapse();
 			} else {
 			
@@ -82,7 +82,9 @@ public class HorizontalFocus {
 				fa.analyseHorizontalLine(repetition,lineLength);
 				fitTableResults(fa);
 				if (saveTable) saveResults();
-			}}
+			}
+		 
+		}
 	}
 	private boolean checkInputImage() {
 		boolean check=true;
@@ -130,7 +132,7 @@ public class HorizontalFocus {
 		focus.addValue("File", file);
 		focus.addValue("Repetition", this.repetition);
 		focus.addValue("z step", this.zstep);
-		focus.addValue("z star", this.start);
+		focus.addValue("z start", this.start);
 		focus.addValue("z stop", this.end);
 		focus.addValue("line length", this.lineLength);
 		focus.addValue("x1", this.horizontalLine.x1d);
@@ -244,9 +246,14 @@ public class HorizontalFocus {
 	void setStart(int value) {
 		this.start=value;
 	}
-	void setend(int value) {
+	void setEnd(int value) {
 		this.end=value;
 	}
-
+	void disableStack() {
+		this.allStack=false;
+	}
+	void ignoreTimelapse() {
+		this.ignoreTime=true;
+	}
 
 }
