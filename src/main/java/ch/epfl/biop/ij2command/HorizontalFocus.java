@@ -7,6 +7,7 @@ import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
@@ -18,8 +19,8 @@ public class HorizontalFocus {
 	
 	private Line horizontalLine;
 	private Calibration cal;
-	private int repetition,start,end,step,lineLength,counter;
-	private boolean showFit,savePlot,saveTable;
+	private int repetition,start,end,zstep,lineLength,counter;
+	private boolean showFit,savePlot,saveTable,allStack;
 	private String filePath,fileName;
 	private ResultsTable summaryResults;
 	private Plot focusFitPlot;
@@ -27,13 +28,14 @@ public class HorizontalFocus {
 	HorizontalFocus(){
 		
 	}
-	HorizontalFocus(ImagePlus imp,int rep,int start,int end,int step,int length,boolean show,boolean savePlot,boolean saveTable){
+	HorizontalFocus(ImagePlus imp,int rep,int start,int end,int step,int length,boolean allStack, boolean show,boolean savePlot,boolean saveTable){
 		this.inputImage=imp;
 		this.repetition=rep;
 		this.start=start;
 		this.end=end;
-		this.step=step;
+		this.zstep=step;
 		this.lineLength=length;
+		this.allStack=allStack;
 		this.showFit=show;
 		this.savePlot=savePlot;
 		this.saveTable=saveTable;
@@ -41,8 +43,46 @@ public class HorizontalFocus {
 	}
 	void run() {
 		if (checkInputImage()) {
+			getSummaryTable();
 			
-		};
+			cal=inputImage.getCalibration();
+			logFileNames();
+			if (inputImage.getNFrames()>1) {
+				HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(inputImage.getZ(),inputImage.getT());
+				hft.analyseTimeLapse();
+			} else {
+			
+				FocusAnalyser fa=new FocusAnalyser();
+				HorizontalLineAnalyser hla=new HorizontalLineAnalyser(inputImage);
+				
+				int z=inputImage.getNSlices();
+									
+				if (inputImage.getRoi()==null) {hla.setHorizontalLine();fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
+				Roi roi=inputImage.getRoi();
+				
+				if (roi!=null ) {
+					if(roi.isLine()) {
+						fa=new FocusAnalyser(inputImage,(Line)roi);
+						this.horizontalLine=(Line)roi;
+						
+					} else {
+						hla.setHorizontalLine();
+						fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());
+					}
+				}
+				fa=new FocusAnalyser(inputImage,(Line)roi);
+//				int[] param=setStackSize(imp);
+//				fa.setStart(param[0]);
+//				fa.setEnd(param[1]);
+				if (allStack) {start=1;end=inputImage.getNSlices();}
+				fa.setStart(start);
+				fa.setEnd(end);
+				fa.setStep(zstep);
+				LogToTable(fileName);
+				fa.analyseHorizontalLine(repetition,lineLength);
+				fitTableResults(fa);
+				if (saveTable) saveResults();
+			}}
 	}
 	private boolean checkInputImage() {
 		boolean check=true;
@@ -72,9 +112,9 @@ public class HorizontalFocus {
 		IJ.log("Path: "+filePath);
 	}
 	private void getSummaryTable() {
-		if (WindowManager.getWindow(this.titleSummary)==null) {
+		if (WindowManager.getWindow(HorizontalFocus.titleSummary)==null) {
 			ResultsTable focusResults=new ResultsTable();
-			focusResults.show(this.titleSummary);
+			focusResults.show(HorizontalFocus.titleSummary);
 			this.counter=0;
 			return;
 		};
@@ -84,11 +124,14 @@ public class HorizontalFocus {
 	void LogToTable(String file) {
 		
 		ResultsTable focus=ResultsTable.getResultsTable(HorizontalFocus.titleSummary);
+		if (focus==null) focus=new ResultsTable();
 		focus.addRow();
 		focus.addValue("#", this.counter);
 		focus.addValue("File", file);
 		focus.addValue("Repetition", this.repetition);
-		focus.addValue("z step", this.step);
+		focus.addValue("z step", this.zstep);
+		focus.addValue("z star", this.start);
+		focus.addValue("z stop", this.end);
 		focus.addValue("line length", this.lineLength);
 		focus.addValue("x1", this.horizontalLine.x1d);
 		focus.addValue("y1", this.horizontalLine.y1d);
@@ -96,7 +139,7 @@ public class HorizontalFocus {
 		focus.addValue("y2", this.horizontalLine.y2d);
 		
 		
-		focus.show(this.titleSummary);
+		focus.show(HorizontalFocus.titleSummary);
 		
 	}
 	void fitTableResults(FocusAnalyser fa) {		
@@ -104,7 +147,7 @@ public class HorizontalFocus {
 		
 		TableFitter tableFit=new TableFitter(fa.getFocusMap());
 		tableFit.fitTable(CurveFitter.POLY5);
-		tableFit.getFitResults().show(this.titleResults);
+		tableFit.getFitResults().show(HorizontalFocus.titleResults);
 		
 		int last=tableFit.getFitResults().getLastColumn();
 		
@@ -124,13 +167,13 @@ public class HorizontalFocus {
 		
 		
 		
-			ResultsTable focus=ResultsTable.getResultsTable(this.titleSummary);
+			ResultsTable focus=ResultsTable.getResultsTable(HorizontalFocus.titleSummary);
 			focus.addValue("Focus shift per slice/um", param[1]);
 			focus.addValue("Focus shift absolut", zShift);
 			focus.addValue("Slope", slope);
 			focus.addValue("angle/deg", angle);
 			focus.addValue("R^2", cf.getFitGoodness());
-			focus.show(this.titleSummary);
+			focus.show(HorizontalFocus.titleSummary);
 		
 		
 		ImagePlus fitWin;
@@ -143,10 +186,9 @@ public class HorizontalFocus {
 			
 		}
 		if (savePlot) {
-			
-			IJ.save(filePath+fileName+" "+IJ.pad(counter, 3)+".tif");
-			WindowManager.getFrame(fileName+" "+IJ.pad(counter, 3)+".tif").dispose();
-			
+			this.focusFitPlot=cf.getPlot();
+			fitWin=focusFitPlot.getImagePlus();
+			IJ.save(fitWin, filePath+fileName+" "+IJ.pad(counter, 3)+".tif");
 		}
 	}
 	
@@ -157,7 +199,7 @@ public class HorizontalFocus {
 		
 //		n=this.filePath.indexOf(saveName);
 //		String savePath=this.filePath.substring(0, n);
-		ResultsTable rt=ResultsTable.getResultsTable(this.titleResults);
+		ResultsTable rt=ResultsTable.getResultsTable(HorizontalFocus.titleResults);
 		rt.save(filePath+saveName+"_TableFits_"+IJ.pad(counter, 4)+".csv");
 
 		
@@ -168,6 +210,27 @@ public class HorizontalFocus {
 		
 		
 		
+		
+	}
+	void LogToTable() {
+		
+		ResultsTable lineMax=ResultsTable.getResultsTable("Line Maxima Results");
+		if ((lineMax)==null) lineMax=new ResultsTable();
+//		ResultsTable lineMax=new ResultsTable();
+		int counter=lineMax.getCounter();
+		lineMax.addRow();
+		lineMax.addValue("#", counter);
+		lineMax.addValue("File", fileName);
+		
+		lineMax.addValue("z step", this.zstep);
+		
+		lineMax.addValue("x1", this.horizontalLine.x1d);
+		lineMax.addValue("y1", this.horizontalLine.y1d);
+		lineMax.addValue("x2", this.horizontalLine.x2d);
+		lineMax.addValue("y2", this.horizontalLine.y2d);
+		
+		
+		lineMax.show("Line Maxima Results");
 		
 	}
 	void closeNonImageWindows() {
