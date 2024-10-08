@@ -19,7 +19,7 @@ public class HorizontalFocusTimelapse extends HorizontalFocus{
 	void analyseTimeLapse(){
 		inputHF.disableStack();
 		inputHF.ignoreTimelapse();	
-		for (int t=0;t<=frames;t++) {
+		for (int t=0;t<frames;t+=1) {
 				int start=t*slices+1;
 				int end=t*slices+slices;
 								

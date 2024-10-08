@@ -2,8 +2,10 @@ package ch.epfl.biop.ij2command;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
+import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
@@ -73,9 +75,23 @@ public class FocusAnalyser {
 			}
 			
 		}
-		
+//		plotFocusMap();
 	}
 	
+	void plotFocusMap() {
+		ImageStack plots=new ImageStack(696,415);
+		
+		int row=this.focusMap.getCounter();
+		int col=this.focusMap.getLastColumn();
+		for (int c=1;c<col;c++) {
+			Plot plot=new Plot("A", "B", "C");
+			plot.add("Circle", this.focusMap.getColumnAsDoubles(0), this.focusMap.getColumnAsDoubles(c));
+			plots.addSlice(plot.getImagePlus().getProcessor());
+		}
+		new ImagePlus ("Plots",plots).show();
+		
+		
+	}
 	ResultsTable getFocusMap() {
 		return this.focusMap;
 	}
@@ -142,7 +158,7 @@ public class FocusAnalyser {
 		
 	}
 	void setEnd(int set) {
-		if (set<=imps.getSlice()) this.end=set;
+		if (set<=imps.getImageStackSize()) this.end=set;
 		else this.end=imps.getNSlices();
 	}
 	void setStep(int set) {

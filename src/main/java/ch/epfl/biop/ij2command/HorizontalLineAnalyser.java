@@ -26,7 +26,7 @@ public class HorizontalLineAnalyser {
  */
 	HorizontalLineAnalyser(ImagePlus imp){
 		this.inputImage=imp;
-		this.setHorizontalLine();
+		this.setHorizontalLine(inputImage.getNSlices()/2);
 		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
 		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
@@ -67,10 +67,10 @@ public class HorizontalLineAnalyser {
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
-	void setHorizontalLine() {
+	void setHorizontalLine(int slice) {
 		
-			int slice=inputImage.getImageStackSize();
-			inputImage.setSlice(slice/2);
+			
+			inputImage.setSlice(slice);
 			ImageProcessor ip_edge=inputImage.getProcessor().duplicate().convertToFloat();
 			ip_edge.findEdges();
 			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);

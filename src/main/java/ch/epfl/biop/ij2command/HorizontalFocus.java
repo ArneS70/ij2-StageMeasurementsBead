@@ -19,7 +19,7 @@ public class HorizontalFocus {
 	
 	private Line horizontalLine;
 	private Calibration cal;
-	private int repetition,start,end,zstep,lineLength,counter;
+	private int repetition,start,end,zstep,lineLength,counter,stackCenter;
 	private boolean showFit,savePlot,saveTable,allStack,ignoreTime=false;
 	private String filePath,fileName;
 	private ResultsTable summaryResults;
@@ -39,6 +39,7 @@ public class HorizontalFocus {
 		this.showFit=show;
 		this.savePlot=savePlot;
 		this.saveTable=saveTable;
+		this.stackCenter=(end-start)/2;
 		
 	}
 	void run() {
@@ -57,7 +58,7 @@ public class HorizontalFocus {
 				
 				int z=inputImage.getNSlices();
 									
-				if (inputImage.getRoi()==null) {hla.setHorizontalLine();fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
+				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
 				Roi roi=inputImage.getRoi();
 				
 				if (roi!=null ) {
@@ -66,7 +67,7 @@ public class HorizontalFocus {
 						this.horizontalLine=(Line)roi;
 						
 					} else {
-						hla.setHorizontalLine();
+						hla.setHorizontalLine(this.stackCenter);
 						fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());
 					}
 				}
@@ -148,8 +149,11 @@ public class HorizontalFocus {
 		
 		
 		TableFitter tableFit=new TableFitter(fa.getFocusMap());
+//		tableFit.showFit();
 		tableFit.fitTable(CurveFitter.POLY5);
-		tableFit.getFitResults().show(HorizontalFocus.titleResults);
+//		tableFit.GlobalTableFit(CurveFitter.POLY5);
+//		tableFit.getFitResults().show(HorizontalFocus.titleResults);
+		
 		
 		int last=tableFit.getFitResults().getLastColumn();
 		
