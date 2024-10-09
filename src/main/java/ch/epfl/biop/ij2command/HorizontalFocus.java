@@ -176,25 +176,6 @@ public class HorizontalFocus extends HorizontalAnalysis{
 		lineMax.show("Line Maxima Results");
 		
 	}
-	void closeNonImageWindows() {
-		Window [] win=WindowManager.getAllNonImageWindows();
-		int num=win.length;
-		
-		for (int i=0;i<num;i++) {
-			win[i].dispose();
-		}
-	}
-	void setStart(int value) {
-		this.start=value;
-	}
-	void setEnd(int value) {
-		this.end=value;
-	}
-	void disableStack() {
-		this.allStack=false;
-	}
-	void ignoreTimelapse() {
-		this.ignoreTime=true;
-	}
+	
 
 }

@@ -1,5 +1,7 @@
 package ch.epfl.biop.ij2command;
 
+import java.awt.Window;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -90,5 +92,25 @@ public class HorizontalAnalysis {
 	}
 	ResultsTable getResultsTable() {
 		return this.analysisTable;
+	}
+	void closeNonImageWindows() {
+		Window [] win=WindowManager.getAllNonImageWindows();
+		int num=win.length;
+		
+		for (int i=0;i<num;i++) {
+			win[i].dispose();
+		}
+	}
+	void setStart(int value) {
+		this.start=value;
+	}
+	void setEnd(int value) {
+		this.end=value;
+	}
+	void disableStack() {
+		this.allStack=false;
+	}
+	void ignoreTimelapse() {
+		this.ignoreTime=true;
 	}
 }
