@@ -3,7 +3,7 @@ package ch.epfl.biop.ij2command;
 import ij.IJ;
 import ij.ImagePlus;
 
-public class HorizontalFocusTimelapse extends HorizontalFocus{
+public class HorizontalFocusTimelapse{ 
 	int frames;
 	int slices;
 	ImagePlus inputImage;

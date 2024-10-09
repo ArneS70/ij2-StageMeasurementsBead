@@ -12,39 +12,32 @@ import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 
-public class HorizontalFocus {
+public class HorizontalFocus extends HorizontalAnalysis{
 	final static String titleResults="Horizontal Focus Results";
 	final static String titleSummary="Summary Horizontal Focus Results";
-	protected ImagePlus inputImage;
-	
-	private Line horizontalLine;
-	private Calibration cal;
-	private int repetition,start,end,zstep,lineLength,counter,stackCenter;
-	private boolean showFit,savePlot,saveTable,allStack,ignoreTime=false;
-	private String filePath,fileName;
-	private ResultsTable summaryResults;
+	private int repetition;
 	private Plot focusFitPlot;
 	
 	HorizontalFocus(){
-		
+		super();
 	}
 	HorizontalFocus(ImagePlus imp,int rep,int start,int end,int step,int length,boolean allStack, boolean show,boolean savePlot,boolean saveTable){
-		this.inputImage=imp;
+		super.inputImage=imp;
 		this.repetition=rep;
-		this.start=start;
-		this.end=end;
-		this.zstep=step;
-		this.lineLength=length;
-		this.allStack=allStack;
-		this.showFit=show;
-		this.savePlot=savePlot;
-		this.saveTable=saveTable;
-		this.stackCenter=(end-start)/2;
+		super.start=start;
+		super.end=end;
+		super.zstep=step;
+		super.lineLength=length;
+		super.allStack=allStack;
+		super.showFit=show;
+		super.savePlot=savePlot;
+		super.saveTable=saveTable;
+		super.stackCenter=(end-start)/2;
 		
 	}
 	void run() {
 		if (checkInputImage()) {
-			getSummaryTable();
+			getSummaryTable(HorizontalFocus.titleSummary);
 			
 			cal=inputImage.getCalibration();
 			logFileNames();
@@ -87,64 +80,8 @@ public class HorizontalFocus {
 		 
 		}
 	}
-	private boolean checkInputImage() {
-		boolean check=true;
-		if (inputImage==null) {
-			//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			//imp=WindowManager.getCurrentImage();
-			IJ.log("Please provide an image");
-			check=false;
-		}
-		
-		if (inputImage.getNSlices()==1) {
-			IJ.log("Please provide an z-stack");
-			check=false;
-		}
-		return check;
-	}
-	void logFileNames() {
-		IJ.log("===============================================================");
-		this.filePath=IJ.getDirectory("file");
-		this.fileName=inputImage.getTitle();
-		
-		if (fileName.startsWith(filePath)) 
-			this.fileName=inputImage.getTitle().substring(filePath.length());
-		
-		
-		IJ.log("File: "+fileName);
-		IJ.log("Path: "+filePath);
-	}
-	private void getSummaryTable() {
-		if (WindowManager.getWindow(HorizontalFocus.titleSummary)==null) {
-			ResultsTable focusResults=new ResultsTable();
-			focusResults.show(HorizontalFocus.titleSummary);
-			this.counter=0;
-			return;
-		};
-		this.summaryResults=ResultsTable.getResultsTable(HorizontalFocus.titleSummary);
-		this.counter=this.summaryResults.getCounter();
-	}
-	void LogToTable(String file) {
-		
-		ResultsTable focus=ResultsTable.getResultsTable(HorizontalFocus.titleSummary);
-		if (focus==null) focus=new ResultsTable();
-		focus.addRow();
-		focus.addValue("#", this.counter);
-		focus.addValue("File", file);
-		focus.addValue("Repetition", this.repetition);
-		focus.addValue("z step", this.zstep);
-		focus.addValue("z start", this.start);
-		focus.addValue("z stop", this.end);
-		focus.addValue("line length", this.lineLength);
-		focus.addValue("x1", this.horizontalLine.x1d);
-		focus.addValue("y1", this.horizontalLine.y1d);
-		focus.addValue("x2", this.horizontalLine.x2d);
-		focus.addValue("y2", this.horizontalLine.y2d);
-		
-		
-		focus.show(HorizontalFocus.titleSummary);
-		
-	}
+	
+	
 	void fitTableResults(FocusAnalyser fa) {		
 		
 		
