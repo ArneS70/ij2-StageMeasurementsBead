@@ -90,34 +90,26 @@ public class LineAnalyser {
 		int []alignMaxima(int[]max1,int[]max2) {				//requires still some testing
 			int len1=max1.length;
 			int len2=max2.length;
-			double min=0;
-			int minPos=0;
-			int [] modified = null;
-			if (len2>len1) {
-				int shift=len2-len1;
-				double []diff=new double [shift];
-				for (int s=0;s<shift;s++) {
-					
-					for (int l=0;l<len1;l++) {
-						diff[s]+=Math.abs(max1[l]-max2[l+s]);
-					}
-					IJ.log(""+diff[s]);
-				}} else {
-					modified=new int[len2];
-					int shift=len1-len2;
-					double []diff=new double [shift+1];
-					for (int s=0;s<=shift;s++) {
+			int [] modified;
+			if (len2>len1)return null;							//len1 must be bigger than len2 
+			else {
+				double min=0;
+				int minPos=0;
+				modified=new int[len2];
+				int shift=len1-len2;
+				double []diff=new double [shift+1];
+				for (int s=0;s<=shift;s++) {
 						
-						for (int l=0;l<len2;l++) {
-							diff[s]+=Math.abs(max1[l+s]-max2[l]);
-						}
-						if (s==0) {min=diff[s];minPos=0;}else
-							{if (diff[s]<min) {min=diff[s];minPos=s;}};
-						IJ.log(s+"  "+diff[s]);
-						}
-						for (int n=0;n<len2;n++) {
-							modified[n]=max1[n+minPos];
-						}
+					for (int l=0;l<len2;l++) {
+						diff[s]+=Math.abs(max1[l+s]-max2[l]);
+					}
+					if (s==0) {min=diff[s];minPos=0;}else
+						{if (diff[s]<min) {min=diff[s];minPos=s;}};
+//						IJ.log(s+"  "+diff[s]);
+					}
+					for (int n=0;n<len2;n++) {
+						modified[n]=max1[n+minPos];
+					}
 						
 					}
 			return modified;
@@ -190,27 +182,31 @@ public class LineAnalyser {
 			//new ImagePlus("test",ip_line).show();
 			ip_line.setLineWidth(linewidth);
 			setProfile(LineAnalyser.CENTER);
-			double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
-			profile=lineLeft;
-			double maxLeft=this.getMax();
-			double minLeft=this.getMin();
-			
-			setProfile(LineAnalyser.CENTER);
-			double [] lineRight=ip_line.getLine(x1+shift, y1, x2+shift, y2);
-			profile=lineRight;
-			double maxRight=this.getMax();
-			double minRight=this.getMin();
-
-			int prominence=(int)(0.5*(maxLeft-minLeft));
-			int [] leftMaximum=MaximumFinder.findMaxima(lineLeft, prominence, false);
-			prominence=(int)(0.5*(maxRight-minRight));
-			int [] rightMaximum=MaximumFinder.findMaxima(lineRight, prominence, false);
+			int [] rightMaximum,leftMaximum;
+			do {
+				double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
+				profile=lineLeft;
+				double maxLeft=this.getMax();
+				double minLeft=this.getMin();
+				
+				setProfile(LineAnalyser.CENTER);
+				double [] lineRight=ip_line.getLine(x1+shift, y1, x2+shift, y2);
+				profile=lineRight;
+				double maxRight=this.getMax();
+				double minRight=this.getMin();
+	
+				int prominence=(int)(0.5*(maxLeft-minLeft));
+				leftMaximum=MaximumFinder.findMaxima(lineLeft, prominence, false);
+				prominence=(int)(0.5*(maxRight-minRight));
+				rightMaximum=MaximumFinder.findMaxima(lineRight, prominence, false);
+				shift=shift-10;
+			} while (leftMaximum.length!=rightMaximum.length);
 			
 			Arrays.sort(leftMaximum);
 			Arrays.sort(rightMaximum);
 			
 			if (leftMaximum.length>rightMaximum.length)leftMaximum=alignMaxima(leftMaximum,rightMaximum);
-			else rightMaximum=alignMaxima(leftMaximum,rightMaximum);
+			else rightMaximum=alignMaxima(rightMaximum,leftMaximum);
 			
 			
 			IJ.log("left: "+leftMaximum.length);

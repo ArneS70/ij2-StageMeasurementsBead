@@ -72,7 +72,7 @@ public class HorizontalFocus extends HorizontalAnalysis{
 				fa.setStart(start);
 				fa.setEnd(end);
 				fa.setStep(zstep);
-				LogToTable(fileName);
+				LogToTable(titleSummary);
 				fa.analyseHorizontalLine(repetition,lineLength);
 				fitTableResults(fa);
 				if (saveTable) saveResults();
