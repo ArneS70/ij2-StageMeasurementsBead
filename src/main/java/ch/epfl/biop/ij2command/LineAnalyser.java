@@ -87,6 +87,42 @@ public class LineAnalyser {
 					break;
 			}
 		}
+		int []alignMaxima(int[]max1,int[]max2) {				//requires still some testing
+			int len1=max1.length;
+			int len2=max2.length;
+			double min=0;
+			int minPos=0;
+			int [] modified = null;
+			if (len2>len1) {
+				int shift=len2-len1;
+				double []diff=new double [shift];
+				for (int s=0;s<shift;s++) {
+					
+					for (int l=0;l<len1;l++) {
+						diff[s]+=Math.abs(max1[l]-max2[l+s]);
+					}
+					IJ.log(""+diff[s]);
+				}} else {
+					modified=new int[len2];
+					int shift=len1-len2;
+					double []diff=new double [shift+1];
+					for (int s=0;s<=shift;s++) {
+						
+						for (int l=0;l<len2;l++) {
+							diff[s]+=Math.abs(max1[l+s]-max2[l]);
+						}
+						if (s==0) {min=diff[s];minPos=0;}else
+							{if (diff[s]<min) {min=diff[s];minPos=s;}};
+						IJ.log(s+"  "+diff[s]);
+						}
+						for (int n=0;n<len2;n++) {
+							modified[n]=max1[n+minPos];
+						}
+						
+					}
+			return modified;
+		}
+		
 		void setProfile() {	
 			
 			profile=ip_line.getLine(x1,y1,x2,y2);
@@ -172,10 +208,18 @@ public class LineAnalyser {
 			
 			Arrays.sort(leftMaximum);
 			Arrays.sort(rightMaximum);
+			
+			if (leftMaximum.length>rightMaximum.length)leftMaximum=alignMaxima(leftMaximum,rightMaximum);
+			else rightMaximum=alignMaxima(leftMaximum,rightMaximum);
+			
+			
 			IJ.log("left: "+leftMaximum.length);
 			IJ.log("right: "+rightMaximum.length);
-					
-			int len=leftMaximum.length;
+			int len=0;		
+			
+			
+			if (leftMaximum.length<rightMaximum.length) len=leftMaximum.length;
+			else len=rightMaximum.length;
 			Roi [] lines=new Roi [len-1];
 			
 			//this.imp.show();
