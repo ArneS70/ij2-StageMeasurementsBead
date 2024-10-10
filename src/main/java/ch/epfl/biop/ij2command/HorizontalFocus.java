@@ -32,7 +32,8 @@ public class HorizontalFocus extends HorizontalAnalysis{
 		super.showFit=show;
 		super.savePlot=savePlot;
 		super.saveTable=saveTable;
-		super.stackCenter=(end-start)/2;
+		if (!allStack) super.stackCenter=(end-start)/2;
+		else stackCenter=imp.getNSlices()/2;
 		
 	}
 	void run() {
@@ -54,6 +55,7 @@ public class HorizontalFocus extends HorizontalAnalysis{
 				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
 				Roi roi=inputImage.getRoi();
 				
+				
 				if (roi!=null ) {
 					if(roi.isLine()) {
 						fa=new FocusAnalyser(inputImage,(Line)roi);
@@ -64,7 +66,7 @@ public class HorizontalFocus extends HorizontalAnalysis{
 						fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());
 					}
 				}
-				fa=new FocusAnalyser(inputImage,(Line)roi);
+//				fa=new FocusAnalyser(inputImage,(Line)roi);
 //				int[] param=setStackSize(imp);
 //				fa.setStart(param[0]);
 //				fa.setEnd(param[1]);
@@ -111,6 +113,7 @@ public class HorizontalFocus extends HorizontalAnalysis{
 		
 		
 			ResultsTable focus=ResultsTable.getResultsTable(HorizontalFocus.titleSummary);
+			focus.setPrecision(5);
 			focus.addValue("Focus shift per slice/um", param[1]);
 			focus.addValue("Focus shift absolut", zShift);
 			focus.addValue("Slope", slope);

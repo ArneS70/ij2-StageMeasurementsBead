@@ -29,6 +29,7 @@ public class HorizontalAnalysis {
 	public void getSummaryTable(String title) {
 		if (WindowManager.getWindow(title)==null) {
 			ResultsTable summaryResults=new ResultsTable();
+			
 			summaryResults.show(title);
 			this.counter=0;
 			return;

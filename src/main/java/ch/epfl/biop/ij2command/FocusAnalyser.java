@@ -51,7 +51,7 @@ public class FocusAnalyser {
 		double x1=this.horizonetalLine.x1d;
 		double x2=this.horizonetalLine.x2d;
 		double y1=this.horizonetalLine.y1d;
-		double y2=this.horizonetalLine.y1d;
+		double y2=this.horizonetalLine.y2d;
 		double length=this.horizonetalLine.getLength();
 		int slices=imps.getNSlices();
 		

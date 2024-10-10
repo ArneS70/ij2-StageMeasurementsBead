@@ -26,12 +26,12 @@ public class HorizontalLineAnalyser {
  */
 	HorizontalLineAnalyser(ImagePlus imp){
 		this.inputImage=imp;
-		this.setHorizontalLine(inputImage.getNSlices()/2);
+//		this.setHorizontalLine(inputImage.getNSlices()/2);
 		this.cal=imp.getCalibration();
 		ImageProcessor ip=imp.getProcessor();
-		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
-		int profileLength=profile.length;
-		this.xvalues=new double [profileLength];
+//		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
+//		int profileLength=profile.length;
+//		this.xvalues=new double [profileLength];
 		double pixelSize=cal.pixelWidth;
 	}
 	HorizontalLineAnalyser(ImagePlus imp, Line line){
