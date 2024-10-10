@@ -3,12 +3,12 @@ package ch.epfl.biop.ij2command;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.WindowManager;
+
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.Calibration;
-import ij.measure.CurveFitter;
+
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 import ij.process.ImageStatistics;

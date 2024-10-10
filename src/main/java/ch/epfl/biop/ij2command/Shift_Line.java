@@ -1,21 +1,18 @@
 package ch.epfl.biop.ij2command;
 
-import java.io.File;
-import java.io.IOException;
+
 
 import org.scijava.command.Command;
-import org.scijava.plugin.Parameter;
+
 import org.scijava.plugin.Plugin;
 
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Line;
-import ij.gui.Plot;
+
 import ij.gui.Roi;
-import ij.measure.CurveFitter;
-import ij.measure.ResultsTable;
-import loci.formats.FormatException;
+
 import net.imagej.ImageJ;
 
 		

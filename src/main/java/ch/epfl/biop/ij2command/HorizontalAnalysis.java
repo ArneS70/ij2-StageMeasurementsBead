@@ -25,6 +25,7 @@ public class HorizontalAnalysis {
 	HorizontalAnalysis(ImagePlus imp){
 		this.inputImage=imp;
 		
+	
 	}
 	public void getSummaryTable(String title) {
 		if (WindowManager.getWindow(title)==null) {

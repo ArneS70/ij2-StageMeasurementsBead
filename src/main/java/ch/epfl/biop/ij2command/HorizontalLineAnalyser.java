@@ -1,24 +1,18 @@
 package ch.epfl.biop.ij2command;
 
-import java.util.Arrays;
-
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
-import ij.gui.Plot;
 import ij.gui.Roi;
-import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
 
-public class HorizontalLineAnalyser {
+public class HorizontalLineAnalyser extends HorizontalAnalysis{
 	private double [] profile;
 	private double [] xvalues;
-	private Line horizontalLine;
-	private int method,zstep=1;
-	private ImagePlus inputImage;
-	private Calibration cal;
+	
+	private int method;
 	private FitterFunction fitFunc;
 	private ResultsTable fitResults, profileTableValues;
 /**   

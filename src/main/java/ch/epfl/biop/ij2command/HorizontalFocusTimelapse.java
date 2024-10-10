@@ -1,12 +1,11 @@
 package ch.epfl.biop.ij2command;
 
 import ij.IJ;
-import ij.ImagePlus;
 
-public class HorizontalFocusTimelapse{ 
+public class HorizontalFocusTimelapse extends HorizontalAnalysis{ 
 	int frames;
 	int slices;
-	ImagePlus inputImage;
+	
 	HorizontalFocus inputHF;
 	
 	HorizontalFocusTimelapse(HorizontalFocus hf){
@@ -14,8 +13,8 @@ public class HorizontalFocusTimelapse{
 		inputHF=hf;
 		slices=hf.inputImage.getNSlices();
 		frames=hf.inputImage.getNFrames();
-		
 	}
+
 	void analyseTimeLapse(){
 		inputHF.disableStack();
 		inputHF.ignoreTimelapse();	

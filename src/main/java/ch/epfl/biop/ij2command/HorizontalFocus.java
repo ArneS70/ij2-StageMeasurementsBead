@@ -1,14 +1,10 @@
 package ch.epfl.biop.ij2command;
 
-import java.awt.Window;
-
 import ij.IJ;
 import ij.ImagePlus;
-import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.Roi;
-import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 
