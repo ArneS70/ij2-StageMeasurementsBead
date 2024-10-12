@@ -6,14 +6,20 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import ch.epfl.biop.ij2command.USAF_Analysis.HorizontalFocusAnalysis;
 import ij.IJ;
+import ij.ImagePlus;
 import ij.WindowManager;
 import net.imagej.ImageJ;
 
 		
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Foccus")
 		public class USAF_HorizontalFocus implements Command {
-
+		
+		
+		protected USAF_Analysis horizontalFocus;
+//		protected HorizontalLineAnalyser horizontalLineAnalyser;
+		
 		
 		
 		@Parameter(label="number of focus points")
@@ -38,17 +44,27 @@ import net.imagej.ImageJ;
 		boolean showFit;
 		
 		@Parameter(label="Save Fit window?")
-		boolean saveFitWindow;
+		boolean savePlot;
 
 		@Parameter(label="Save result tables?")
-		boolean save;
+		boolean saveTable;
 		
 		@Override
 
 		public void run() {
-				HorizontalFocus hf=new HorizontalFocus(WindowManager.getCurrentImage(), repetition, start, end, step, lineLength, allStack, showFit, save, save);
-				hf.run();
-
+			
+			ImagePlus imp=WindowManager.getCurrentImage();	
+			if (imp!=null){
+//				HorizontalAnalysis toAnalyse=new HorizontalAnalysis(imp);
+				
+				horizontalFocus=new HorizonzalFocusAnalysis(imp,repetition,start,end,step,lineLength,allStack, showFit,savePlot,saveTable);
+				horizontalFocus.run();
+				IJ.log("Super");
+//				HorizontalLineAnalyser hlanalyser=new HorizontalLineAnalyser(imp);
+//				hlanalyser.stackCenter=horizontalFocus.stackCenter;
+//				horizontalFocus.run();
+				
+			}
 		}
 			
 

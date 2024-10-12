@@ -42,6 +42,10 @@ public class FocusAnalyser {
 		this.horizonetalLine=line;
 		
 	}
+	public FocusAnalyser(ImagePlus imp) {
+		setImage(imp);
+		cal=imp.getCalibration();
+	}
 	void analyseHorizontalLine(int rep,int lineHeight) {
 		this.focusMap=new ResultsTable();
 		this.titleFocusMap="Focus Map Horizontal Line";
@@ -61,7 +65,8 @@ public class FocusAnalyser {
 		
 		for (int s=start;s<=end;s+=step) {
 			focusMap.addRow();
-			imps.setSliceWithoutUpdate(s);
+//			imps.setSliceWithoutUpdate(s);
+			imps.setSlice(s);
 			focusMap.addValue("z-slice",s);
 			ImageProcessor ip=imps.getProcessor();
 			for (int r=0;r<rep;r++) {
@@ -75,7 +80,8 @@ public class FocusAnalyser {
 			}
 			
 		}
-//		plotFocusMap();
+		plotFocusMap();
+		focusMap.show("");
 	}
 	
 	void plotFocusMap() {
@@ -164,7 +170,7 @@ public class FocusAnalyser {
 	void setStep(int set) {
 		this.step=set;
 	}
-	void setImage(ImagePlus imp) {
+	private void setImage(ImagePlus imp) {
 		this.imps=imp;
 	}
 	void setRepetitionX(int rep){

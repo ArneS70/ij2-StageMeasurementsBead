@@ -11,14 +11,18 @@ import ij.measure.ResultsTable;
 public class HorizontalFocus extends HorizontalAnalysis{
 	final static String titleResults="Horizontal Focus Results";
 	final static String titleSummary="Summary Horizontal Focus Results";
-	private int repetition;
+	
+	public int repetition;
 	private Plot focusFitPlot;
 	
 	HorizontalFocus(){
 		super();
 	}
+	HorizontalFocus(ImagePlus imp){
+		super(imp);
+	}
 	HorizontalFocus(ImagePlus imp,int rep,int start,int end,int step,int length,boolean allStack, boolean show,boolean savePlot,boolean saveTable){
-		super.inputImage=imp;
+		super(imp);
 		this.repetition=rep;
 		super.start=start;
 		super.end=end;
@@ -32,34 +36,39 @@ public class HorizontalFocus extends HorizontalAnalysis{
 		else stackCenter=imp.getNSlices()/2;
 		
 	}
-	void run() {
+/*	void run() {
 		if (checkInputImage()) {
 			getSummaryTable(HorizontalFocus.titleSummary);
 			
 			cal=inputImage.getCalibration();
 			logFileNames();
 			if (inputImage.getNFrames()>1&&!ignoreTime) {
+				
 				HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(this);
 				hft.analyseTimeLapse();
 			} else {
 			
-				FocusAnalyser fa=new FocusAnalyser();
-				HorizontalLineAnalyser hla=new HorizontalLineAnalyser(inputImage);
+				FocusAnalyser focusAnalyser =new FocusAnalyser(this.inputImage);
+				HorizontalLineAnalyser horizontalLineAnalyser=new HorizontalLineAnalyser(this.inputImage);
 				
 				int z=inputImage.getNSlices();
 									
-				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
+				if (inputImage.getRoi()==null) 
+					{horizontalLineAnalyser.setHorizontalLine(this.stackCenter);
+					 focusAnalyser=new FocusAnalyser(inputImage,horizontalLineAnalyser.getHorizontalLine());
+					}
 				Roi roi=inputImage.getRoi();
 				
+				roi=horizontalLineAnalyser.optimizeHorizontalMaxima((Line) roi);
 				
 				if (roi!=null ) {
 					if(roi.isLine()) {
-						fa=new FocusAnalyser(inputImage,(Line)roi);
+						focusAnalyser=new FocusAnalyser(inputImage,(Line)roi);
 						this.horizontalLine=(Line)roi;
 						
 					} else {
-						hla.setHorizontalLine(this.stackCenter);
-						fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());
+						horizontalLineAnalyser.setHorizontalLine(this.stackCenter);
+						focusAnalyser=new FocusAnalyser(inputImage,horizontalLineAnalyser.getHorizontalLine());
 					}
 				}
 //				fa=new FocusAnalyser(inputImage,(Line)roi);
@@ -67,19 +76,19 @@ public class HorizontalFocus extends HorizontalAnalysis{
 //				fa.setStart(param[0]);
 //				fa.setEnd(param[1]);
 				if (allStack) {start=1;end=inputImage.getNSlices();}
-				fa.setStart(start);
-				fa.setEnd(end);
-				fa.setStep(zstep);
+				focusAnalyser.setStart(start);
+				focusAnalyser.setEnd(end);
+				focusAnalyser.setStep(zstep);
 				LogToTable(titleSummary);
-				fa.analyseHorizontalLine(repetition,lineLength);
-				fitTableResults(fa);
+				focusAnalyser.analyseHorizontalLine(repetition,lineLength);
+				fitTableResults(focusAnalyser);
 				if (saveTable) saveResults();
 			}
 		 
 		}
 	}
 	
-	
+*/	
 	void fitTableResults(FocusAnalyser fa) {		
 		
 		
@@ -175,6 +184,20 @@ public class HorizontalFocus extends HorizontalAnalysis{
 		lineMax.show("Line Maxima Results");
 		
 	}
+	void setParameters(int repetition, int start, int end, int step, int length, boolean allStack, boolean show, boolean savePlot, boolean saveTable) {
+		this.repetition=repetition;
+		super.start=start;
+		super.end=end;
+		super.zstep=step;
+		super.lineLength=length;
+		super.allStack=allStack;
+		super.showFit=show;
+		super.savePlot=savePlot;
+		super.saveTable=saveTable;
+		if (!allStack) super.stackCenter=(end-start)/2;
+		else stackCenter=super.inputImage.getNSlices()/2;
+	};
+	
 	
 
 }

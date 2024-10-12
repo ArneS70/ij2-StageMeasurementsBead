@@ -5,6 +5,7 @@ import java.util.Arrays;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
+import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.CurveFitter;
@@ -15,7 +16,9 @@ import ij.process.ImageProcessor;
 
 public class LineAnalyser {
 	private static final int TOP=1,MIDDLE=2,BOTTOM=3;
-	private static final int LEFT=4,CENTER=5,RIGHT=6;
+	private static final int LEFT=4;
+	static final int CENTER=5;
+	private static final int RIGHT=6;
 	private double [] profile;
 	private int profileLength;
 	private Calibration cal;
@@ -26,24 +29,32 @@ public class LineAnalyser {
 	private double width,height;
 	private int position;
 	private double linePositionX,linePositionY;
-	private ImageProcessor ip_line;
-	double x1=0,x2=width,y1=0,y2=height;
-	private ImagePlus imp;
 	
+	double x1=0,x2=width,y1=0,y2=height;
+	private ImagePlus inputImage;
+	private ImageProcessor ip_line;
 	/**   
 	 * Constructors
 	 */
 		LineAnalyser(){
 			
 		}
+		LineAnalyser(ImagePlus imp){
+			this.inputImage=imp;
+			this.setProcessor(imp.getProcessor());
+			this.width=imp.getWidth();
+			this.height=imp.getHeight();
+			this.cal=imp.getCalibration();
+		}
 		LineAnalyser(ImagePlus imp, int pos){
 			if (pos<7&&pos>0) this.position=pos;
 			else pos=1;
 			this.width=imp.getWidth();
 			this.height=imp.getHeight();
-			this.ip_line=imp.getProcessor();
+			this.setProcessor(imp.getProcessor());
 			cal=imp.getCalibration();
-			this.imp=imp;
+			this.inputImage=imp;
+			this.setProcessor(imp.getProcessor());
 		}
 		LineAnalyser(ImagePlus imp, Line inputLine){
 			
@@ -52,8 +63,8 @@ public class LineAnalyser {
 			imp.draw();
 			this.width=imp.getWidth();
 			cal=imp.getCalibration();
-			ImageProcessor ip=imp.getProcessor();
-			profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
+			this.setProcessor(imp.getProcessor());
+			profile=getProcessor().getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
 			profileLength=profile.length;
 			x=new double [profileLength];
 			pixelSize=cal.pixelWidth;
@@ -117,7 +128,7 @@ public class LineAnalyser {
 		
 		void setProfile() {	
 			
-			profile=ip_line.getLine(x1,y1,x2,y2);
+			profile=getProcessor().getLine(x1,y1,x2,y2);
 			profileLength=profile.length;
 			x=new double [profileLength];
 			pixelSize=cal.pixelWidth;
@@ -127,15 +138,15 @@ public class LineAnalyser {
 		}
 		void findHorizontalMaxima(int linewidth){
 			//ImageProcessor ip_maxima=ip_edge;
-			ip_line.setLineWidth(linewidth);
+			getProcessor().setLineWidth(linewidth);
 			setProfile(this.TOP);
-			double [] lineTop=ip_line.getLine(x1, y1, x2, y2);
+			double [] lineTop=getProcessor().getLine(x1, y1, x2, y2);
 			profile=lineTop;
 			double maxTop=this.getMax();
 			double minTop=this.getMin();
 			
 			setProfile(this.BOTTOM);
-			double [] lineBottom=ip_line.getLine(x1, y1, x2, y2);
+			double [] lineBottom=getProcessor().getLine(x1, y1, x2, y2);
 			profile=lineBottom;
 			double maxBottom=this.getMax();
 			double minBottom=this.getMin();
@@ -153,9 +164,9 @@ public class LineAnalyser {
 			
 		}
 		double calulateVertcalSpacing(int linewidth){
-			ip_line.setLineWidth(linewidth);
+			getProcessor().setLineWidth(linewidth);
 			setProfile(LineAnalyser.CENTER);
-			double [] line=ip_line.getLine(x1, y1, x2, y2);
+			double [] line=getProcessor().getLine(x1, y1, x2, y2);
 			profile=line;
 			double max=this.getMax();
 			double min=this.getMin();
@@ -172,25 +183,27 @@ public class LineAnalyser {
 			
 			CurveFitter cf=new CurveFitter(x,y);
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
+			cf.getPlot().show();
 			double []param=cf.getParams();
 			return param[1];
 			
 			
 		}
+		
 		Roi [] findVerticalMaxima(int linewidth,int shift){
 			//ImageProcessor ip_maxima=ip_edge;
 			//new ImagePlus("test",ip_line).show();
-			ip_line.setLineWidth(linewidth);
+			getProcessor().setLineWidth(linewidth);
 			setProfile(LineAnalyser.CENTER);
 			int [] rightMaximum,leftMaximum;
 			do {
-				double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
+				double [] lineLeft=getProcessor().getLine(x1-shift, y1, x2-shift, y2);
 				profile=lineLeft;
 				double maxLeft=this.getMax();
 				double minLeft=this.getMin();
 				
 				setProfile(LineAnalyser.CENTER);
-				double [] lineRight=ip_line.getLine(x1+shift, y1, x2+shift, y2);
+				double [] lineRight=getProcessor().getLine(x1+shift, y1, x2+shift, y2);
 				profile=lineRight;
 				double maxRight=this.getMax();
 				double minRight=this.getMin();
@@ -237,14 +250,21 @@ public class LineAnalyser {
 		}
 		
 		double [] getProfile() {
-			profile=ip_line.getLine(x1,y1,x2,y2);
+			profile=getProcessor().getLine(x1,y1,x2,y2);
 			profileLength=profile.length;
 			x=new double [profileLength];
 			pixelSize=cal.pixelWidth;
 			for (int n=0;n<profileLength;n++) {
 				x[n]=n*pixelSize;
 			}
+			new Plot("A","B","C",x,profile).show();
 			return profile;
+		}
+		Plot getProfilPlot(){
+			 return new Plot("A","B","C",this.x,this.profile);
+		}
+		void setImage(ImagePlus imp) {
+			inputImage=imp;
 		}
 		double getMin() {
 			return new ArrayStatistics(profile).getMin();
@@ -260,5 +280,11 @@ public class LineAnalyser {
 		}
 		double xPosition() {
 			return pixelSize*(line.x1+line.x2)/2.0;
+		}
+		public ImageProcessor getProcessor() {
+			return ip_line;
+		}
+		public void setProcessor(ImageProcessor ip_line) {
+			this.ip_line = ip_line;
 		}
 }

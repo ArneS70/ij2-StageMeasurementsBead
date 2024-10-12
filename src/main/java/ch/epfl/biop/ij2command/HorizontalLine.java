@@ -1,14 +1,19 @@
 package ch.epfl.biop.ij2command;
 
+import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Roi;
 
-public class HorizontalLine extends HorizontalAnalysis{
+public class HorizontalLine extends HorizontalAnalysis {
 	final static String titleResults="Horizontal Line Analysis Results";
 	final static String titleSummary="Summary Horizontal Line Analysis Results";
-	HorizontalLine(){
-		super();
+	protected LineAnalyser analyseLine;
+	
+	HorizontalLine(ImagePlus imp){
+		super(imp);
+		analyseLine=new LineAnalyser(super.inputImage);
 	}
+	
 	void run() {
 		if (checkInputImage()) {
 			getSummaryTable(HorizontalLine.titleSummary);
@@ -16,8 +21,8 @@ public class HorizontalLine extends HorizontalAnalysis{
 			cal=inputImage.getCalibration();
 			logFileNames();
 			if (inputImage.getNFrames()>1&&!ignoreTime) {
-				HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(this);
-				hft.analyseTimeLapse();
+				HorizontalLineTimelapse hlt=new HorizontalLineTimelapse(this);
+				hlt.analyseTimelapse();
 			} else {
 			
 				FocusAnalyser fa=new FocusAnalyser();
@@ -25,9 +30,13 @@ public class HorizontalLine extends HorizontalAnalysis{
 				
 				int z=inputImage.getNSlices();
 									
-				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());}
+				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage, hla.getHorizontalLine());}
 				Roi roi=inputImage.getRoi();
-				
+
+//				this.analyseLine=new LineAnalyser(this.inputImage);
+//				this.analyseLine=new LineAnalyser(this.inputImage);
+
+				roi=super.getHorizontalLineAnalyser().optimizeHorizontalMaxima((Line)roi);
 				if (roi!=null ) {
 					if(roi.isLine()) {
 						fa=new FocusAnalyser(inputImage,(Line)roi);
@@ -35,7 +44,7 @@ public class HorizontalLine extends HorizontalAnalysis{
 						
 					} else {
 						hla.setHorizontalLine(this.stackCenter);
-						fa=new FocusAnalyser(inputImage,hla.getHorizontalLIne());
+						fa=new FocusAnalyser(inputImage,hla.getHorizontalLine());
 					}
 				}
 				fa=new FocusAnalyser(inputImage,(Line)roi);
@@ -47,9 +56,9 @@ public class HorizontalLine extends HorizontalAnalysis{
 				fa.setEnd(end);
 				fa.setStep(zstep);
 				LogToTable(fileName);
-				fa.analyseHorizontalLine(repetition,lineLength);
-				fitTableResults(fa);
-				if (saveTable) saveResults();
+//				fa.analyseHorizontalLine(repetition,lineLength);
+//				fitTableResults(fa);
+//				if (saveTable) saveResults();
 			}
 		 
 		}

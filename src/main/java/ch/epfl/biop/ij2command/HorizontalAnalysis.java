@@ -13,6 +13,7 @@ public class HorizontalAnalysis {
 	protected ImagePlus inputImage;
 	protected Calibration cal;
 	protected Line horizontalLine;
+	
 	protected ResultsTable analysisTable=new ResultsTable();
 	protected String filePath,fileName;
 	protected int start,end,zstep,lineLength,counter,stackCenter;
@@ -24,19 +25,24 @@ public class HorizontalAnalysis {
 	}
 	HorizontalAnalysis(ImagePlus imp){
 		this.inputImage=imp;
-		
+		this.cal=imp.getCalibration();
 	
 	}
-	public void getSummaryTable(String title) {
-		if (WindowManager.getWindow(title)==null) {
-			ResultsTable summaryResults=new ResultsTable();
-			
-			summaryResults.show(title);
-			this.counter=0;
-			return;
-		};
-		this.summaryResults=ResultsTable.getResultsTable(title);
-		this.counter=this.summaryResults.getCounter();
+	
+	public boolean checkInputImage() {
+		boolean check=true;
+		if (inputImage==null) {
+			//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//imp=WindowManager.getCurrentImage();
+			IJ.log("Please provide an image");
+			check=false;
+		}
+		
+		if (inputImage.getNSlices()==1) {
+			IJ.log("Please provide an z-stack");
+			check=false;
+		}
+		return check;
 	}
 	void LogToTable(String title) {
 		
@@ -59,21 +65,6 @@ public class HorizontalAnalysis {
 		focus.show(title);
 		
 	}
-	public boolean checkInputImage() {
-		boolean check=true;
-		if (inputImage==null) {
-			//IJ.run("Bio-Formats", "open="+fileInput+" color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			//imp=WindowManager.getCurrentImage();
-			IJ.log("Please provide an image");
-			check=false;
-		}
-		
-		if (inputImage.getNSlices()==1) {
-			IJ.log("Please provide an z-stack");
-			check=false;
-		}
-		return check;
-	}
 	void logFileNames() {
 		IJ.log("===============================================================");
 		this.filePath=IJ.getDirectory("file");
@@ -86,12 +77,6 @@ public class HorizontalAnalysis {
 		IJ.log("File: "+fileName);
 		IJ.log("Path: "+filePath);
 	}
-	void setInputImage(ImagePlus imp) {
-		inputImage=imp;
-	}
-	void setHorizontalLine(Line horizontal) {
-		this.horizontalLine=horizontal;
-	}
 	ResultsTable getResultsTable() {
 		return this.analysisTable;
 	}
@@ -103,11 +88,31 @@ public class HorizontalAnalysis {
 			win[i].dispose();
 		}
 	}
+	void setInputImage(ImagePlus imp) {
+		inputImage=imp;
+	}
+	void setHorizontalLine(Line horizontal) {
+		this.horizontalLine=horizontal;
+	}
 	void setStart(int value) {
 		this.start=value;
 	}
 	void setEnd(int value) {
 		this.end=value;
+	}
+	Line getHorizontalLine() {
+		return this.horizontalLine;
+	}
+	public void getSummaryTable(String title) {
+		if (WindowManager.getWindow(title)==null) {
+			ResultsTable summaryResults=new ResultsTable();
+			
+			summaryResults.show(title);
+			this.counter=0;
+			return;
+		};
+		this.summaryResults=ResultsTable.getResultsTable(title);
+		this.counter=this.summaryResults.getCounter();
 	}
 	void disableStack() {
 		this.allStack=false;
@@ -115,4 +120,5 @@ public class HorizontalAnalysis {
 	void ignoreTimelapse() {
 		this.ignoreTime=true;
 	}
+	
 }
