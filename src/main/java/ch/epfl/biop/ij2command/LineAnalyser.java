@@ -39,6 +39,9 @@ public class LineAnalyser {
 		LineAnalyser(){
 			
 		}
+		LineAnalyser (ImageProcessor ip){
+			this.setProcessor(ip);
+		}
 		LineAnalyser(ImagePlus imp){
 			this.inputImage=imp;
 			this.setProcessor(imp.getProcessor());
@@ -191,13 +194,13 @@ public class LineAnalyser {
 		}
 		
 		Roi [] findVerticalMaxima(int linewidth,int shift){
-			//ImageProcessor ip_maxima=ip_edge;
-			//new ImagePlus("test",ip_line).show();
+//			ip_line.findEdges();
+//			new ImagePlus("test",ip_line).show();
 			getProcessor().setLineWidth(linewidth);
 			setProfile(LineAnalyser.CENTER);
 			int [] rightMaximum,leftMaximum;
 			do {
-				double [] lineLeft=getProcessor().getLine(x1-shift, y1, x2-shift, y2);
+				double [] lineLeft=ip_line.getLine(x1-shift, y1, x2-shift, y2);
 				profile=lineLeft;
 				double maxLeft=this.getMax();
 				double minLeft=this.getMin();
@@ -285,6 +288,8 @@ public class LineAnalyser {
 			return ip_line;
 		}
 		public void setProcessor(ImageProcessor ip_line) {
-			this.ip_line = ip_line;
+			this.ip_line = ip_line.duplicate();
+			this.width=ip_line.getWidth();
+			this.height=ip_line.getHeight();
 		}
 }

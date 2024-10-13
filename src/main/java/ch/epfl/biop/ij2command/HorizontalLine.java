@@ -3,64 +3,35 @@ package ch.epfl.biop.ij2command;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Roi;
+import ij.process.ImageProcessor;
 
-public class HorizontalLine extends HorizontalAnalysis {
-	final static String titleResults="Horizontal Line Analysis Results";
-	final static String titleSummary="Summary Horizontal Line Analysis Results";
-	protected LineAnalyser analyseLine;
+public class HorizontalLine  {
+	ImageProcessor inputIP;
+	int width;
 	
-	HorizontalLine(ImagePlus imp){
-		super(imp);
-		analyseLine=new LineAnalyser(super.inputImage);
+	HorizontalLine(ImageProcessor ip){
+		inputIP=ip;
+		this.width=ip.getWidth();
 	}
-	
-	void run() {
-		if (checkInputImage()) {
-			getSummaryTable(HorizontalLine.titleSummary);
-			
-			cal=inputImage.getCalibration();
-			logFileNames();
-			if (inputImage.getNFrames()>1&&!ignoreTime) {
-				HorizontalLineTimelapse hlt=new HorizontalLineTimelapse(this);
-				hlt.analyseTimelapse();
-			} else {
-			
-				FocusAnalyser fa=new FocusAnalyser();
-				HorizontalLineAnalyser hla=new HorizontalLineAnalyser(inputImage);
-				
-				int z=inputImage.getNSlices();
-									
-				if (inputImage.getRoi()==null) {hla.setHorizontalLine(this.stackCenter);fa=new FocusAnalyser(inputImage, hla.getHorizontalLine());}
-				Roi roi=inputImage.getRoi();
-
-//				this.analyseLine=new LineAnalyser(this.inputImage);
-//				this.analyseLine=new LineAnalyser(this.inputImage);
-
-				roi=super.getHorizontalLineAnalyser().optimizeHorizontalMaxima((Line)roi);
-				if (roi!=null ) {
-					if(roi.isLine()) {
-						fa=new FocusAnalyser(inputImage,(Line)roi);
-						this.horizontalLine=(Line)roi;
-						
-					} else {
-						hla.setHorizontalLine(this.stackCenter);
-						fa=new FocusAnalyser(inputImage,hla.getHorizontalLine());
-					}
-				}
-				fa=new FocusAnalyser(inputImage,(Line)roi);
-//				int[] param=setStackSize(imp);
-//				fa.setStart(param[0]);
-//				fa.setEnd(param[1]);
-				if (allStack) {start=1;end=inputImage.getNSlices();}
-				fa.setStart(start);
-				fa.setEnd(end);
-				fa.setStep(zstep);
-				LogToTable(fileName);
-//				fa.analyseHorizontalLine(repetition,lineLength);
-//				fitTableResults(fa);
-//				if (saveTable) saveResults();
-			}
-		 
-		}
+	Line findHorizontalLine() {
+		
+		Line horizontal;
+		ImageProcessor ip_edge=inputIP.duplicate().convertToFloat();
+		ip_edge.findEdges();
+		LineAnalyser la=new LineAnalyser(ip_edge);
+		Roi [] lines=la.findVerticalMaxima(10,3*width/8);
+		int pos=1+lines.length/2;
+		
+		inputIP.setRoi(lines[pos]);
+		double mean1=inputIP.getStatistics().mean;
+		
+		inputIP.setRoi(lines[pos+1]);
+		double mean2=inputIP.getStatistics().mean;
+		//IJ.log("m1="+mean1+"    m2="+mean2);
+		
+		if (mean1>mean2) {horizontal=(Line)lines[pos];}
+		else {horizontal=(Line)lines[pos+1];}
+		
+		return horizontal;
 	}
 }

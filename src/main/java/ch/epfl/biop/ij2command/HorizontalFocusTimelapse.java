@@ -6,9 +6,9 @@ public class HorizontalFocusTimelapse extends HorizontalAnalysis{
 	int frames;
 	int slices;
 	
-	HorizontalFocus inputHF;
+	HorizontalLineAnalysis inputHF;
 	
-	HorizontalFocusTimelapse(HorizontalFocus hf){
+	HorizontalFocusTimelapse(HorizontalLineAnalysis hf){
 		inputImage=hf.inputImage;
 		inputHF=hf;
 		slices=hf.inputImage.getNSlices();

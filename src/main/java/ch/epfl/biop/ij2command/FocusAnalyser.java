@@ -15,18 +15,21 @@ import ij.process.ImageStatistics;
 
 public class FocusAnalyser {
 	
-	private ImagePlus imps;
-	private Calibration cal;
-	private int repX,repY,analysisLineLength;
-	private boolean isHorizontal;
-	private Line horizonetalLine;
-	private ResultsTable focusMap;
-	private int start,end,step;
-	private String titleFocusMap;
+	protected ImagePlus imps;
+	protected Calibration cal;
+	protected int repX,repY,analysisLineWidth;
+	protected boolean isHorizontal;
+	protected Line horizontalLine;
+	protected ResultsTable focusMap;
+	protected int start,end,step;
+	protected String titleFocusMap;
+	protected ImageStack zstack;
+	protected int rep;
 	
 	FocusAnalyser(){
 		
 	}
+	
 	FocusAnalyser(ImagePlus imp,int line,int nx,int ny){
 		setImage(imp);
 		setAnalysisLineLength(line);
@@ -34,56 +37,12 @@ public class FocusAnalyser {
 		setRepetitionY(ny);
 		cal=imp.getCalibration();
 	}
-	
-	FocusAnalyser(ImagePlus imp, Line line){
-		setImage(imp);
-		cal=imp.getCalibration();
-		this.isHorizontal=true;
-		this.horizonetalLine=line;
 		
-	}
 	public FocusAnalyser(ImagePlus imp) {
 		setImage(imp);
 		cal=imp.getCalibration();
 	}
-	void analyseHorizontalLine(int rep,int lineHeight) {
-		this.focusMap=new ResultsTable();
-		this.titleFocusMap="Focus Map Horizontal Line";
 		
-		int h=imps.getHeight();
-		int w=imps.getWidth();
-		double x1=this.horizonetalLine.x1d;
-		double x2=this.horizonetalLine.x2d;
-		double y1=this.horizonetalLine.y1d;
-		double y2=this.horizonetalLine.y2d;
-		double length=this.horizonetalLine.getLength();
-		int slices=imps.getNSlices();
-		
-		double dist=length/rep;							//distance between horizontal focus points in pixel
-		IJ.log("Distance focus points= "+IJ.d2s(dist*cal.pixelWidth)+" um");
-		
-		
-		for (int s=start;s<=end;s+=step) {
-			focusMap.addRow();
-//			imps.setSliceWithoutUpdate(s);
-			imps.setSlice(s);
-			focusMap.addValue("z-slice",s);
-			ImageProcessor ip=imps.getProcessor();
-			for (int r=0;r<rep;r++) {
-				Line analyseLine=new Line(x1+r*dist,y1-lineHeight,x2+r*dist,y2+lineHeight);
-					ip.setRoi(analyseLine);
-					ImageStatistics statsX=ip.getStats();
-//					focusMean.addValue(""+IJ.d2s((x1+rep*dist)*cal.pixelWidth), statsX.mean);
-					focusMap.addValue(IJ.d2s((x1+r*dist)*cal.pixelWidth),statsX.mean);
-					
-					
-			}
-			
-		}
-		plotFocusMap();
-		focusMap.show("");
-	}
-	
 	void plotFocusMap() {
 		ImageStack plots=new ImageStack(696,415);
 		
@@ -105,14 +64,14 @@ public class FocusAnalyser {
 		focusMap.show(this.titleFocusMap);
 	}
 	void setLine(Line line) {
-		this.horizonetalLine=line;
+		this.horizontalLine=line;
 	}
 	void run() {
-		int h=imps.getHeight()-analysisLineLength;
+		int h=imps.getHeight()-analysisLineWidth;
 		int w=imps.getWidth();
 		
 		int rimX=(w%repX)/2;
-		int rimY=analysisLineLength/2+(h%repY)/2;
+		int rimY=analysisLineWidth/2+(h%repY)/2;
 		
 		int distX=w/repX;
 		int distY=h/repY;
@@ -138,7 +97,7 @@ public class FocusAnalyser {
 			ImageProcessor ip=imps.getProcessor();
 			
 			for (int pos=0;pos<repX;pos++) {
-				Roi line=new Line(rimX+pos*distX, h/2-analysisLineLength/2, rimX+pos*distX, h/2+analysisLineLength/2);
+				Roi line=new Line(rimX+pos*distX, h/2-analysisLineWidth/2, rimX+pos*distX, h/2+analysisLineWidth/2);
 				ip.setRoi(line);
 				ImageStatistics statsX=ip.getStats();
 				rt_xAxis.addValue(""+IJ.d2s((rimX+pos*distX)*cal.pixelWidth), statsX.stdDev);
@@ -146,7 +105,7 @@ public class FocusAnalyser {
 				//imp.setRoi(line);
 				
 			for (int pos=0;pos<repY;pos++) {	
-				Roi line=new Line(w/2, rimY+pos*distY, w/2, rimY+pos*distY+analysisLineLength);
+				Roi line=new Line(w/2, rimY+pos*distY, w/2, rimY+pos*distY+analysisLineWidth);
 				ip.setRoi(line);
 				ImageStatistics statsY=ip.getStats();
 				rt_yAxis.addValue(""+IJ.d2s((rimY+pos*distY)*cal.pixelHeight), statsY.stdDev);
@@ -158,6 +117,7 @@ public class FocusAnalyser {
 		rt_xAxis.show("Results x-Axis");
 		rt_yAxis.show("Results y-Axis");
 	}
+	
 	void setStart(int set) {
 		if (set<0) set=1;
 		this.start=set;
@@ -180,10 +140,66 @@ public class FocusAnalyser {
 		this.repY=rep;
 	}
 	void setAnalysisLineLength(int line){
-		this.analysisLineLength=line;
+		this.analysisLineWidth=line;
 	}
 	
 	double getZstep() {
 		return cal.pixelDepth;
 	}
 }
+/* to delete		
+for (int s=1;s<=slices;s++) {
+	focusMap.addRow();
+//	imps.setSliceWithoutUpdate(s);
+//	imps.setSlice(s);
+	focusMap.addValue("z-slice",s);
+	ImageProcessor ip=zstack.getProcessor(s);
+	ip.setLineWidth(analysisLineWidth);
+	double []profile=ip.getLine(x1, y1, x2, y2);
+	for (int r=0;r<rep;r++) {
+		focusMap.addValue(IJ.d2s((x1+r*dist)*cal.pixelWidth),profile[r*gap]);
+	}
+}
+focusMap.show("");
+plotFocusMap();
+return focusMap;
+}
+*/
+
+/*		this.focusMap=new ResultsTable();
+this.titleFocusMap="Focus Map Horizontal Line";
+
+int h=imps.getHeight();
+int w=imps.getWidth();
+double x1=this.horizontalLine.x1d;
+double x2=this.horizontalLine.x2d;
+double y1=this.horizontalLine.y1d;
+double y2=this.horizontalLine.y2d;
+double length=this.horizontalLine.getLength();
+int slices=imps.getNSlices();
+
+double dist=length/rep;							//distance between horizontal focus points in pixel
+IJ.log("Distance focus points= "+IJ.d2s(dist*cal.pixelWidth)+" um");
+
+
+for (int s=start;s<=end;s+=step) {
+	focusMap.addRow();
+//	imps.setSliceWithoutUpdate(s);
+	imps.setSlice(s);
+	focusMap.addValue("z-slice",s);
+	ImageProcessor ip=imps.getProcessor();
+	for (int r=0;r<rep;r++) {
+		Line analyseLine=new Line(x1+r*dist,y1-lineHeight,x2+r*dist,y2+lineHeight);
+			ip.setRoi(analyseLine);
+			ImageStatistics statsX=ip.getStats();
+//			focusMean.addValue(""+IJ.d2s((x1+rep*dist)*cal.pixelWidth), statsX.mean);
+			focusMap.addValue(IJ.d2s((x1+r*dist)*cal.pixelWidth),statsX.mean);
+			
+			
+	}
+	
+}
+plotFocusMap();
+focusMap.show("");
+}
+*/	

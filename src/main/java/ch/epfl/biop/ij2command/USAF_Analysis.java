@@ -8,7 +8,7 @@ import ij.gui.Roi;
 public class USAF_Analysis {
 	ImagePlus inputImage;
 	HorizontalAnalysis horianalysis;
-	HorizontalFocus horifocus;
+	HorizontalLineAnalysis horifocus;
 	LineAnalyser lineanalyser;
 	FocusAnalyser focusanalyser;
 	
@@ -21,7 +21,7 @@ public class USAF_Analysis {
 	}
 	void run(){
 		if (horianalysis.checkInputImage()) {
-			horianalysis.getSummaryTable(HorizontalFocus.titleSummary);
+			horianalysis.getSummaryTable(HorizontalLineAnalysis.titleSummary);
 			
 //			cal=inputImage.getCalibration();
 			horianalysis.logFileNames();

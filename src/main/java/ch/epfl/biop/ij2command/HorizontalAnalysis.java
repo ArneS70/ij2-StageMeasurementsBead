@@ -6,8 +6,10 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import ij.gui.Line;
+import ij.gui.Roi;
 import ij.measure.Calibration;
 import ij.measure.ResultsTable;
+import ij.process.ImageProcessor;
 
 public class HorizontalAnalysis {
 	protected ImagePlus inputImage;
@@ -119,6 +121,26 @@ public class HorizontalAnalysis {
 	}
 	void ignoreTimelapse() {
 		this.ignoreTime=true;
+	}
+	ImageProcessor getCenterIP(){
+		inputImage.setSliceWithoutUpdate(stackCenter);
+		return inputImage.getProcessor();
+	}
+	boolean  hasLine() {
+		Roi roi=inputImage.getRoi();
+		if (roi!=null) return roi.isLine();
+		else return false;
+	}
+	Line getLine() {
+		return (Line)inputImage.getRoi();
+	}
+	Line defineLine() {
+		new LineAnalyser(getCenterIP()).findHorizontalMaxima(5);
+		return new Line(1,1,1,1);
+	}
+	Line setLine(){
+		if (hasLine()) return getLine();
+		else return defineLine();
 	}
 	
 }

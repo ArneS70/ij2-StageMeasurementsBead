@@ -79,25 +79,11 @@ public class TableFitter {
 				}
 			}
 			
-			
-			
-			
-			
-			
-			
-			
 			for (int n=0;n<numParam;n++) {
 				fitParameters.addValue(""+n, parameters[n]);
 			}
-			
-			
 			fitParameters.addValue("xmax", xmax);
-			
-			
-			
-			
 			if (showFit) plots.addSlice(cf.getPlot().getImagePlus().getProcessor());
-			
 		}
 //		fitParameters.show("Fit Parameters");
 		if (showFit) new ImagePlus ("Fit Plots",plots).show();
