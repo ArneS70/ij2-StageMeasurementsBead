@@ -139,7 +139,7 @@ public class LineAnalyser {
 				x[n]=n*pixelSize;
 			}
 		}
-		void findHorizontalMaxima(int linewidth){
+/*		void findHorizontalMaxima(int linewidth){
 			//ImageProcessor ip_maxima=ip_edge;
 			getProcessor().setLineWidth(linewidth);
 			setProfile(this.TOP);
@@ -193,6 +193,8 @@ public class LineAnalyser {
 			
 		}
 		
+		
+*/		
 		Roi [] findVerticalMaxima(int linewidth,int shift){
 //			ip_line.findEdges();
 //			new ImagePlus("test",ip_line).show();
@@ -251,7 +253,6 @@ public class LineAnalyser {
 			}
 			return lines;
 		}
-		
 		double [] getProfile() {
 			profile=getProcessor().getLine(x1,y1,x2,y2);
 			profileLength=profile.length;

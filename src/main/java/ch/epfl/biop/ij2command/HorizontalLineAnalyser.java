@@ -169,7 +169,7 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 	void setZstep(int step) {
 		this.zstep=step;
 	}
-	double calculateHorizontalSpacing(int linewidth){
+/*	double calculateHorizontalSpacing(int linewidth){
 		inputImage.setSlice(super.stackCenter);
 		LineAnalyser spacing=new LineAnalyser (new ImagePlus("edge",this.inputImage.getProcessor().duplicate()));
 		spacing.getProcessor().findEdges();
@@ -198,7 +198,7 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 		return param[1];
 		
 		
-	}
+	}*/
 	Line optimizeHorizontalMaxima(Line line) {
 		
 		ImageProcessor ip=inputImage.getProcessor().duplicate();

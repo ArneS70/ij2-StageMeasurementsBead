@@ -5,8 +5,6 @@ package ch.epfl.biop.ij2command;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
-
-import ch.epfl.biop.ij2command.USAF_Analysis.HorizontalFocusAnalysis;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -20,8 +18,6 @@ import net.imagej.ImageJ;
 		protected USAF_Analysis horizontalFocus;
 //		protected HorizontalLineAnalyser horizontalLineAnalyser;
 		
-		
-		
 		@Parameter(label="number of focus points")
 		int repetition;
 		
@@ -34,20 +30,22 @@ import net.imagej.ImageJ;
 		@Parameter(label="z-stack Step")
 		int step;
 		
-		@Parameter(label="Analysis line length (vetical)")
-		int length;
-		
 		@Parameter(label="Use entire stack?")
 		boolean allStack;
 		
 		@Parameter(label="Show Fit window?")
-		boolean showFit;
+		boolean showPlot;
 		
 		@Parameter(label="Save Fit window?")
 		boolean savePlot;
 
+		@Parameter(label="Show result tables?")
+		boolean showTable;
+		
 		@Parameter(label="Save result tables?")
 		boolean saveTable;
+		
+		
 		
 		@Override
 
@@ -55,8 +53,12 @@ import net.imagej.ImageJ;
 			
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			if (imp!=null){
-				HorizontalLineFocusAnalysis toAnalyse=new HorizontalLineFocusAnalysis(imp, repetition,start, stop, step,length,allStack,  showFit,savePlot,saveTable);
-				toAnalyse.run();
+				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(imp, repetition,start, stop, step,allStack);
+				horizontal.run();
+				if (saveTable) horizontal.saveResultTables();
+				if (showTable)horizontal.showResultsTables();
+				if (savePlot) horizontal.savePlot();
+				if (showPlot)horizontal.showPlot();
 				
 //				horizontalFocus=new HorizonzalFocusAnalysis(imp,repetition,start,end,step,lineLength,allStack, showFit,savePlot,saveTable);
 //				horizontalFocus.run();
