@@ -226,17 +226,13 @@ public class LineAnalyser {
 			if (leftMaximum.length>rightMaximum.length)leftMaximum=alignMaxima(leftMaximum,rightMaximum);
 			else rightMaximum=alignMaxima(rightMaximum,leftMaximum);
 			
-			
-			IJ.log("left: "+leftMaximum.length);
-			IJ.log("right: "+rightMaximum.length);
+//			IJ.log("left: "+leftMaximum.length);
+//			IJ.log("right: "+rightMaximum.length);
 			int len=0;		
-			
-			
 			if (leftMaximum.length<rightMaximum.length) len=leftMaximum.length;
 			else len=rightMaximum.length;
 			Roi [] lines=new Roi [len-1];
 			
-			//this.imp.show();
 			for (int i=1;i<len;i+=1) {
 				double middle=this.width/2.0;
 				double left=((leftMaximum[i-1]+leftMaximum[i])/2.0);
@@ -246,10 +242,7 @@ public class LineAnalyser {
 				double p1=left+slope*(middle-shift);
 				double p2=right-slope*(middle-shift);
 				
-				
-				//IJ.log(""+slope+"   "+p1+"    "+p2);
 				lines[i-1]=new Line(0,p1,this.width,p2);
-				//this.imp.setRoi(lines[i],true);
 			}
 			return lines;
 		}
