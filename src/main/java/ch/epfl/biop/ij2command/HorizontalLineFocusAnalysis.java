@@ -25,23 +25,27 @@ public class HorizontalLineFocusAnalysis {
 	private ResultsTable focusShift=new ResultsTable();
 	private ResultsTable summaryResults;
 	private String filePath,fileName;
-	private int start,stop,zstep,lineWidth,counter,stackCenter;
+	private USAF_HorizontalFocus inputParam;
+	private int lineWidth,counter,stackCenter, stackSlices;
 	private boolean allStack,ignoreTime=false,isTimeLapse=false;
-	private int repetition;
+	
 	private Plot focusFitPlot;
 	private ImagePlus fitWin;
 	
 	HorizontalLineFocusAnalysis(){
 		
 	}
-	HorizontalLineFocusAnalysis(ImagePlus imp,int rep,int start,int stop,int step,boolean allStack){
+	HorizontalLineFocusAnalysis(ImagePlus imp,USAF_HorizontalFocus uhf){
 		this.inputImage=imp;
 		this.cal=imp.getCalibration();
-		this.repetition=rep; this.start=start;this.stop=stop;this.zstep=step;
-		this.allStack=allStack;	
-		checkStack();
+		inputParam=uhf;
+			
+		checkParameters();
 		this.fileName=imp.getTitle();
 		this.lineWidth=(int) setAnalysisLineWidth();
+	}
+	HorizontalLineFocusAnalysis duplicate() {
+		return new HorizontalLineFocusAnalysis(this.inputImage,this.inputParam);
 	}
 	
 	void run(){
@@ -53,10 +57,7 @@ public class HorizontalLineFocusAnalysis {
 					inputImage.setRoi(horizontalLine);
 			}
 		}
-		getSummaryTable(titleSummary);
-		logFileNames();
-		LogToTable();
-		cal=inputImage.getCalibration();
+		
 		
 		if (inputImage.getNFrames()>1&&!ignoreTime) {
 			
@@ -64,28 +65,42 @@ public class HorizontalLineFocusAnalysis {
 			hft.analyseTimeLapse();
 		} else {
 		
+			getSummaryTable(titleSummary);
+			cal=inputImage.getCalibration();
+			logFileNames();
+			LogToTable();
 			LineFocusAnalyser focusAnalyser =new LineFocusAnalyser(this);
 			analysisTable=focusAnalyser.analyseHorizontalLine();
 			TableFitter tableFit=new TableFitter(analysisTable);
 			tableFit.fitTable(CurveFitter.POLY5);
 			focusShift=tableFit.getFitResults();
 			this.fitFocusShift();
+			outputResults();
 		}
 	}
 	
-	void checkStack(){
+	void outputResults() {
+		if (inputParam.saveTable) this.saveResultTables();
+		if (inputParam.showTable)this.showResultsTables();
+		if (inputParam.savePlot) this.savePlot();
+		if (inputParam.showPlot)this.showPlot();
+	}
+	void checkParameters(){
 		int max=inputImage.getNSlices();
-		if (allStack) {start=1;stop=max;stackCenter=max/2;}
-		if (stop<start) {
+		this.stackSlices=max;
+		if (inputParam.zstep<1) inputParam.zstep=1;
+		if (inputParam.zstep>max) inputParam.zstep=max/10;
+		if (inputParam.allStack) {inputParam.start=1;inputParam.stop=max;stackCenter=max/2;}
+		if (inputParam.stop<inputParam.start) {
 			do {
-				start--;
-			}while (stop<start);
+				inputParam.start--;
+			}while (inputParam.stop<inputParam.start);
 		}
 		
 		
-		if (start<1)start=1;
-		if (stop>max)stop=max;
-		if (stop<start)start=stop;
+		if (inputParam.start<1)inputParam.start=1;
+		if (inputParam.stop>max)inputParam.stop=max;
+		if (inputParam.stop<inputParam.start)inputParam.start=inputParam.stop;
 		
 	}
 
@@ -100,10 +115,10 @@ public class HorizontalLineFocusAnalysis {
 		focus.addRow();
 		focus.addValue("#", this.counter);
 		focus.addValue("File", fileName);
-		focus.addValue("Repetition", this.repetition);
-		focus.addValue("z step", this.zstep);
-		focus.addValue("z start", this.start);
-		focus.addValue("z stop", this.stop);
+		focus.addValue("Repetition", inputParam.repetition);
+		focus.addValue("z step", inputParam.zstep);
+		focus.addValue("z start", inputParam.start);
+		focus.addValue("z stop", inputParam.stop);
 		double space=1000/(4*this.lineWidth*cal.pixelWidth);
 		focus.addValue("Grid spacing LP/mm", space);
 		focus.addValue("x1", this.horizontalLine.x1d);
@@ -135,7 +150,9 @@ public class HorizontalLineFocusAnalysis {
 			IJ.log("Please provide an z-stack");
 			check=false;
 		}
+//		if (inputImage.getNFrames()>1) this.isTimeLapse=true;
 		return check;
+		
 	}
 	
 	void disableStack() {
@@ -229,10 +246,10 @@ public class HorizontalLineFocusAnalysis {
 		if (!isTimeLapse) {
 			int slices=inputImage.getNSlices();
 			if (allStack) {
-				this.start=1;
-				this.stop=slices;
+				inputParam.start=1;
+				inputParam.stop=slices;
 			}
-			for (int s=start;s<=stop;s+=zstep) {
+			for (int s=inputParam.start;s<=inputParam.stop;s+=inputParam.zstep) {
 				inputImage.setSlice(s);
 				stack.addSlice(inputImage.getProcessor());
 						
@@ -245,10 +262,16 @@ public class HorizontalLineFocusAnalysis {
 		return this.inputImage;
 	}
 	int getRepetition() {
-		return repetition;
+		return inputParam.repetition;
 	}
 	ResultsTable getResultsTable() {
 		return this.analysisTable;
+	}
+	int getStackCenter() {
+		return this.stackCenter;
+	}
+	int getStackSlices() {
+		return this.stackSlices;
 	}
 	public void getSummaryTable(String title) {
 		if (WindowManager.getWindow(title)==null) {
@@ -263,17 +286,21 @@ public class HorizontalLineFocusAnalysis {
 	}
 
 	int getZStep() {
-		return this.zstep;
+		return inputParam.zstep;
 	}
 	void setHorizontalLine(Line horizontal) {
 		this.horizontalLine=horizontal;
 	}
 	void setStart(int value) {
-		this.start=value;
+		inputParam.start=value;
 	}
 	void setStop(int value) {
-		this.stop=value;
-	}	
+		inputParam.stop=value;
+	}
+	
+	void setStackCenter(int shift) {
+		this.stackCenter+=shift;
+	}
 }
 
 /*			

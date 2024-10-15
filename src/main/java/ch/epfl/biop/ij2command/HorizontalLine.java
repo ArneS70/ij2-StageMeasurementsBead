@@ -24,6 +24,7 @@ public class HorizontalLine  {
 		Line horizontal;
 		ImageProcessor ip_edge=inputIP.duplicate().convertToFloat();
 		ip_edge.findEdges();
+//		new ImagePlus("Edge",ip_edge).show();
 		LineAnalyser la=new LineAnalyser(ip_edge);
 		Roi [] lines=la.findVerticalMaxima(10,3*width/8);
 		int pos=1+lines.length/2;

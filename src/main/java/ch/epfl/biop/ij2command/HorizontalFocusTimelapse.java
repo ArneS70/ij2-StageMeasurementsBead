@@ -1,9 +1,6 @@
 package ch.epfl.biop.ij2command;
 
 import ij.IJ;
-import ij.gui.Roi;
-import ij.process.ImageProcessor;
-
 
 public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{ 
 	int frames;
@@ -14,7 +11,7 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 	HorizontalFocusTimelapse(HorizontalLineFocusAnalysis hlfa){
 		super();
 		super.inputImage=hlfa.getInputImage();
-		inputHLFA=hlfa;
+		inputHLFA=hlfa.duplicate();
 		slices=hlfa.inputImage.getNSlices();
 		frames=hlfa.inputImage.getNFrames();
 	}
@@ -24,6 +21,7 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 		inputHLFA.ignoreTimelapse();	
 		
 		for (int t=0;t<frames;t+=1) {
+				inputImage.setSlice(inputHLFA.getStackCenter());
 				int start=t*slices+1;
 				int end=t*slices+slices;
 								
@@ -31,6 +29,7 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 				inputHLFA.setStart(start);
 				inputHLFA.setStop(end);
 				inputHLFA.run();
+				inputHLFA.setStackCenter(inputHLFA.getStackSlices());
 				IJ.run(inputImage, "Select None", "");
 			}
 	}

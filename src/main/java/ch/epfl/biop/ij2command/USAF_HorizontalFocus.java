@@ -28,7 +28,7 @@ import net.imagej.ImageJ;
 		int stop;
 		
 		@Parameter(label="z-stack Step")
-		int step;
+		int zstep;
 		
 		@Parameter(label="Use entire stack?")
 		boolean allStack;
@@ -50,12 +50,9 @@ import net.imagej.ImageJ;
 			
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			if (imp!=null){
-				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(imp, repetition,start, stop, step,allStack);
+				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(imp, this);
 				horizontal.run();
-				if (saveTable) horizontal.saveResultTables();
-				if (showTable)horizontal.showResultsTables();
-				if (savePlot) horizontal.savePlot();
-				if (showPlot)horizontal.showPlot();
+				
 			}
 		}
 			
@@ -75,7 +72,7 @@ import net.imagej.ImageJ;
 			ij.ui().showUI();
 			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240510/Experiment_tZ-Stack_20240510_25_substack.tif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
+			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240510/SmallSubstack.tif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
 		
