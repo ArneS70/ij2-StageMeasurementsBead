@@ -26,8 +26,8 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 				int end=t*slices+slices;
 								
 				IJ.log("start="+start+"    end="+end);
-				inputHLFA.setStart(start);
-				inputHLFA.setStop(end);
+				inputHLFA.setSliceStart(start);
+				inputHLFA.setSliceStop(end);
 				inputHLFA.run();
 				inputHLFA.setStackCenter(inputHLFA.getStackSlices());
 				IJ.run(inputImage, "Select None", "");

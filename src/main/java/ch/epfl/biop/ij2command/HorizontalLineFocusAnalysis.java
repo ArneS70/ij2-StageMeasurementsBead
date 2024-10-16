@@ -7,36 +7,26 @@ import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.Roi;
-import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
-public class HorizontalLineFocusAnalysis {
+public class HorizontalLineFocusAnalysis extends HorizontalAnalysis{
 	final static String titleProfiles="Horizontal Focus Frofiles";
 	final static String titleShift="Horizontal Focus Shift";
 	final static String titleSummary="Summary Horizontal Focus Results";
-	protected ImagePlus inputImage;
 	
-	Calibration cal;
-	private Line horizontalLine;
-	
-	private ResultsTable analysisTable=new ResultsTable();
 	private ResultsTable focusShift=new ResultsTable();
-	private ResultsTable summaryResults;
-	private String filePath,fileName;
 	private USAF_HorizontalFocus inputParam;
-	private int lineWidth,counter,stackCenter, stackSlices;
-	private boolean allStack,ignoreTime=false,isTimeLapse=false;
 	
 	private Plot focusFitPlot;
 	private ImagePlus fitWin;
 	
-	HorizontalLineFocusAnalysis(){
-		
+	HorizontalLineFocusAnalysis(HorizontalAnalysis horizontalAnalysis){
+		super(horizontalAnalysis);
 	}
 	HorizontalLineFocusAnalysis(ImagePlus imp,USAF_HorizontalFocus uhf){
-		this.inputImage=imp;
+		super(imp);
 		this.cal=imp.getCalibration();
 		inputParam=uhf;
 			
@@ -88,19 +78,19 @@ public class HorizontalLineFocusAnalysis {
 	void checkParameters(){
 		int max=inputImage.getNSlices();
 		this.stackSlices=max;
-		if (inputParam.zstep<1) inputParam.zstep=1;
-		if (inputParam.zstep>max) inputParam.zstep=max/10;
-		if (inputParam.allStack) {inputParam.start=1;inputParam.stop=max;stackCenter=max/2;}
-		if (inputParam.stop<inputParam.start) {
+		if (inputParam.stepZ<1) inputParam.stepZ=1;
+		if (inputParam.stepZ>max) inputParam.stepZ=max/10;
+		if (inputParam.allStack) {inputParam.startZ=1;inputParam.stopZ=max;stackCenter=max/2;}
+		if (inputParam.stopZ<inputParam.startZ) {
 			do {
-				inputParam.start--;
-			}while (inputParam.stop<inputParam.start);
+				inputParam.startZ--;
+			}while (inputParam.stopZ<inputParam.startZ);
 		}
 		
 		
-		if (inputParam.start<1)inputParam.start=1;
-		if (inputParam.stop>max)inputParam.stop=max;
-		if (inputParam.stop<inputParam.start)inputParam.start=inputParam.stop;
+		if (inputParam.startZ<1)inputParam.startZ=1;
+		if (inputParam.stopZ>max)inputParam.stopZ=max;
+		if (inputParam.stopZ<inputParam.startZ)inputParam.startZ=inputParam.stopZ;
 		
 	}
 
@@ -116,7 +106,7 @@ public class HorizontalLineFocusAnalysis {
 		focus.addValue("#", this.counter);
 		focus.addValue("File", fileName);
 		focus.addValue("Repetition", inputParam.repetition);
-		focus.addValue("z step", inputParam.zstep);
+		focus.addValue("z step", inputParam.stepZ);
 		focus.addValue("z start", inputParam.start);
 		focus.addValue("z stop", inputParam.stop);
 		double space=1000/(4*this.lineWidth*cal.pixelWidth);
@@ -126,51 +116,6 @@ public class HorizontalLineFocusAnalysis {
 		focus.addValue("x2", this.horizontalLine.x2d);
 		focus.addValue("y2", this.horizontalLine.y2d);
 		focus.show(HorizontalLineFocusAnalysis.titleSummary);
-	}
-
-	void logFileNames() {
-		IJ.log("===============================================================");
-		this.filePath=IJ.getDirectory("file");
-		this.fileName=inputImage.getTitle();
-		
-		if (fileName.startsWith(filePath)) 
-			this.fileName=inputImage.getTitle().substring(filePath.length());
-			IJ.log("File: "+fileName);
-			IJ.log("Path: "+filePath);
-	}
-
-	public boolean checkInputImage() {
-		boolean check=true;
-		if (inputImage==null) {
-			IJ.log("Please provide an image");
-			check=false;
-		}
-		
-		if (inputImage.getNSlices()==1) {
-			IJ.log("Please provide an z-stack");
-			check=false;
-		}
-//		if (inputImage.getNFrames()>1) this.isTimeLapse=true;
-		return check;
-		
-	}
-	
-	void disableStack() {
-		this.allStack=false;
-	}
-	
-	void ignoreTimelapse() {
-		this.ignoreTime=true;
-	}
-	
-	boolean  hasLine() {
-		Roi roi=inputImage.getRoi();
-		if (roi!=null) return roi.isLine();
-		else return false;
-	}
-	
-	Line getLine() {
-		return (Line)inputImage.getRoi();
 	}
 	
 	void fitFocusShift() {		
@@ -231,76 +176,12 @@ public class HorizontalLineFocusAnalysis {
  * Getter and Setter
  **********************************************************************************************************/
 	
-	int getAnalysisLineWidth() {
-		return this.lineWidth;
-	}
-	ImageProcessor getCenterIP(){
-		inputImage.setSliceWithoutUpdate(stackCenter);
-		return inputImage.getProcessor();
-	}
-	Line getHorizontalLine() {
-		return this.horizontalLine;
-	}
-	ImageStack getImageStack() {
-		ImageStack stack=new ImageStack(inputImage.getWidth(),inputImage.getHeight());
-		if (!isTimeLapse) {
-			int slices=inputImage.getNSlices();
-			if (allStack) {
-				inputParam.start=1;
-				inputParam.stop=slices;
-			}
-			for (int s=inputParam.start;s<=inputParam.stop;s+=inputParam.zstep) {
-				inputImage.setSlice(s);
-				stack.addSlice(inputImage.getProcessor());
-						
-			}
-		}
-		return stack;
-	
-	}
-	ImagePlus getInputImage(){
-		return this.inputImage;
-	}
 	int getRepetition() {
 		return inputParam.repetition;
 	}
-	ResultsTable getResultsTable() {
-		return this.analysisTable;
-	}
-	int getStackCenter() {
-		return this.stackCenter;
-	}
-	int getStackSlices() {
-		return this.stackSlices;
-	}
-	public void getSummaryTable(String title) {
-		if (WindowManager.getWindow(title)==null) {
-			ResultsTable summaryResults=new ResultsTable();
-			
-			summaryResults.show(title);
-			this.counter=0;
-			return;
-		};
-		this.summaryResults=ResultsTable.getResultsTable(title);
-		this.counter=this.summaryResults.getCounter();
-	}
-
-	int getZStep() {
-		return inputParam.zstep;
-	}
-	void setHorizontalLine(Line horizontal) {
-		this.horizontalLine=horizontal;
-	}
-	void setStart(int value) {
-		inputParam.start=value;
-	}
-	void setStop(int value) {
-		inputParam.stop=value;
-	}
 	
-	void setStackCenter(int shift) {
-		this.stackCenter+=shift;
-	}
+
+	
 }
 
 /*			

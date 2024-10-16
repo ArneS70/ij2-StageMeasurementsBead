@@ -4,6 +4,7 @@ import java.awt.Window;
 
 import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Roi;
@@ -12,25 +13,198 @@ import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
 public class HorizontalAnalysis {
-	protected ImagePlus inputImage;
-	protected Calibration cal;
-	protected Line horizontalLine;
+	//required parameters
+	private ImagePlus inputImage;
+	private Line horizontalLine;
+	//optional parameters
+	private int startZ, stopZ,stepZ, startT,stopT,stepT;
+	private Builder built;
 	
-	protected ResultsTable analysisTable=new ResultsTable();
 	protected String filePath,fileName;
-	protected int start,end,zstep,lineLength,counter,stackCenter;
-	protected boolean showFit,savePlot,saveTable,allStack,ignoreTime=false;
+	protected ResultsTable analysisTable=new ResultsTable();
 	protected ResultsTable summaryResults;
+	protected int lineWidth, counter,stackCenter, stackSlices;
+	protected boolean allStack,ignoreTime=false,isTimeLapse=false;
+	protected Calibration cal;
 	
-	HorizontalAnalysis(){
+	private HorizontalAnalysis (Builder builder) {
+		//required parameters
+		this.inputImage=builder.inputImage;
+		
+		//optional parameters
+		this.horizontalLine=builder.horizontalLine;
+		this.startZ=builder.startZ;
+		this.stopZ=builder.stopZ;
+	}
+	
+	public static class Builder{
+		//required parameters
+		private ImagePlus inputImage;
+		
+		//optional Parameters
+		private Line horizontalLine;
+		private int startZ;
+		private int stopZ;
+		private int stepZ;
+		private int startT;
+		private int stopT;
+		private int stepT;
+		private Builder built;
+		
+		public Builder(ImagePlus imp) {
+			this.inputImage=imp;
+			
+		}
+		public Builder setStartZ(int start) {
+			this.startZ=start;
+			return this;
+		}
+		public Builder setStopZ(int stop) {
+			this.stopZ=stop;
+			return this;
+		}
+		public Builder setStepZ(int step) {
+			this.stepZ=step;
+			return this;
+		}
+		public Builder setStartT(int start) {
+			this.startT=start;
+			return this;
+		}
+		public Builder setStopT(int stop) {
+			this.stopT=stop;
+			return this;
+		}
+		public Builder setStepT(int step) {
+			this.stepT=step;
+			return this;
+		}
+		public Builder setBuilder(Builder b){
+			this.built=b;
+			return this;
+		}
+		public HorizontalAnalysis build() {
+			return new HorizontalAnalysis(this);
+		}
+	}
+	
+	void logFileNames() {
+		IJ.log("===============================================================");
+		this.filePath=IJ.getDirectory("file");
+		this.fileName=inputImage.getTitle();
+		
+		if (fileName.startsWith(filePath)) 
+			this.fileName=inputImage.getTitle().substring(filePath.length());
+			IJ.log("File: "+fileName);
+			IJ.log("Path: "+filePath);
+	}
+
+	public boolean checkInputImage() {
+		boolean check=true;
+		if (inputImage==null) {
+			IJ.log("Please provide an image");
+			check=false;
+		}
+		
+		if (inputImage.getNSlices()==1) {
+			IJ.log("Please provide an z-stack");
+			check=false;
+		}
+//		if (inputImage.getNFrames()>1) this.isTimeLapse=true;
+		return check;
 		
 	}
-	HorizontalAnalysis(ImagePlus imp){
-		this.inputImage=imp;
-		this.cal=imp.getCalibration();
-	
+	void disableStack() {
+		this.allStack=false;
 	}
 	
+	void ignoreTimelapse() {
+		this.ignoreTime=true;
+	}
+	
+	boolean  hasLine() {
+		Roi roi=inputImage.getRoi();
+		if (roi!=null) return roi.isLine();
+		else return false;
+	}
+	
+	Line getLine() {
+		return (Line)inputImage.getRoi();
+	}
+	/********************************************************************************************************** 
+	 * Getter and Setter
+	 **********************************************************************************************************/
+		
+		int getAnalysisLineWidth() {
+			return this.lineWidth;
+		}
+		ImageProcessor getCenterIP(){
+			inputImage.setSliceWithoutUpdate(stackCenter);
+			return inputImage.getProcessor();
+		}
+		Line getHorizontalLine() {
+			return this.horizontalLine;
+		}
+		ImageStack getImageStack() {
+			ImageStack stack=new ImageStack(inputImage.getWidth(),inputImage.getHeight());
+			if (!isTimeLapse) {
+				int slices=inputImage.getNSlices();
+				if (allStack) {
+					startZ=1;
+					stopZ=slices;
+				}
+				for (int s=startZ;s<=stopZ;s+=stepZ) {
+					inputImage.setSlice(s);
+					stack.addSlice(inputImage.getProcessor());
+							
+				}
+			}
+			return stack;
+		
+		}
+		ImagePlus getInputImage(){
+			return this.inputImage;
+		}
+		int getZStep() {
+			return stepZ;
+		}
+		void setHorizontalLine(Line horizontal) {
+			this.horizontalLine=horizontal;
+		}
+		void setSliceStart(int value) {
+			startZ=value;
+		}
+		void setSliceStop(int value) {
+			stopZ=value;
+		}
+		
+		void setStackCenter(int shift) {
+			this.stackCenter+=shift;
+		}
+		ResultsTable getResultsTable() {
+			return this.analysisTable;
+		}
+		int getStackCenter() {
+			return this.stackCenter;
+		}
+		int getStackSlices() {
+			return this.stackSlices;
+		}
+		public void getSummaryTable(String title) {
+			if (WindowManager.getWindow(title)==null) {
+				ResultsTable summaryResults=new ResultsTable();
+				
+				summaryResults.show(title);
+				this.counter=0;
+				return;
+			};
+			this.summaryResults=ResultsTable.getResultsTable(title);
+			this.counter=this.summaryResults.getCounter();
+		}
+}	
+	
+	
+/*	
 	public boolean checkInputImage() {
 		boolean check=true;
 		if (inputImage==null) {
@@ -67,6 +241,8 @@ public class HorizontalAnalysis {
 		focus.show(title);
 		
 	}
+
+	
 	void logFileNames() {
 		IJ.log("===============================================================");
 		this.filePath=IJ.getDirectory("file");
@@ -135,12 +311,12 @@ public class HorizontalAnalysis {
 		return (Line)inputImage.getRoi();
 	}
 	Line defineLine() {
-		new LineAnalyser(getCenterIP()).findHorizontalMaxima(5);
-		return new Line(1,1,1,1);
+		HorizontalLine horizontal=new HorizontalLine (getCenterIP());
+		return horizontal.optimizeHorizontalMaxima(horizontal.findHorizontalLine());
 	}
 	Line setLine(){
 		if (hasLine()) return getLine();
 		else return defineLine();
 	}
-	
-}
+*/	
+

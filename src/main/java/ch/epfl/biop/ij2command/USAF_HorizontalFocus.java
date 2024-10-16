@@ -12,23 +12,23 @@ import net.imagej.ImageJ;
 
 		
 	@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Horizontal Foccus")
-		public class USAF_HorizontalFocus implements Command {
+		public class USAF_HorizontalFocus implements Command  {
 		
 		
-		protected USAF_Analysis horizontalFocus;
+//		protected USAF_Analysis horizontalFocus;
 //		protected HorizontalLineAnalyser horizontalLineAnalyser;
 		
 		@Parameter(label="number of focus points")
 		int repetition;
 		
 		@Parameter(label="z-stack Start")
-		int start;
+		int startZ;
 		
 		@Parameter(label="z-stack End")
-		int stop;
+		int stopZ;
 		
 		@Parameter(label="z-stack Step")
-		int zstep;
+		int stepZ;
 		
 		@Parameter(label="Use entire stack?")
 		boolean allStack;
@@ -50,7 +50,8 @@ import net.imagej.ImageJ;
 			
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			if (imp!=null){
-				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(imp, this);
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).build();
+				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(new HorizontalAnalysis.Builder(imp).setStartZ(startZ).build());
 				horizontal.run();
 				
 			}
@@ -70,9 +71,9 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240510/SmallSubstack.tif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
+			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240510/SmallSubstack.tif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack");
 			ij.command().run(USAF_HorizontalFocus.class, true);
 		}
 		
