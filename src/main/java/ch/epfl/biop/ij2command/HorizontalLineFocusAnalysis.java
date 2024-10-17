@@ -7,92 +7,88 @@ import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
-public class HorizontalLineFocusAnalysis extends HorizontalAnalysis{
+public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 	final static String titleProfiles="Horizontal Focus Frofiles";
 	final static String titleShift="Horizontal Focus Shift";
 	final static String titleSummary="Summary Horizontal Focus Results";
 	
-	private ResultsTable focusShift=new ResultsTable();
-	private USAF_HorizontalFocus inputParam;
+	protected HorizontalAnalysis analysis;
+	
+	private ResultsTable focusShiftTable=new ResultsTable();
+	protected ResultsTable analysisTable=new ResultsTable();
 	
 	private Plot focusFitPlot;
 	private ImagePlus fitWin;
+	private Calibration cal;
 	
-	HorizontalLineFocusAnalysis(HorizontalAnalysis horizontalAnalysis){
-		super(horizontalAnalysis);
+	private int counter;
+	
+	HorizontalLineFocusAnalysis(HorizontalAnalysis parameters){
+		super();
+		this.analysis=parameters;
 	}
-	HorizontalLineFocusAnalysis(ImagePlus imp,USAF_HorizontalFocus uhf){
-		super(imp);
-		this.cal=imp.getCalibration();
-		inputParam=uhf;
-			
-		checkParameters();
-		this.fileName=imp.getTitle();
-		this.lineWidth=(int) setAnalysisLineWidth();
+	HorizontalLineFocusAnalysis (HorizontalLineFocusAnalysis hlfa){
+		super();
 	}
-	HorizontalLineFocusAnalysis duplicate() {
-		return new HorizontalLineFocusAnalysis(this.inputImage,this.inputParam);
-	}
+//	HorizontalLineFocusAnalysis(ImagePlus imp,USAF_HorizontalFocus uhf){
+//		
+//		this.cal=imp.getCalibration();
+//		inputParam=uhf;
+//			
+//		checkParameters();
+//		this.fileName=imp.getTitle();
+//		this.lineWidth=(int) setAnalysisLineWidth();
+//	}
 	
 	void run(){
-		if (this.checkInputImage()) {
+		if (checkInputImage()) {
 			if (hasLine()) this.setHorizontalLine(this.getLine());
 			else {
-					this.horizontalLine= new HorizontalLine(getCenterIP()).findHorizontalLine();
-					this.horizontalLine= new HorizontalLine(getCenterIP()).optimizeHorizontalMaxima(horizontalLine);
-					inputImage.setRoi(horizontalLine);
+					analysis.setHorizontalLine( new HorizontalLine(getCenterIP()).findHorizontalLine());
+					analysis.setHorizontalLine( new HorizontalLine(getCenterIP()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
+					analysis.getImage().setRoi(analysis.getHorizontalLine());
 			}
 		}
 		
 		
-		if (inputImage.getNFrames()>1&&!ignoreTime) {
+		if (analysis.getImage().getNFrames()>1&&!analysis.ignoreTime) {
 			
 			HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(this);
 			hft.analyseTimeLapse();
 		} else {
 		
 			getSummaryTable(titleSummary);
-			cal=inputImage.getCalibration();
+			cal=analysis.getImage().getCalibration();
 			logFileNames();
 			LogToTable();
 			LineFocusAnalyser focusAnalyser =new LineFocusAnalyser(this);
 			analysisTable=focusAnalyser.analyseHorizontalLine();
 			TableFitter tableFit=new TableFitter(analysisTable);
 			tableFit.fitTable(CurveFitter.POLY5);
-			focusShift=tableFit.getFitResults();
+			focusShiftTable=tableFit.getFitResults();
 			this.fitFocusShift();
 			outputResults();
 		}
 	}
-	
 	void outputResults() {
-		if (inputParam.saveTable) this.saveResultTables();
-		if (inputParam.showTable)this.showResultsTables();
-		if (inputParam.savePlot) this.savePlot();
-		if (inputParam.showPlot)this.showPlot();
-	}
-	void checkParameters(){
-		int max=inputImage.getNSlices();
-		this.stackSlices=max;
-		if (inputParam.stepZ<1) inputParam.stepZ=1;
-		if (inputParam.stepZ>max) inputParam.stepZ=max/10;
-		if (inputParam.allStack) {inputParam.startZ=1;inputParam.stopZ=max;stackCenter=max/2;}
-		if (inputParam.stopZ<inputParam.startZ) {
-			do {
-				inputParam.startZ--;
-			}while (inputParam.stopZ<inputParam.startZ);
+		if (analysis.getSaveTable()) {
+										this.saveResultTables(analysisTable,"_Profile_");
+										this.saveResultTables(focusShiftTable,"_Shift_");
 		}
-		
-		
-		if (inputParam.startZ<1)inputParam.startZ=1;
-		if (inputParam.stopZ>max)inputParam.stopZ=max;
-		if (inputParam.stopZ<inputParam.startZ)inputParam.startZ=inputParam.stopZ;
-		
+		if (analysis.getShowTable()) {
+										this.showResultsTables(analysisTable, HorizontalLineFocusAnalysis.titleProfiles);
+										this.showResultsTables(focusShiftTable, HorizontalLineFocusAnalysis.titleShift);
+		}
+		if (analysis.getSavePlot()) this.savePlot(fitWin);
+		if (analysis.getShowPlot())this.showPlot(fitWin);
 	}
+	
+	
 
 	double setAnalysisLineWidth(){
 		HorizontalLine hl=new HorizontalLine(getCenterIP());
@@ -104,17 +100,18 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysis{
 		if (focus==null) focus=new ResultsTable();
 		focus.addRow();
 		focus.addValue("#", this.counter);
-		focus.addValue("File", fileName);
-		focus.addValue("Repetition", inputParam.repetition);
-		focus.addValue("z step", inputParam.stepZ);
-		focus.addValue("z start", inputParam.start);
-		focus.addValue("z stop", inputParam.stop);
-		double space=1000/(4*this.lineWidth*cal.pixelWidth);
+		focus.addValue("File", analysis.fileName);
+		focus.addValue("Repetition", analysis.getRepetition());
+		focus.addValue("z step", analysis.getStepZ());
+		focus.addValue("z start", analysis.getStartZ());
+		focus.addValue("z stop", analysis.getStopZ());
+		double space=1000/(4*analysis.lineWidth*cal.pixelWidth);
 		focus.addValue("Grid spacing LP/mm", space);
-		focus.addValue("x1", this.horizontalLine.x1d);
-		focus.addValue("y1", this.horizontalLine.y1d);
-		focus.addValue("x2", this.horizontalLine.x2d);
-		focus.addValue("y2", this.horizontalLine.y2d);
+		Line line=analysis.getHorizontalLine();
+		focus.addValue("x1", line.x1d);
+		focus.addValue("y1", line.y1d);
+		focus.addValue("x2", line.x2d);
+		focus.addValue("y2", line.y2d);
 		focus.show(HorizontalLineFocusAnalysis.titleSummary);
 	}
 	
@@ -126,10 +123,10 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysis{
 //		tableFit.GlobalTableFit(CurveFitter.POLY5);
 //		tableFit.getFitResults().show(HorizontalFocus.titleResults);
 	
-		int last=focusShift.getLastColumn();
+		int last=focusShiftTable.getLastColumn();
 		
 		ResultsTable focus=ResultsTable.getResultsTable(HorizontalLineFocusAnalysis.titleSummary);
-		CurveFitter cf=new CurveFitter(focusShift.getColumnAsDoubles(0),focusShift.getColumnAsDoubles(last));
+		CurveFitter cf=new CurveFitter(focusShiftTable.getColumnAsDoubles(0),focusShiftTable.getColumnAsDoubles(last));
 		cf.doFit(CurveFitter.STRAIGHT_LINE);
 		
 		double [] param=cf.getParams();
@@ -152,33 +149,13 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysis{
 		this.focusFitPlot.setXYLabels("Shift x-axis/um", "Shift z-axis/um");
 		fitWin=focusFitPlot.getImagePlus();
 	}
-	void showPlot() {
-		fitWin.show();
-	}
-	void savePlot() {
-		IJ.save(fitWin, filePath+fileName+" "+IJ.pad(counter, 4)+".tif");
-	}
-	void saveResultTables() {
-		
-		int n=this.fileName.indexOf(".");
-		String saveName=this.fileName.substring(0, n);
-		
-		analysisTable.save(filePath+saveName+"_Profiles_"+IJ.pad(counter, 4)+".csv");
-		focusShift.save(filePath+fileName+"_FocusShift_"+IJ.pad(counter, 4)+".csv");
-	}
-
-	void showResultsTables() {
-		analysisTable.show(HorizontalLineFocusAnalysis.titleProfiles);
-		focusShift.show(HorizontalLineFocusAnalysis.titleShift);
-		
-	}
+	
+	
 /********************************************************************************************************** 
  * Getter and Setter
  **********************************************************************************************************/
 	
-	int getRepetition() {
-		return inputParam.repetition;
-	}
+	
 	
 
 	

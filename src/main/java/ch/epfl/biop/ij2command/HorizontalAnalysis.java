@@ -13,47 +13,86 @@ import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
 public class HorizontalAnalysis {
+	
 	//required parameters
 	private ImagePlus inputImage;
 	private Line horizontalLine;
 	//optional parameters
-	private int startZ, stopZ,stepZ, startT,stopT,stepT;
-	private Builder built;
+	private int repetition, startZ, stopZ,stepZ, startT,stopT,stepT;
+	private boolean saveTables,showTables,savePlot,showPlot;
 	
+	//derived parameters (no input)
 	protected String filePath,fileName;
-	protected ResultsTable analysisTable=new ResultsTable();
-	protected ResultsTable summaryResults;
 	protected int lineWidth, counter,stackCenter, stackSlices;
 	protected boolean allStack,ignoreTime=false,isTimeLapse=false;
 	protected Calibration cal;
 	
+	
+	
+	
+	protected ResultsTable summaryResults;
+	
+	
 	private HorizontalAnalysis (Builder builder) {
 		//required parameters
 		this.inputImage=builder.inputImage;
+		this.horizontalLine=builder.horizontalLine;
 		
 		//optional parameters
-		this.horizontalLine=builder.horizontalLine;
+		this.repetition=builder.repetition;
 		this.startZ=builder.startZ;
 		this.stopZ=builder.stopZ;
+		this.stepZ=builder.stepZ;
+		this.startT=builder.startT;
+		this.stopT=builder.stopT;
+		this.stepT=builder.stepT;
+		this.allStack=builder.allStack;
+		this.saveTables=builder.saveTables;
+		this.showTables=builder.showTables;
+		this.savePlot=builder.savePlot;
+		this.showPlot=builder.showPlot;
 	}
-	
+	public ImagePlus getImage(){
+		return inputImage;
+	}
 	public static class Builder{
 		//required parameters
 		private ImagePlus inputImage;
 		
 		//optional Parameters
 		private Line horizontalLine;
-		private int startZ;
-		private int stopZ;
-		private int stepZ;
-		private int startT;
-		private int stopT;
-		private int stepT;
+		private int repetition;
+		private int startZ, stopZ, stepZ, startT, stopT, stepT;
+		private boolean allStack, saveTables,showTables,savePlot,showPlot;
 		private Builder built;
 		
 		public Builder(ImagePlus imp) {
 			this.inputImage=imp;
 			
+		}
+		public Builder repetition(int rep) {
+			this.repetition=rep;
+			return this;
+		}
+		public Builder showTables(boolean show) {
+			this.showTables=show;
+			return this;
+		}
+		public Builder showPlot(boolean show) {
+			this.showPlot=show;
+			return this;
+		}
+		public Builder saveTables(boolean save) {
+			this.saveTables=save;
+			return this;
+		}
+		public Builder savePLot(boolean save) {
+			this.savePlot=save;
+			return this;
+		}
+		public Builder setEntireStack(boolean all) {
+			this.allStack=all;
+			return this;
 		}
 		public Builder setStartZ(int start) {
 			this.startZ=start;
@@ -79,129 +118,95 @@ public class HorizontalAnalysis {
 			this.stepT=step;
 			return this;
 		}
-		public Builder setBuilder(Builder b){
-			this.built=b;
-			return this;
+		public void setSlice(int slice) {
+			inputImage.setSlice(slice);
 		}
 		public HorizontalAnalysis build() {
 			return new HorizontalAnalysis(this);
 		}
+		
+	}
+	public void deleteRoi(){
+		IJ.run(inputImage, "Select None", "");
 	}
 	
-	void logFileNames() {
-		IJ.log("===============================================================");
-		this.filePath=IJ.getDirectory("file");
-		this.fileName=inputImage.getTitle();
-		
-		if (fileName.startsWith(filePath)) 
-			this.fileName=inputImage.getTitle().substring(filePath.length());
-			IJ.log("File: "+fileName);
-			IJ.log("Path: "+filePath);
-	}
-
-	public boolean checkInputImage() {
-		boolean check=true;
-		if (inputImage==null) {
-			IJ.log("Please provide an image");
-			check=false;
-		}
-		
-		if (inputImage.getNSlices()==1) {
-			IJ.log("Please provide an z-stack");
-			check=false;
-		}
-//		if (inputImage.getNFrames()>1) this.isTimeLapse=true;
-		return check;
-		
-	}
-	void disableStack() {
-		this.allStack=false;
+	public void shiftStackCenter(int shift) {
+		// TODO Auto-generated method stub
+		this.stackCenter+=shift;
 	}
 	
-	void ignoreTimelapse() {
-		this.ignoreTime=true;
+	/*************************************************************************************************************
+	 * getter and setter methods
+	 * @return
+	 *************************************************************************************************************/
+	
+	public Line getHorizontalLine() {
+		// TODO Auto-generated method stub
+		return horizontalLine;
+	}
+	public ResultsTable getAnalysisTable() {
+		// TODO Auto-generated method stub
+		return this.analysisTable;
+	}
+	public int getstackCenter() {
+		// TODO Auto-generated method stub
+		return this.stackCenter;
+	}
+	public int getStackSlices() {
+		// TODO Auto-generated method stub
+		return this.stackSlices;
+	}
+	public int getStartZ() {
+		// TODO Auto-generated method stub
+		return this.startZ;
+	}
+	public int getStepZ() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	public int getStopZ() {
+		// TODO Auto-generated method stub
+		return stopZ;
+	}
+	public void setHorizontalLine(Line horizontal) {
+		// TODO Auto-generated method stub
+		this.horizontalLine=horizontal;
+	}
+	public void setStartZ(int i) {
+		// TODO Auto-generated method stub
+		this.startZ=i;
+	}
+	public void setStepZ(int value) {
+		// TODO Auto-generated method stub
+		this.stepZ=value;
+	}
+	public void setStopZ(int slices) {
+		// TODO Auto-generated method stub
+		this.stopZ=slices;
+	}
+	public boolean getSaveTable() {
+		// TODO Auto-generated method stub
+		return this.saveTables;
+	}
+	public boolean getSavePlot() {
+		// TODO Auto-generated method stub
+		return this.savePlot;
+	}
+	public boolean getShowTable() {
+		// TODO Auto-generated method stub
+		return this.showTables;
+	}
+	public boolean getShowPlot() {
+		// TODO Auto-generated method stub
+		return this.showPlot;
+	}
+	public int getRepetition() {
+		// TODO Auto-generated method stub
+		return this.repetition;
 	}
 	
-	boolean  hasLine() {
-		Roi roi=inputImage.getRoi();
-		if (roi!=null) return roi.isLine();
-		else return false;
-	}
 	
-	Line getLine() {
-		return (Line)inputImage.getRoi();
-	}
-	/********************************************************************************************************** 
-	 * Getter and Setter
-	 **********************************************************************************************************/
-		
-		int getAnalysisLineWidth() {
-			return this.lineWidth;
-		}
-		ImageProcessor getCenterIP(){
-			inputImage.setSliceWithoutUpdate(stackCenter);
-			return inputImage.getProcessor();
-		}
-		Line getHorizontalLine() {
-			return this.horizontalLine;
-		}
-		ImageStack getImageStack() {
-			ImageStack stack=new ImageStack(inputImage.getWidth(),inputImage.getHeight());
-			if (!isTimeLapse) {
-				int slices=inputImage.getNSlices();
-				if (allStack) {
-					startZ=1;
-					stopZ=slices;
-				}
-				for (int s=startZ;s<=stopZ;s+=stepZ) {
-					inputImage.setSlice(s);
-					stack.addSlice(inputImage.getProcessor());
-							
-				}
-			}
-			return stack;
-		
-		}
-		ImagePlus getInputImage(){
-			return this.inputImage;
-		}
-		int getZStep() {
-			return stepZ;
-		}
-		void setHorizontalLine(Line horizontal) {
-			this.horizontalLine=horizontal;
-		}
-		void setSliceStart(int value) {
-			startZ=value;
-		}
-		void setSliceStop(int value) {
-			stopZ=value;
-		}
-		
-		void setStackCenter(int shift) {
-			this.stackCenter+=shift;
-		}
-		ResultsTable getResultsTable() {
-			return this.analysisTable;
-		}
-		int getStackCenter() {
-			return this.stackCenter;
-		}
-		int getStackSlices() {
-			return this.stackSlices;
-		}
-		public void getSummaryTable(String title) {
-			if (WindowManager.getWindow(title)==null) {
-				ResultsTable summaryResults=new ResultsTable();
-				
-				summaryResults.show(title);
-				this.counter=0;
-				return;
-			};
-			this.summaryResults=ResultsTable.getResultsTable(title);
-			this.counter=this.summaryResults.getCounter();
-		}
-}	
+	}	
 	
 	
 /*	

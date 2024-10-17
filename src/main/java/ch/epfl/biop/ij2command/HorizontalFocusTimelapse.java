@@ -9,11 +9,12 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 	HorizontalLineFocusAnalysis inputHLFA;
 	
 	HorizontalFocusTimelapse(HorizontalLineFocusAnalysis hlfa){
-		super();
-		super.inputImage=hlfa.getInputImage();
-		inputHLFA=hlfa.duplicate();
-		slices=hlfa.inputImage.getNSlices();
-		frames=hlfa.inputImage.getNFrames();
+		super(hlfa);
+		
+		inputHLFA=hlfa;
+		slices=hlfa.analysis.getStackSlices();
+		hlfa.analysis.getStackSlices();
+		frames=analysis.getImage().getNFrames();
 	}
 
 	void analyseTimeLapse(){
@@ -21,7 +22,7 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 		inputHLFA.ignoreTimelapse();	
 		
 		for (int t=0;t<frames;t+=1) {
-				inputImage.setSlice(inputHLFA.getStackCenter());
+				analysis.getImage().setSlice(inputHLFA.getStackCenter());
 				int start=t*slices+1;
 				int end=t*slices+slices;
 								
@@ -29,8 +30,9 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 				inputHLFA.setSliceStart(start);
 				inputHLFA.setSliceStop(end);
 				inputHLFA.run();
-				inputHLFA.setStackCenter(inputHLFA.getStackSlices());
-				IJ.run(inputImage, "Select None", "");
+				analysis.shiftStackCenter(slices);
+				analysis.deleteRoi();
+//				IJ.run(inputImage, "Select None", "");
 			}
 	}
 	

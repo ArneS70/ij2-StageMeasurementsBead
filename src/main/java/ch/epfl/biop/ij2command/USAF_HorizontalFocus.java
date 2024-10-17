@@ -5,6 +5,8 @@ package ch.epfl.biop.ij2command;
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
+
+import ch.epfl.biop.ij2command.HorizontalAnalysis.Builder;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -50,8 +52,12 @@ import net.imagej.ImageJ;
 			
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			if (imp!=null){
-				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).build();
-				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(new HorizontalAnalysis.Builder(imp).setStartZ(startZ).build());
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).setStepZ(stepZ).setStopT(stopZ).
+																				setEntireStack(allStack).
+																				savePLot(savePlot).showPlot(showPlot).
+																				saveTables(saveTable).showTables(showTable).build();
+				
+				HorizontalLineFocusAnalysis horizontal=new HorizontalLineFocusAnalysis(analysis);
 				horizontal.run();
 				
 			}
