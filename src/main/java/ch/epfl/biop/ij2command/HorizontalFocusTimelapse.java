@@ -12,8 +12,9 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 		super(hlfa);
 		
 		inputHLFA=hlfa;
-		slices=hlfa.analysis.getStackSlices();
-		hlfa.analysis.getStackSlices();
+		this.analysis=hlfa.analysis;
+		slices=analysis.getStackSlices();
+		
 		frames=analysis.getImage().getNFrames();
 	}
 

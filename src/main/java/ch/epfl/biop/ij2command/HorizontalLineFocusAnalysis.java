@@ -47,7 +47,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 	
 	void run(){
 		if (checkInputImage()) {
-			checkParameters();
+			
 			if (hasLine()) this.setHorizontalLine(this.getLine());
 			else {
 					analysis.setHorizontalLine( new HorizontalLine(getCenterIP()).findHorizontalLine());
