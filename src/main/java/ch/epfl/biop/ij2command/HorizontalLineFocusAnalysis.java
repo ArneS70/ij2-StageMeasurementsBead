@@ -17,19 +17,19 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 	final static String titleShift="Horizontal Focus Shift";
 	final static String titleSummary="Summary Horizontal Focus Results";
 	
-	protected HorizontalAnalysis analysis;
+//	protected HorizontalAnalysis analysis;
 	
 	private ResultsTable focusShiftTable=new ResultsTable();
 	protected ResultsTable analysisTable=new ResultsTable();
 	
 	private Plot focusFitPlot;
 	private ImagePlus fitWin;
-	private Calibration cal;
+//	private Calibration cal;
 	
 	private int counter;
 	
 	HorizontalLineFocusAnalysis(HorizontalAnalysis parameters){
-		super();
+//		super();
 		this.analysis=parameters;
 	}
 	HorizontalLineFocusAnalysis (HorizontalLineFocusAnalysis hlfa){
@@ -47,6 +47,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 	
 	void run(){
 		if (checkInputImage()) {
+			checkParameters();
 			if (hasLine()) this.setHorizontalLine(this.getLine());
 			else {
 					analysis.setHorizontalLine( new HorizontalLine(getCenterIP()).findHorizontalLine());
@@ -61,9 +62,9 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 			HorizontalFocusTimelapse hft=new HorizontalFocusTimelapse(this);
 			hft.analyseTimeLapse();
 		} else {
-		
+			
 			getSummaryTable(titleSummary);
-			cal=analysis.getImage().getCalibration();
+			analysis.cal=analysis.getImage().getCalibration();
 			logFileNames();
 			LogToTable();
 			LineFocusAnalyser focusAnalyser =new LineFocusAnalyser(this);
@@ -105,7 +106,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 		focus.addValue("z step", analysis.getStepZ());
 		focus.addValue("z start", analysis.getStartZ());
 		focus.addValue("z stop", analysis.getStopZ());
-		double space=1000/(4*analysis.lineWidth*cal.pixelWidth);
+		double space=1000/(4*analysis.lineWidth*analysis.cal.pixelWidth);
 		focus.addValue("Grid spacing LP/mm", space);
 		Line line=analysis.getHorizontalLine();
 		focus.addValue("x1", line.x1d);
@@ -133,13 +134,13 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 		double slope=param[1];
 		double angle=180*Math.atan(slope)/Math.PI;
 		
-		IJ.log("Focus shift x-axis/pixel per z/um: "+cal.pixelWidth/slope);
+		IJ.log("Focus shift x-axis/pixel per z/um: "+analysis.cal.pixelWidth/slope);
 		IJ.log("Focus shift delta z/detla x  : "+slope);
 		IJ.log("angle/deg: "+angle);
 		IJ.log("R^2: "+cf.getFitGoodness());
 
 		focus.setPrecision(5);
-		focus.addValue("Focus shift x-axis pixel/um", cal.pixelWidth/slope);
+		focus.addValue("Focus shift x-axis pixel/um", analysis.cal.pixelWidth/slope);
 		focus.addValue("Focus shift delta z/delta x", slope);
 		focus.addValue("angle/deg", angle);
 		focus.addValue("R^2", cf.getFitGoodness());

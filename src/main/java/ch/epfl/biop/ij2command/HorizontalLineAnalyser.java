@@ -6,16 +6,19 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.gui.Line;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.plugin.filter.MaximumFinder;
 import ij.process.ImageProcessor;
 
 
-public class HorizontalLineAnalyser extends HorizontalAnalysis{
+public class HorizontalLineAnalyser extends HorizontalAnalysisMethods{
 	private double [] profile;
 	private double [] xvalues;
-	
+	private ImagePlus inputImage=analysis.getImage();
+	private Line horizontalLine=analysis.getHorizontalLine();
+	private Calibration cal=analysis.cal;
 	private int method;
 	private FitterFunction fitFunc;
 	private ResultsTable fitResults, profileTableValues;
@@ -23,13 +26,13 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
  * Constructors
  */
 	HorizontalLineAnalyser(){
-		
+		super();
 	}
-	HorizontalLineAnalyser(ImagePlus imp){
-		super(imp);
-		this.cal=imp.getCalibration();
-		double pixelSize=cal.pixelWidth;
-		ImageProcessor ip=imp.getProcessor();
+	HorizontalLineAnalyser(HorizontalAnalysis analysis){
+		this.analysis=analysis;
+//		this.inputImage=analysis.getImage();
+//		double pixelSize=this.analysis.cal.pixelWidth;
+//		ImageProcessor ip=inputImage.getProcessor();
 		
 
 //		this.setHorizontalLine(inputImage.getNSlices()/2);
@@ -74,7 +77,7 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 	void setHorizontalLine(int slice) {
 		
 			
-			inputImage.setSlice(slice);
+			analysis.setSlice(slice);
 			ImageProcessor ip_edge=inputImage.getProcessor().duplicate().convertToFloat();
 			ip_edge.findEdges();
 			LineAnalyser la=new LineAnalyser(new ImagePlus("Edges",ip_edge),1);
@@ -88,8 +91,8 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 			double mean2=ip.getStatistics().mean;
 			//IJ.log("m1="+mean1+"    m2="+mean2);
 			
-			if (mean1>mean2) {inputImage.setRoi(lines[pos]);horizontalLine=(Line)lines[pos];}
-			else {inputImage.setRoi(lines[pos+1]);horizontalLine=(Line)lines[pos+1];}
+			if (mean1>mean2) {inputImage.setRoi(lines[pos]);analysis.setHorizontalLine((Line)lines[pos]);}
+			else {inputImage.setRoi(lines[pos+1]);analysis.setHorizontalLine((Line)lines[pos+1]);}
 			
 			inputImage.updateAndDraw();
 			
@@ -99,7 +102,10 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 	
 	void writeFitResultsTable(int method, boolean profileTable) {
 		
+		Line horizontalLine=analysis.getHorizontalLine();
+		
 		int slices=inputImage.getNSlices();
+		int zstep=analysis.getStepZ();
 		
 		for (int n=1;n<=slices;n+=zstep) {
 			
@@ -131,7 +137,8 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 				this.fitFunc=new Poly3Fitter(xvalues,profile);
 				fitFunc.setHeader(Poly3Fitter.header);
 				this.method=FitterFunction.Poly3;
-				double [] results=this.fitFunc.getParameter();
+				double 
+				[] results=this.fitFunc.getParameter();
 				
 				fitResults=ResultsTable.getResultsTable("Horizontal Line Fits");
 				fitResults.addRow();
@@ -166,9 +173,9 @@ public class HorizontalLineAnalyser extends HorizontalAnalysis{
 		}
 	}
 	}
-	void setZstep(int step) {
-		this.zstep=step;
-	}
+//	void setZstep(int step) {
+//		this.zstep=step;
+//	}
 /*	double calculateHorizontalSpacing(int linewidth){
 		inputImage.setSlice(super.stackCenter);
 		LineAnalyser spacing=new LineAnalyser (new ImagePlus("edge",this.inputImage.getProcessor().duplicate()));

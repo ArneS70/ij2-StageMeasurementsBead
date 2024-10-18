@@ -15,9 +15,9 @@ public class LineFocusAnalyser extends FocusAnalyser{
 		super();
 		this.horizontalLine=hlfa.getHorizontalLine();
 		this.zstack=hlfa.getImageStack();
-		this.cal=hlfa.cal;
+		this.cal=hlfa.analysis.cal;
 		this.analysisLineWidth=hlfa.getAnalysisLineWidth();
-		this.rep=hlfa.getRepetition();
+		this.rep=hlfa.analysis.getRepetition();
 		this.step=hlfa.getZStep();
 	}
 	ResultsTable analyseHorizontalLine() {

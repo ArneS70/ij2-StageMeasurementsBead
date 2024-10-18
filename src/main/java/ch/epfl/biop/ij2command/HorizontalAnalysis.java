@@ -26,6 +26,7 @@ public class HorizontalAnalysis {
 	protected int lineWidth, counter,stackCenter, stackSlices;
 	protected boolean allStack,ignoreTime=false,isTimeLapse=false;
 	protected Calibration cal;
+	protected ResultsTable analysisTable;
 	
 	
 	
@@ -92,6 +93,10 @@ public class HorizontalAnalysis {
 		}
 		public Builder setEntireStack(boolean all) {
 			this.allStack=all;
+			return this;
+		}
+		public Builder setRepetition(int rep) {
+			this.repetition=rep;
 			return this;
 		}
 		public Builder setStartZ(int start) {
@@ -162,7 +167,7 @@ public class HorizontalAnalysis {
 	}
 	public int getStepZ() {
 		// TODO Auto-generated method stub
-		return 0;
+		return this.stepZ;
 	}
 	public int getStopZ() {
 		// TODO Auto-generated method stub
@@ -171,6 +176,10 @@ public class HorizontalAnalysis {
 	public void setHorizontalLine(Line horizontal) {
 		// TODO Auto-generated method stub
 		this.horizontalLine=horizontal;
+	}
+	public void setRepetition(int i) {
+		// TODO Auto-generated method stub
+		this.repetition=i;
 	}
 	public void setStartZ(int i) {
 		// TODO Auto-generated method stub
@@ -204,11 +213,11 @@ public class HorizontalAnalysis {
 		// TODO Auto-generated method stub
 		return this.repetition;
 	}
-	
-	
+	public void setSlice(int slice) {
+		inputImage.setSlice(slice);
 	}	
 	
-	
+}	
 /*	
 	public boolean checkInputImage() {
 		boolean check=true;

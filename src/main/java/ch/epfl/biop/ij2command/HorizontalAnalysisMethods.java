@@ -128,13 +128,17 @@ public class HorizontalAnalysisMethods {
 			}
 			ImageStack getImageStack() {
 				ImageStack stack=new ImageStack(analysis.getImage().getWidth(),analysis.getImage().getHeight());
+				int start=analysis.getStartZ();
+				int stop=analysis.getStopZ();
+				int step=analysis.getStepZ();
+				
 				if (!analysis.isTimeLapse) {
 					int slices=analysis.getImage().getNSlices();
 					if (analysis.allStack) {
 						analysis.setStartZ(1);
 						analysis.setStopZ(slices);
 					}
-					for (int s=analysis.getStartZ();s<=analysis.getStopZ();s+=analysis.getStepZ()) {
+					for (int s=start;s<=stop;s+=step) {
 						analysis.getImage().setSlice(s);
 						stack.addSlice(analysis.getImage().getProcessor());
 								
