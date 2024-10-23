@@ -28,6 +28,25 @@ public class HorizontalLine  {
 		ip_edge.findEdges();
 //		new ImagePlus("Edge",ip_edge).show();
 		LineAnalyser la=new LineAnalyser(ip_edge);
+		int [] maxima=la.findVerticalMaximum(10);
+		int pos=1+maxima.length/2;
+		
+		double space=this.getHorizontalSpacing();
+		
+		inputIP.setRoi(new Line(1,maxima[pos]-space/2,width,maxima[pos]-space/2));
+		double mean1=inputIP.getStatistics().mean;
+		
+		inputIP.setRoi(new Line(1,maxima[pos]+space/2,width,maxima[pos]+space/2));
+		double mean2=inputIP.getStatistics().mean;
+		
+		if (mean1>mean2) {horizontal=new Line(1,maxima[pos]-space/2,width,maxima[pos]-space/2);}
+		else {horizontal=new Line(1,maxima[pos]+space/2,width,maxima[pos]+space/2);}
+		
+		
+/*		
+		
+		Roi line=la.findVerticalMaximum(width, height);
+		
 		Roi [] lines=la.findVerticalMaxima(10,3*width/8);
 		int pos=1+lines.length/2;
 		
@@ -38,11 +57,11 @@ public class HorizontalLine  {
 		double mean2=inputIP.getStatistics().mean;
 		//IJ.log("m1="+mean1+"    m2="+mean2);
 		
-		if (mean1>mean2) {horizontal=(Line)lines[pos];}
-		else {horizontal=(Line)lines[pos+1];}
 		
+*/		
 		return horizontal;
 	}
+	
 	double getHorizontalSpacing(){
 //		inputImage.setSlice(super.stackCenter);
 //		LineAnalyser spacing=new LineAnalyser (new ImagePlus("edge",this.inputImage.getProcessor().duplicate()));

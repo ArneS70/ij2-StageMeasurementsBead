@@ -196,6 +196,22 @@ public class LineAnalyser {
 		
 		
 */		
+		int [] findVerticalMaximum(int linewidth) {
+			
+			
+			int [] middleMaximum;
+			getProcessor().setLineWidth(linewidth);
+			setProfile(LineAnalyser.CENTER);
+			double [] lineMiddle=ip_line.getLine(x1, y1, x2, y2);
+			profile=lineMiddle;
+			double maxMiddle=this.getMax();
+			double minMiddle=this.getMin();
+			int prominence=(int)(0.5*(maxMiddle-minMiddle));
+			middleMaximum=MaximumFinder.findMaxima(lineMiddle, prominence, false);
+			Arrays.sort(middleMaximum);
+			
+			return middleMaximum;
+		}
 		Roi [] findVerticalMaxima(int linewidth,int shift){
 //			ip_line.findEdges();
 //			new ImagePlus("test",ip_line).show();
