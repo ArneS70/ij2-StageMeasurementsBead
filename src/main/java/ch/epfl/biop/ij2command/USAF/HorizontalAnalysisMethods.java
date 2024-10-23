@@ -28,16 +28,18 @@ public class HorizontalAnalysisMethods {
 		void logFileNames(){
 			IJ.log("===============================================================");
 			analysis.filePath=IJ.getDirectory("file");
-			analysis.fileName=checkFileName(analysis.getImage().getTitle());
-			
-			
+			analysis.fileName=analysis.getImage().getTitle();
 			if (analysis.fileName.startsWith(analysis.filePath)) 
 				analysis.fileName=analysis.getImage().getTitle().substring(analysis.filePath.length());
-				IJ.log("File: "+analysis.fileName);
-				IJ.log("Path: "+analysis.filePath);
+				
+			analysis.fileName=checkFileName(analysis.fileName);
+			IJ.log("File: "+analysis.fileName);
+			IJ.log("Path: "+analysis.filePath);
 				
 		
 		}
+		
+		
 		String checkFileName(String input) {
 			String output=new String(input);
 			do   {

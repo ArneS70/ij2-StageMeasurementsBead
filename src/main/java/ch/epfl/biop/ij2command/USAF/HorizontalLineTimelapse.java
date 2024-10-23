@@ -22,8 +22,11 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 				analysis.ignoreTime=true;
 				analysis.setStartZ(analysis.getStartZ()+t*slices);
 				analysis.setStopZ(analysis.getStopZ()+t*slices);
+				analysis.stackCenter=analysis.getStartZ()+(analysis.getStopZ()-analysis.getStartZ())/2;
+				analysis.getImage().setSlice(analysis.stackCenter);
 				HorizontalLineAnalysis lineAnalysis=new HorizontalLineAnalysis(analysis);
 				lineAnalysis.run();
+				IJ.run(analysis.getImage(), "Select None", "");
 			
 /*				this.summary=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
 				if (this.summary==null) this.summary=new ResultsTable();
