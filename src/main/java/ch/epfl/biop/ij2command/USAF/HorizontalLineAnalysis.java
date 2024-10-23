@@ -306,17 +306,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
 			fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
-			
-		
-			
-//			int length=Poly3Fitter.header.length;
-//			this.fitFunc=new Poly3Fitter(xvalues,profile);
-//			fitFunc.setHeader(Poly3Fitter.header);
-//			this.method=FitterFunction.Poly3;
-//			results=this.fitFunc.getParameter();
-	
-				
 			this.fitResults.addRow();
+		
 			for (int i=0;i<length-1;i++) {
 				this.fitResults.addValue("z / um", n*cal.pixelDepth);
 				this.fitResults.addValue("p"+i, results[i]);
@@ -333,11 +324,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			} else {	
 					
 				this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
-					
 			};
-				
-			
-			}
+		}
 			
 		
 		if (analysis.getShowTable()) {
@@ -346,6 +334,11 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		}
 		if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
 	}
+//	int length=Poly3Fitter.header.length;
+//	this.fitFunc=new Poly3Fitter(xvalues,profile);
+//	fitFunc.setHeader(Poly3Fitter.header);
+//	this.method=FitterFunction.Poly3;
+//	results=this.fitFunc.getParameter();
 	
 	void writeFitResultsTable(int method, boolean profileTable) {
 		
