@@ -52,7 +52,7 @@ import net.imagej.ImageJ;
 			
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			if (imp!=null){
-				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).setStepZ(stepZ).setStopT(stopZ).
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).setStepZ(stepZ).setStopZ(stopZ).
 																				setRepetition(repetition).
 																				setEntireStack(allStack).
 																				savePLot(savePlot).showPlot(showPlot).

@@ -1,6 +1,7 @@
 package ch.epfl.biop.ij2command.stage.general;
 
 import ij.IJ;
+import ij.gui.Plot;
 import ij.measure.CurveFitter;
 
 public class FitterFunction {
@@ -31,6 +32,13 @@ public class FitterFunction {
 		this.parameters=cf.getParams();
 		this.max=findMax();
 	}
+	private void run(boolean show) {
+		cf.doFit(this.method);
+		this.parameters=cf.getParams();
+		if (show) cf.getPlot().show();
+		this.max=findMax();
+	}
+	
 	private void run(String func,double [] param) {
 		cf.doCustomFit(func, param, false);
 		cf.getPlot().show();
@@ -75,13 +83,21 @@ public class FitterFunction {
 		if (logResults) logParameters();
 		return cf.getParams();
 	}
+	public Plot getPlot() {
+		return cf.getPlot();
+	}
 	double findMax() {
 		int length=x.length;
+		double x1=x[0];double x2=x[length-1];
+		if (x1>x2) {x1=x[length];x2=x[0];}
+		double dist=x2-x1;
+		x1-=dist/2;
+		x2+=dist/2;
 		double maxValue=0;
 		double max=0;
-		for (int i=0;i<length;i++) {
+		for (double i=x1;i<x2;i+=dist/(10*length)) {
 //			IJ.log(""+cf.f(x[i]));
-			if (cf.f(x[i])>maxValue) {max=x[i];maxValue=cf.f(x[i]);};
+			if (cf.f(i)>maxValue) {max=i;maxValue=cf.f(i);};
 		}
 		return max;
 		

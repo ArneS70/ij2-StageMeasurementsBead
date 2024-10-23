@@ -1,5 +1,7 @@
 package ch.epfl.biop.ij2command.USAF;
 
+
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -20,9 +22,10 @@ public class HorizontalAnalysisMethods {
 		}
 /************************************************************************************************************
  * Output logFile
+ *  
  * 		
  ************************************************************************************************************/
-		void logFileNames() {
+		void logFileNames(){
 			IJ.log("===============================================================");
 			analysis.filePath=IJ.getDirectory("file");
 			analysis.fileName=analysis.getImage().getTitle();
@@ -31,6 +34,8 @@ public class HorizontalAnalysisMethods {
 				analysis.fileName=analysis.getImage().getTitle().substring(analysis.filePath.length());
 				IJ.log("File: "+analysis.fileName);
 				IJ.log("Path: "+analysis.filePath);
+				
+		
 		}
 		
 		void showPlot(ImagePlus fit) {
@@ -43,6 +48,7 @@ public class HorizontalAnalysisMethods {
 			
 			int n=this.analysis.fileName.indexOf(".");
 			String saveName=analysis.fileName.substring(0, n);
+//			String pathName=analysis.filePath+saveName+name+IJ.pad(analysis.counter, 4)+".csv";
 			table.save(analysis.filePath+saveName+name+IJ.pad(analysis.counter, 4)+".csv");
 //			table.save(analysis.filePath+saveName+"_Profiles_"+IJ.pad(analysis.counter, 4)+".csv");
 //			analysis.focusShiftTable.save(analysis.filePath+analysis.fileName+"_FocusShift_"+IJ.pad(analysis.counter, 4)+".csv");

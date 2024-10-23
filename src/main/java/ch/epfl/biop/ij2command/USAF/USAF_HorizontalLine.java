@@ -28,28 +28,52 @@ import net.imagej.ImageJ;
 //			@Parameter(style="open")
 //		    File fileInput;
 			
-			@Parameter(label="z-step")
-			int zstep;
+			@Parameter(label="z-start")
+			int startZ;
 			
-			@Parameter(label="Save result tables?")
-			boolean save;
+			@Parameter(label="z-stop")
+			int stopZ;
+			
+			@Parameter(label="z-step")
+			int stepZ;
+			
+			@Parameter(label="Show Focus Shift Plot")
+			boolean showPlot;
+		
+			@Parameter(label="Show result tables?")
+			boolean showTable;
+			
+			@Parameter(label="Show profile tables?")
+			boolean showProfile;
 			
 			@Parameter(label="Summarize results?")
 			boolean summarize;
 			
-			@Parameter(label="Show Plot")
-			boolean show;
-			
-			@Parameter(label="Save & close Plot")
+			@Parameter(label="Save Plot?")
 			boolean savePlot;
+			
+			@Parameter(label="Save result tables?")
+			boolean saveTables;
+			
 			
 			Line toAnalyse;
 
 		@Override
 		public void run() {
 		
-		
-		}	
+			ImagePlus imp=WindowManager.getCurrentImage();	
+			if (imp!=null){
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStepZ(stepZ).setStartZ(startZ).setStopZ(stopZ).
+																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
+																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).summarize(summarize).build();
+				
+				HorizontalLineAnalysis horizontal=new HorizontalLineAnalysis(analysis);
+				
+				horizontal.run();
+				
+				
+			}
+		}
 				
 
 

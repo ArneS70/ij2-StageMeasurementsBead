@@ -10,6 +10,7 @@ import ij.measure.CurveFitter;
 import ij.plugin.filter.MaximumFinder;
 import ij.process.ImageProcessor;
 
+
 public class HorizontalLine  {
 	ImageProcessor inputIP;
 	int width;
@@ -74,6 +75,7 @@ public class HorizontalLine  {
 		cf.doFit(CurveFitter.STRAIGHT_LINE);
 //		cf.getPlot().show();
 		double []param=cf.getParams();
+		
 		return param[1];
 		
 		

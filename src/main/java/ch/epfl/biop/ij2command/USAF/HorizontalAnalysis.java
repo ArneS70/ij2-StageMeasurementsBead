@@ -15,15 +15,17 @@ import ij.process.ImageProcessor;
 public class HorizontalAnalysis {
 	
 	//required parameters
-	private ImagePlus inputImage;
+	ImagePlus inputImage;
 	private Line horizontalLine;
 	//optional parameters
 	private int repetition, startZ, stopZ,stepZ, startT,stopT,stepT;
-	private boolean saveTables,showTables,savePlot,showPlot;
+	private boolean saveTables,showTables,savePlot,showPlot,showProfile;
+	boolean summarize;
 	
 	//derived parameters (no input)
 	protected String filePath,fileName;
-	protected int lineWidth, counter,stackCenter, stackSlices;
+	protected int lineWidth, counter,stackCenter, stackSlices; 
+	double spacing;
 	protected boolean allStack,ignoreTime=false,isTimeLapse=false;
 	protected Calibration cal;
 	protected ResultsTable analysisTable;
@@ -47,24 +49,31 @@ public class HorizontalAnalysis {
 		this.startT=builder.startT;
 		this.stopT=builder.stopT;
 		this.stepT=builder.stepT;
+		this.stackCenter=builder.stackCenter;
 		this.allStack=builder.allStack;
 		this.saveTables=builder.saveTables;
 		this.showTables=builder.showTables;
 		this.savePlot=builder.savePlot;
 		this.showPlot=builder.showPlot;
+		this.showProfile=builder.showProfile;
+		this.summarize=builder.summarize;
+		this.cal=builder.cal;
 	}
 	public ImagePlus getImage(){
 		return inputImage;
 	}
 	public static class Builder{
+		
+
 		//required parameters
 		private ImagePlus inputImage;
 		
 		//optional Parameters
 		private Line horizontalLine;
 		private int repetition;
-		private int startZ, stopZ, stepZ, startT, stopT, stepT;
-		private boolean allStack, saveTables,showTables,savePlot,showPlot;
+		private int startZ, stopZ, stepZ, startT, stopT, stepT,stackCenter;
+		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize;
+		private Calibration cal;
 		private Builder built;
 		
 		public Builder(ImagePlus imp) {
@@ -75,8 +84,20 @@ public class HorizontalAnalysis {
 			this.repetition=rep;
 			return this;
 		}
+		public Builder setCalibration(Calibration cal) {
+			this.cal=cal;
+			return this;
+		};
 		public Builder showTables(boolean show) {
 			this.showTables=show;
+			return this;
+		}
+		public Builder summarize(boolean summarize) {
+			this.summarize=summarize;
+			return this;
+		}
+		public Builder showProfile(boolean profile) {
+			this.showProfile=profile;
 			return this;
 		}
 		public Builder showPlot(boolean show) {
@@ -126,7 +147,21 @@ public class HorizontalAnalysis {
 		public void setSlice(int slice) {
 			inputImage.setSlice(slice);
 		}
+		public Builder setStackCenter(int c) {
+			this.stackCenter=c;
+			return this;
+		}
+		public Builder setCalibration() {
+			this.cal=inputImage.getCalibration();
+			return this;
+		}
 		public HorizontalAnalysis build() {
+			if (inputImage!=null) {
+				setCalibration();
+//				setStartZ(1);
+//				setStopZ(inputImage.getNSlices());
+				setStackCenter(startZ+((stopZ-startZ)/2));
+			}
 			return new HorizontalAnalysis(this);
 		}
 		
@@ -159,6 +194,7 @@ public class HorizontalAnalysis {
 	}
 	public int getStackSlices() {
 		// TODO Auto-generated method stub
+		stackSlices=this.inputImage.getNSlices();
 		return this.stackSlices;
 	}
 	public int getStartZ() {

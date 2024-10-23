@@ -27,7 +27,9 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 //	private Calibration cal;
 	
 	private int counter;
-	
+	HorizontalLineFocusAnalysis(){
+		
+	}
 	HorizontalLineFocusAnalysis(HorizontalAnalysis parameters){
 //		super();
 		this.analysis=parameters;
@@ -64,6 +66,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 		} else {
 			
 			getSummaryTable(titleSummary);
+			analysis.spacing=new HorizontalLine(getCenterIP()).getHorizontalSpacing();
 			analysis.cal=analysis.getImage().getCalibration();
 			logFileNames();
 			LogToTable();
@@ -99,6 +102,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 	void LogToTable() {
 		ResultsTable focus=ResultsTable.getResultsTable(HorizontalLineFocusAnalysis.titleSummary);
 		if (focus==null) focus=new ResultsTable();
+		counter=focus.getCounter();
 		focus.addRow();
 		focus.addValue("#", this.counter);
 		focus.addValue("File", analysis.fileName);
@@ -106,7 +110,7 @@ public class HorizontalLineFocusAnalysis extends HorizontalAnalysisMethods{
 		focus.addValue("z step", analysis.getStepZ());
 		focus.addValue("z start", analysis.getStartZ());
 		focus.addValue("z stop", analysis.getStopZ());
-		double space=1000/(4*analysis.lineWidth*analysis.cal.pixelWidth);
+		double space=1000/(2*analysis.spacing*analysis.cal.pixelWidth);
 		focus.addValue("Grid spacing LP/mm", space);
 		Line line=analysis.getHorizontalLine();
 		focus.addValue("x1", line.x1d);

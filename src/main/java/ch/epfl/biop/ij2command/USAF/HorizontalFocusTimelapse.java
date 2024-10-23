@@ -17,7 +17,13 @@ public class HorizontalFocusTimelapse extends HorizontalLineFocusAnalysis{
 		
 		frames=analysis.getImage().getNFrames();
 	}
-
+	HorizontalFocusTimelapse(HorizontalAnalysis ha){
+		super();
+		this.analysis=ha;
+		slices=analysis.getStackSlices();
+		
+		frames=analysis.getImage().getNFrames();
+	}
 	void analyseTimeLapse(){
 		inputHLFA.disableStack();
 		inputHLFA.ignoreTimelapse();	

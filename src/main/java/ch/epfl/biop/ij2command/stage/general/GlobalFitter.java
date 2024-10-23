@@ -17,6 +17,9 @@ private int bestFitPos;
 private double [][] fitResults;
 private ResultsTable fitParameters;
 	
+	public GlobalFitter() {
+		
+	}
 	public GlobalFitter(ResultsTable rt, int method){
 		
 		this.inputTable=rt;
@@ -107,14 +110,14 @@ private ResultsTable fitParameters;
 		fitParameters.show("Fit Parameters");
 	}
 	
-	String createFormula(double []parameters) {
+	public String createFormula(double []parameters) {
 		String formula="y=a+b*("+parameters[0];
 		int poly=parameters.length;
 		
 		for (int n=1;n<poly;n++) {
 		
 		if (parameters[n]>0)formula=formula.concat("+");  
-		formula=formula.concat(IJ.d2s(parameters[n]));
+		formula=formula.concat(IJ.d2s(parameters[n],6));
 		formula=formula.concat("*pow(x-c,"+n+")");
 		}
 		formula=formula.concat(")");
