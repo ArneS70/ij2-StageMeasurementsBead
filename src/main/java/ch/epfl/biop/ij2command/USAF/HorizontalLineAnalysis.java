@@ -32,7 +32,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	private Calibration cal;
 	private int method,counter;
 	private FitterFunction fitFunc;
-	private ResultsTable fitResults, profiles,summary;
+	protected ResultsTable fitResults;
+	protected ResultsTable profiles;
+	protected ResultsTable summary;
 	int startSlice,endSlice;
 	ImageStack fitPlots=new ImageStack(696,415);
 /**   
@@ -228,7 +230,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			if (analysis.getSavePlot()) {
 				IJ.save(fitWin,analysis.filePath+analysis.fileName+"_FitPlots_"+IJ.pad(counter, 4)+".tif");
 			}
-			ResultsTable lineMax=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
+//			ResultsTable lineMax=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
+			ResultsTable lineMax=this.summary;
 			lineMax.addValue("p1", param[0]);
 			lineMax.addValue("p2", param[1]);
 			lineMax.addValue("SumResSquare", param[2]);

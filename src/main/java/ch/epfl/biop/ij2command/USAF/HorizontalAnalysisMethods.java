@@ -28,7 +28,8 @@ public class HorizontalAnalysisMethods {
 		void logFileNames(){
 			IJ.log("===============================================================");
 			analysis.filePath=IJ.getDirectory("file");
-			analysis.fileName=analysis.getImage().getTitle();
+			analysis.fileName=checkFileName(analysis.getImage().getTitle());
+			
 			
 			if (analysis.fileName.startsWith(analysis.filePath)) 
 				analysis.fileName=analysis.getImage().getTitle().substring(analysis.filePath.length());
@@ -36,6 +37,25 @@ public class HorizontalAnalysisMethods {
 				IJ.log("Path: "+analysis.filePath);
 				
 		
+		}
+		String checkFileName(String input) {
+			String output=new String(input);
+			do   {
+				output=output.replaceFirst("/", "_");
+			}while (output.contains("/"));
+			
+			do   {
+				output=output.replaceFirst(" ", "");
+			}while (output.contains(" "));
+			
+//			do   {
+//				output=output.replaceFirst(".", "_");
+//			}while (output.contains("."));
+			
+			do   {
+				output=output.replaceFirst("-", "_");
+			}while (output.contains("-"));
+			return output;
 		}
 		
 		void showPlot(ImagePlus fit) {

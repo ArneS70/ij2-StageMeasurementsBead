@@ -2,6 +2,8 @@ package ch.epfl.biop.ij2command.USAF;
 
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ij.IJ;
+import ij.ImagePlus;
+import ij.measure.ResultsTable;
 
 public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 	int frames,slices;
@@ -17,17 +19,38 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 //		inputHLFA.ignoreTimelapse();	
 		
 		for (int t=0;t<frames;t+=1) {
+				analysis.ignoreTime=true;
+				analysis.setStartZ(analysis.getStartZ()+t*slices);
+				analysis.setStopZ(analysis.getStopZ()+t*slices);
+				HorizontalLineAnalysis lineAnalysis=new HorizontalLineAnalysis(analysis);
+				lineAnalysis.run();
+			
+/*				this.summary=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
+				if (this.summary==null) this.summary=new ResultsTable();
+				int counter=this.summary.getCounter();
 				analysis.getImage().setSlice(analysis.getstackCenter());
-				int start=t*slices+1;
-				int end=t*slices+slices;
+				int start=analysis.getStartZ()+t*slices;
+				int end=analysis.getStopZ()+t*slices;
 				HorizontalLineAnalysis lineAnalysis=new HorizontalLineAnalysis(analysis);				
 				IJ.log("start="+start+"    end="+end);
 				lineAnalysis.setStartSlice(start);
 				lineAnalysis.setEndSlice(end);
-				lineAnalysis.writeFitResultsTable(FitterFunction.Poly3, true);
+//				lineAnalysis.writeFitResultsTable(FitterFunction.Poly3, true);
+				lineAnalysis.writeGlobalFitResults();
 				analysis.shiftStackCenter(slices);
 				analysis.deleteRoi();
+				LogToTable();
+				getSlope(3);
+				
+				if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
+				if (analysis.getSaveTable()) {
+					
+					saveResultTables(this.fitResults, saveFitResults);
+					saveResultTables(this.profiles, saveProfiles);
+				}
+				
 //				IJ.run(inputImage, "Select None", "");
-			}
+*/			}
 	}
+
 }
