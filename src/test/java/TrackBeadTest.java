@@ -3,7 +3,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.scijava.command.CommandModule;
 
-import ch.epfl.biop.ij2command.USAF.LocalizeBead3D;
+
 
 import java.util.concurrent.Future;
 
