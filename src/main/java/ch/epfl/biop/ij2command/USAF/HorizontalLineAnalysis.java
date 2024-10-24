@@ -25,13 +25,13 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	final static String titleFitResults="Analysis Fit Results";
 	final static String saveProfiles="Horizontal_Line_Profiles";
 	final static String saveFitResults="Analysis_Fit_Results";
-	private double [] profile;
-	private double [] xvalues;
+	protected double [] profile;
+	public double [] xvalues;
 	private ImagePlus inputImage;
-	private Line horizontalLine;
-	private Calibration cal;
-	private int method,counter;
-	private FitterFunction fitFunc;
+	protected Line horizontalLine;
+	protected Calibration cal;
+	protected int method,counter;
+	protected FitterFunction fitFunc;
 	protected ResultsTable fitResults;
 	protected ResultsTable profiles;
 	protected ResultsTable summary;
@@ -127,8 +127,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 
 			logFileNames();
 			
-			
-			writeGlobalFitResults();
+			MultiThreadHLA fast=new MultiThreadHLA(this);
+			fast.run();
+//			writeGlobalFitResults();
 			LogToTable();
 			getSlope(3);
 			analysis.counter=this.counter;
