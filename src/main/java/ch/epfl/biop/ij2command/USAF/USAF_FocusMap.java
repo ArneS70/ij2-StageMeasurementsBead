@@ -36,6 +36,8 @@ import net.imagej.ImageJ;
 				
 				for (int n=0;n<num;n++) {
 					FocusAnalyser ufm=new FocusAnalyser(imps[n],lineLength,repetitionX,repetitionY);
+					
+					
 					ufm.run();
 					if (save) saveResults();
 				}

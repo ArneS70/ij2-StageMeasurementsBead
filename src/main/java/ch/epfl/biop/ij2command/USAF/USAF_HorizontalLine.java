@@ -69,7 +69,7 @@ import net.imagej.ImageJ;
 				
 				HorizontalLineAnalysis horizontal=new HorizontalLineAnalysis(analysis);
 				horizontal.run();
-//			MultiThreadHLA horizontal=new MultiThreadHLA(analysis);
+//				MultiThreadHLA horizontal=new MultiThreadHLA(analysis);
 //				horizontal.run();
 				
 			}

@@ -51,14 +51,14 @@ public class HLAMultiCore extends HorizontalLineAnalysis {
 
 			logFileNames();
 			writeGlobalFitResults();
-			LogToTable();
+			LogToSummaryTable();
 			getSlope(3);
 			analysis.counter=this.counter;
 			if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 			if (analysis.getSaveTable()) {
 				
 				saveResultTables(fitResults, saveFitResults);
-				saveResultTables(profiles, saveProfiles);
+				saveResultTables(lineProfiles, saveProfiles);
 			}
 			
 		}
@@ -114,20 +114,20 @@ public class HLAMultiCore extends HorizontalLineAnalysis {
 			
 			this.fitResults.addValue("max", fitFunc.getMax());
 			
-			if (this.profiles==null) {
-					this.profiles=new ResultsTable();
-					this.profiles.setValues("x", this.xvalues);
-					this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+			if (this.lineProfiles==null) {
+					this.lineProfiles=new ResultsTable();
+					this.lineProfiles.setValues("x", this.xvalues);
+					this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 			} else {	
 					
-				this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+				this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 			};
 		}
 			
 		
 		if (analysis.getShowTable()) {
-										profiles.show(HorizontalLineAnalysis.titleProfiles);
+										lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
 										fitResults.show(HorizontalLineAnalysis.titleFitResults);
 		}
 		if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();

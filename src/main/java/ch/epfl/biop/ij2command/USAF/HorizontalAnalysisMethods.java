@@ -8,11 +8,17 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Roi;
+import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
 
 public class HorizontalAnalysisMethods {
-		HorizontalAnalysis analysis;
+		protected HorizontalAnalysis analysis;
+		protected ImagePlus inputImage;
+		protected Line horizontalLine;
+		protected Calibration cal;
+		protected double [] profile;
+		public double [] xvalues;
 		
 		HorizontalAnalysisMethods(){
 			

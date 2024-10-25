@@ -17,7 +17,7 @@ public class FitterFunction {
 	private double [] parameters,initParameters;
 	protected CurveFitter cf;
 	private int method;
-	private boolean logResults=true;
+	private boolean logResults=false;
 	private double max;
 	
 	FitterFunction(double [] inputX, double [] inputY,int method){

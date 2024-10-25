@@ -2,6 +2,7 @@ package ch.epfl.biop.ij2command.stage.general;
 
 import java.io.IOException;
 
+import ij.IJ;
 import ij.ImagePlus;
 import loci.formats.FormatException;
 import loci.plugins.BF;
@@ -16,12 +17,15 @@ public class BioformatsReader{
 	public ImagePlus [] open() throws FormatException, IOException{
 		
 		ImporterOptions options = new ImporterOptions();
+				
 		options.setId(filepath);
 		options.setAutoscale(true);
 		options.setCrop(true);
 		options.setVirtual(true);
 		options.setColorMode(ImporterOptions.COLOR_MODE_COMPOSITE);
 		options.setSplitTimepoints(true);
+		
+		
 		
 		
 		ImagePlus[] imps = BF.openImagePlus(options);

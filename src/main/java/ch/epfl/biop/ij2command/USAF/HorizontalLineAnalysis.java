@@ -20,23 +20,21 @@ import loci.formats.FileInfo;
 
 
 public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
+	
 	final static String titleSummary="Summary Horizontal Line Analysis Results";
 	final static String titleProfiles="Horizontal Line Profiles";
 	final static String titleFitResults="Analysis Fit Results";
 	final static String saveProfiles="Horizontal_Line_Profiles";
 	final static String saveFitResults="Analysis_Fit_Results";
-	protected double [] profile;
-	public double [] xvalues;
-	private ImagePlus inputImage;
-	protected Line horizontalLine;
-	protected Calibration cal;
+	
+		
 	protected int method,counter;
 	protected FitterFunction fitFunc;
 	protected ResultsTable fitResults;
-	protected ResultsTable profiles;
+	protected ResultsTable lineProfiles;
 	protected ResultsTable summary;
-	int startSlice,endSlice;
-	ImageStack fitPlots=new ImageStack(696,415);
+	private int startSlice,endSlice;
+	private ImageStack fitPlots=new ImageStack(696,415);
 /**   
  * Constructors
  */
@@ -49,11 +47,10 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		this.cal=analysis.cal;
 		startSlice=1;
 		endSlice=analysis.getStackSlices();
+
 //		this.inputImage=analysis.getImage();
 //		double pixelSize=this.analysis.cal.pixelWidth;
 //		ImageProcessor ip=inputImage.getProcessor();
-		
-
 //		this.setHorizontalLine(inputImage.getNSlices()/2);
 //		this.profile=ip.getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
 //		int profileLength=profile.length;
@@ -112,40 +109,65 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			hft.analyseTimeLapse();
 		} else {
 			
-//			HorizontalLineAnalysis hla=new HorizontalLineAnalysis(analysis.getImage(),analysis.getHorizontalLine());
-//			hla.setParameters(analysis);
 			summary=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
 			if (summary==null) summary=new ResultsTable();
 			counter=summary.getCounter();
 			analysis.spacing=new HorizontalLine(getCenterIP()).getHorizontalSpacing();
-//			hla.analysis=analysis;
-//			hla.setZstep(analysis.getStepZ());
-//			hla.writeFitResultsTable(FitterFunction.Poly3, true);
-//			ij.io.FileInfo fi=analysis.inputImage.getFileInfo();
-//			hla.LogToTable();
-//			hla.getSlope();
-
 			logFileNames();
+			
+			analysis.inputImage.getProcessor().setLineWidth(1);
+			final int start=analysis.getStartZ();
+			final int stop=analysis.getStopZ();
+			final int zstep=analysis.getStepZ();
+	    	final int iterations=(stop-start)/zstep;
+	    	horizontalLine=analysis.getHorizontalLine();
+	    	inputImage=analysis.getImage();
+	    	
+	    	for (int z=start;z<stop;z+=zstep) {
+	    		
+	    		inputImage.setSliceWithoutUpdate(z);
+				profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
+				
+		    	if (lineProfiles==null) {
+		    		xvalues=new double [profile.length];
+		    		for (int n=0;n<profile.length;n++) {
+						xvalues[n]=n*cal.pixelWidth;
+					}
+		    		lineProfiles=new ResultsTable();
+					lineProfiles.setValues("x", xvalues);
+					lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
+					
+		    	} else {	
+					
+				lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
+		    	};
+	    	}
 			
 			MultiThreadHLA fast=new MultiThreadHLA(this);
 			fast.run();
 //			writeGlobalFitResults();
-			LogToTable();
-			getSlope(3);
+			LogToSummaryTable();
+//			getSlope(3);
 			analysis.counter=this.counter;
 			if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 			if (analysis.getSaveTable()) {
 				
 				saveResultTables(fitResults, saveFitResults);
-				saveResultTables(profiles, saveProfiles);
+				saveResultTables(lineProfiles, saveProfiles);
 			}
 			
 		}
-			
-		
-		
-		
 	}
+//	HorizontalLineAnalysis hla=new HorizontalLineAnalysis(analysis.getImage(),analysis.getHorizontalLine());
+//	hla.setParameters(analysis);
+//	hla.analysis=analysis;
+//	hla.setZstep(analysis.getStepZ());
+//	hla.writeFitResultsTable(FitterFunction.Poly3, true);
+//	ij.io.FileInfo fi=analysis.inputImage.getFileInfo();
+//	hla.LogToTable();
+//	hla.getSlope();
+	
+	
 	void setParameters(HorizontalAnalysis param) {
 		this.analysis=param;
 	}
@@ -155,7 +177,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	void setEndSlice(int end) {
 		this.endSlice=end;
 	}
-	void LogToTable() {
+	void LogToSummaryTable() {
 		//	ResultsTable lineMax=ResultsTable.getResultsTable("Line Maxima Results");
 		//	if ((lineMax)==null) lineMax=new ResultsTable();
 		//	ResultsTable lineMax=new ResultsTable();
@@ -317,20 +339,20 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			this.fitResults.addValue("max", fitFunc.getMax());
 			
-			if (this.profiles==null) {
-					this.profiles=new ResultsTable();
-					this.profiles.setValues("x", this.xvalues);
-					this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+			if (this.lineProfiles==null) {
+					this.lineProfiles=new ResultsTable();
+					this.lineProfiles.setValues("x", this.xvalues);
+					this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 			} else {	
 					
-				this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+				this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 			};
 		}
 			
 		
 		if (analysis.getShowTable()) {
-										profiles.show(HorizontalLineAnalysis.titleProfiles);
+										lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
 										fitResults.show(HorizontalLineAnalysis.titleFitResults);
 		}
 		if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
@@ -408,14 +430,14 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			if (profileTable) {
 //				this.profiles=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleProfiles);
 				
-				if (this.profiles==null) {
-					this.profiles=new ResultsTable();
-					this.profiles.setValues("x", this.xvalues);
-					this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+				if (this.lineProfiles==null) {
+					this.lineProfiles=new ResultsTable();
+					this.lineProfiles.setValues("x", this.xvalues);
+					this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 				} else {	
 					
-					this.profiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
+					this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
 					
 				};
 				
@@ -424,7 +446,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			}
 			
 		}
-		if (analysis.getShowTable()) profiles.show(HorizontalLineAnalysis.titleProfiles);
+		if (analysis.getShowTable()) lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
 	}
 	Line optimizeHorizontalMaxima(Line line) {
 		

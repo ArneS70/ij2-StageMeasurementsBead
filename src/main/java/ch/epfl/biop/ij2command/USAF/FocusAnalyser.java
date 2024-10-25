@@ -77,6 +77,9 @@ public class FocusAnalyser {
 		int distY=h/repY;
 		
 		int slices=imps.getNSlices();
+		if (start==0)start=1;
+		if (end==0) end=slices;
+		if (step==0)step=1;
 		
 		
 		ResultsTable rt_xAxis=new ResultsTable();
