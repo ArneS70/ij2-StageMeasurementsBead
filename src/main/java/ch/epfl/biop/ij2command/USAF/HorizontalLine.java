@@ -24,7 +24,8 @@ public class HorizontalLine  {
 	Line findHorizontalLine() {
 		
 		Line horizontal;
-		ImageProcessor ip_edge=inputIP.duplicate().convertToFloat();
+		ImageProcessor ip_edge=inputIP.duplicate();
+		ip_edge.convertToFloat();
 		ip_edge.findEdges();
 //		new ImagePlus("Edge",ip_edge).show();
 		LineAnalyser la=new LineAnalyser(ip_edge);
@@ -33,12 +34,10 @@ public class HorizontalLine  {
 		
 		double space=this.getHorizontalSpacing();
 		
-		inputIP.setRoi(new Line(1,maxima[pos]-space/2,width,maxima[pos]-space/2));
-		double mean1=inputIP.getStatistics().mean;
 		
-		inputIP.setRoi(new Line(1,maxima[pos]+space/2,width,maxima[pos]+space/2));
-		double mean2=inputIP.getStatistics().mean;
-		
+		double mean1=new ArrayStatistics(inputIP.getLine(20,maxima[pos]-space/2,width-20,maxima[pos]-space/2)).getMean();
+		double mean2=new ArrayStatistics(inputIP.getLine(20,maxima[pos]+space/2,width-20,maxima[pos]+space/2)).getMean();
+				
 		if (mean1>mean2) {horizontal=new Line(1,maxima[pos]-space/2,width,maxima[pos]-space/2);}
 		else {horizontal=new Line(1,maxima[pos]+space/2,width,maxima[pos]+space/2);}
 		

@@ -142,12 +142,13 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
 		    	};
 	    	}
-			
-			MultiThreadHLA fast=new MultiThreadHLA(this);
-			fast.run();
-//			writeGlobalFitResults();
+//			writeGlobalFitResults()     non multithreaded fit, slow;			
+			MultiThreadFit fastFit=new MultiThreadFit(this);
+			fastFit.run();
+			this.fitResults=fastFit.getFitResults();
+			this.fitPlots=fastFit.getFitPlots();
 			LogToSummaryTable();
-//			getSlope(3);
+			getSlope(3);
 			analysis.counter=this.counter;
 			if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 			if (analysis.getSaveTable()) {
@@ -155,9 +156,14 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				saveResultTables(fitResults, saveFitResults);
 				saveResultTables(lineProfiles, saveProfiles);
 			}
+			if (analysis.getShowTable()) {
+				lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
+				fitResults.show(HorizontalLineAnalysis.titleFitResults);
+
 			
-		}
-	}
+			}
+			if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
+	}}
 //	HorizontalLineAnalysis hla=new HorizontalLineAnalysis(analysis.getImage(),analysis.getHorizontalLine());
 //	hla.setParameters(analysis);
 //	hla.analysis=analysis;
@@ -242,7 +248,12 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //			ResultsTable rt=ResultsTable.getResultsTable("Horizontal Line Fits");
 			
 //			int counter=fitResults.getCounter();
-			CurveFitter cf=new CurveFitter(fitResults.getColumn("z / um"),fitResults.getColumn(fitResults.getColumnHeading(col)));
+			double []axisX=fitResults.getColumnAsDoubles(0);
+			int length=axisX.length;
+			for (int i=0;i<length;i++) {
+				axisX[i]*=analysis.cal.pixelDepth*analysis.getStepZ();
+			}
+			CurveFitter cf=new CurveFitter(axisX,fitResults.getColumn(fitResults.getColumnHeading(col)));
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
 			double []param=cf.getParams();
 			Plot focusFit=cf.getPlot();
