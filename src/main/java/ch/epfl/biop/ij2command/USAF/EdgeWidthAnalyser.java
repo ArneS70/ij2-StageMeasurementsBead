@@ -72,6 +72,7 @@ public class EdgeWidthAnalyser {
 		int w=ip_edge.getWidth();
 		int h=ip_edge.getHeight();
 		ip_edge.setLineWidth(linewidth);;
+//		new ImagePlus("Test",ip_edge).show();
 		double [] lineTop=ip_edge.getLine(0, 10, w, 10);
 		double [] lineBottom=ip_edge.getLine(0, h-10, w, h-10);
 		this.maxTop=MaximumFinder.findMaxima(lineTop, 8000, false);

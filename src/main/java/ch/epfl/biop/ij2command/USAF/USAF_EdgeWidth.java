@@ -23,7 +23,7 @@ import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
 		@Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF EdgeWidth")
-		public class EdgeWidth implements Command {
+		public class USAF_EdgeWidth implements Command {
 			@Parameter(style="open")							//File to analyse
 		    File fileInput;
 			@Parameter(label="Slice")							//Slice to analyse
@@ -77,6 +77,6 @@ import net.imagej.ImageJ;
 					
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
-			ij.command().run(EdgeWidth.class, true);
+			ij.command().run(USAF_EdgeWidth.class, true);
 		}
 	}
