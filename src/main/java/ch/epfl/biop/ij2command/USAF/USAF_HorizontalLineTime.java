@@ -17,6 +17,7 @@ import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
+import ij.gui.Plot;
 import ij.measure.CurveFitter;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
@@ -89,12 +90,21 @@ public class USAF_HorizontalLineTime implements Command{
 		double [] results=fitFunc.getParameter();
 		final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
 		
-		for (int i = 1; i < last; i += 1) { 
+		final double [] x=new double [last];
+		final double [] p0=new double [last];
+		final double [] p1=new double [last];
+		final double [] p2=new double [last];
+		final double [] p3=new double [last];
+		
+		for (int i = 0; i < last; i += 1) { 
 		
 			IJ.log("Stack position: "+i);
 			CurveFitter cf=new CurveFitter(xvalue,toFit.get(i));
 			cf.doCustomFit(function, new double [] {1, 1,1},false);
 			results=cf.getParams();
+			x[i]=i;//*fileInput.getCalibration().frameInterval;
+			p0[i]=results[0]; p1[i]=results[1]; p2[i]=results[2]; p3[i]=results[3];
+						
 			IJ.log(i+"  "+results[0]+"  "+results[1]+"   "+results[2]+"   "+results[3]);
 			fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
 //			fitResults.addRow();
@@ -104,7 +114,10 @@ public class USAF_HorizontalLineTime implements Command{
 //				fitResults.addValue("p"+n, results[n]);
 //					//fitResults.addValue(fitFunc.header[i], results[i]);
 		}
-		new ImagePlus ("Plots",fitPlots).show();	
+		new ImagePlus ("Plots",fitPlots).show();
+		Plot plot=new Plot("A", "B", "C", x, p2);
+		plot.show();
+		
 	}
 	
 	public static void main(final String... args) throws Exception {

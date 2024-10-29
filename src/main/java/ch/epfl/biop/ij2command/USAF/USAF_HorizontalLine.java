@@ -46,14 +46,17 @@ import net.imagej.ImageJ;
 			@Parameter(label="Show profile tables?")
 			boolean showProfile;
 			
-			@Parameter(label="Summarize results?")
-			boolean summarize;
+//			@Parameter(label="Summarize results?")
+//			boolean summarize;
 			
 			@Parameter(label="Save Plot?")
 			boolean savePlot;
 			
 			@Parameter(label="Save result tables?")
 			boolean saveTables;
+			
+			@Parameter(label="Multi Thread Fit?")
+			boolean multiThread;
 			
 			
 			Line toAnalyse;
@@ -65,8 +68,10 @@ import net.imagej.ImageJ;
 			if (imp!=null){
 				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStepZ(stepZ).setStartZ(startZ).setStopZ(stopZ).
 																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
-																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).summarize(summarize).build();
-				
+																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).
+																				multiThread(multiThread).
+																				build();
+																					
 				HorizontalLineAnalysis horizontal=new HorizontalLineAnalysis(analysis);
 				horizontal.run();
 //				MultiThreadHLA horizontal=new MultiThreadHLA(analysis);

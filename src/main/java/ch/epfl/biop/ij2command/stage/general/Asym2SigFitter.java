@@ -64,8 +64,9 @@ import ij.gui.Line;
 				return 2*sigma*Math.sqrt(Math.log(4));
 			}
 			
-			Function fun = new Function(){
-			    @Override
+			public Function fun = new Function(){
+			    double [] parameters;
+				@Override
 			    public double evaluate(double[] values, double[] parameters) {
 			        double A = parameters[0];
 			        double B = parameters[1];
@@ -77,7 +78,10 @@ import ij.gui.Line;
 			        double x = values[0];
 			        return A+B*(1/(1+Math.exp(-(1*x-C+(D/2))/E)))*(1-(1/(1+Math.exp(-(1*x-C-(D/2))/F))));
 			    }
-			    @Override
+			    
+			    public double [] getParameters() {
+			    	return parameters;
+			    }
 			    public int getNParameters() {
 			        return 6;
 			    }
@@ -87,7 +91,7 @@ import ij.gui.Line;
 			        return 1;
 			    }
 			};
-			void fit(){
+			public void fit(){
 				
 				double[][] xs = new double[x.length][1];
 				for (int i=0;i<x.length;i++) {
@@ -101,6 +105,25 @@ import ij.gui.Line;
 				fit.fitData();
 				IJ.log(Arrays.toString(fit.getParameters()));
 				
+			}
+			public double[][] getFunctionValues(double []x, double[] param) {
+				int len=x.length;
+				double A=param[0];
+				double B=param[1];
+				double C=param[2];
+				double D=param[3];
+				double E=param[4];
+				double F=param[5];
+				
+				double deltax=x[1]-x[0];
+				double [][] function =new double [1][len*5];
+				
+				for (double n=x[0];n<x[len];n+=deltax/5) {
+					int pos=(int)(5*n/deltax);
+					function[0][pos]=n;
+					function[1][pos]=A+B*(1/(1+Math.exp(-(1*n-C+(D/2))/E)))*(1-(1/(1+Math.exp(-(1*n-C-(D/2))/F))));
+				}
+				return function;
 			}
 		}
 

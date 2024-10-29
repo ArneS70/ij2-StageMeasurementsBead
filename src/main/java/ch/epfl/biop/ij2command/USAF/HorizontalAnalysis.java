@@ -19,7 +19,7 @@ public class HorizontalAnalysis {
 	private Line horizontalLine;
 	//optional parameters
 	private int repetition, startZ, stopZ,stepZ, startT,stopT,stepT;
-	private boolean saveTables,showTables,savePlot,showPlot,showProfile;
+	private boolean saveTables,showTables,savePlot,showPlot,showProfile,multiThread;
 	boolean summarize;
 	
 	//derived parameters (no input)
@@ -58,9 +58,13 @@ public class HorizontalAnalysis {
 		this.showProfile=builder.showProfile;
 		this.summarize=builder.summarize;
 		this.cal=builder.cal;
+		this.multiThread=builder.multiThread;
 	}
 	public ImagePlus getImage(){
 		return inputImage;
+	}
+	public boolean getMultiThread() {
+		return multiThread;
 	}
 	public static class Builder{
 		
@@ -72,7 +76,7 @@ public class HorizontalAnalysis {
 		private Line horizontalLine;
 		private int repetition;
 		private int startZ, stopZ, stepZ, startT, stopT, stepT,stackCenter;
-		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize;
+		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize,multiThread;
 		private Calibration cal;
 		private Builder built;
 		
@@ -82,6 +86,10 @@ public class HorizontalAnalysis {
 		}
 		public Builder repetition(int rep) {
 			this.repetition=rep;
+			return this;
+		}
+		public Builder multiThread(boolean thread) {
+			this.multiThread=thread;
 			return this;
 		}
 		public Builder setCalibration(Calibration cal) {

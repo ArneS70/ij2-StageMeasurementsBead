@@ -20,12 +20,18 @@ public class FitterFunction {
 	private boolean logResults=false;
 	private double max;
 	
-	FitterFunction(double [] inputX, double [] inputY,int method){
+	protected FitterFunction(double [] inputX, double [] inputY,int method){
 		this.functionName=methodString[method];
 		this.method=method;
 		setX(inputX);
 		setY(inputY);
 		this.cf=new CurveFitter(x,y);
+	}
+	public void fit() {
+		
+	}
+	public double [][] getFunctionValues(double [] param) {
+		return new double [0][0];
 	}
 	private void run() {
 		cf.doFit(this.method);

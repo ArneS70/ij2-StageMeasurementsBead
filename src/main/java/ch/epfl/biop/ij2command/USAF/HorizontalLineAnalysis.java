@@ -142,14 +142,18 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
 		    	};
 	    	}
-//			writeGlobalFitResults()     non multithreaded fit, slow;			
-			MultiThreadFit fastFit=new MultiThreadFit(this);
-			fastFit.run();
-			this.fitResults=fastFit.getFitResults();
-			this.fitPlots=fastFit.getFitPlots();
-			LogToSummaryTable();
-			getSlope(3);
-			analysis.counter=this.counter;
+			if (!analysis.getMultiThread()) writeGlobalFitResults();     //non multithreaded fit, slow;			
+			
+			else {
+				MultiThreadFit fastFit=new MultiThreadFit(this);
+				fastFit.run();
+				this.fitResults=fastFit.getFitResults();
+				this.fitPlots=fastFit.getFitPlots();
+				LogToSummaryTable();
+				getSlope(3);
+				analysis.counter=this.counter;
+			
+			}
 			if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 			if (analysis.getSaveTable()) {
 				
@@ -317,12 +321,17 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		for (int i=0;i<profile.length;i++) {
 			xvalues[i]=i*cal.pixelWidth;
 		}
+/*      Poly3Fitter
 		int length=Poly3Fitter.header.length;
 		this.fitFunc=new Poly3Fitter(xvalues,profile);
 		fitFunc.setHeader(Poly3Fitter.header);
 		this.method=FitterFunction.Poly3;
 		double [] results=this.fitFunc.getParameter();
 		String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
+*/
+		this.fitFunc=new Asym2SigFitter(xvalues,profile);
+		double [] results=fitFunc.getParameter();
+		String test="test";
 //		fitFunc.getPlot().show();
 		
 		for (int n=start;n<=stop;n+=zstep) {
@@ -335,18 +344,18 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			inputImage.setSliceWithoutUpdate(n);
 			this.profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
 			CurveFitter cf=new CurveFitter(xvalues,profile);
-			cf.doCustomFit(function, new double [] {1, 1,1},false);
+//			cf.doCustomFit(function, new double [] {1, 1,1},false);
 			results=cf.getParams();
 			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
 			fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
 			this.fitResults.addRow();
 		
-			for (int i=0;i<length-1;i++) {
-				this.fitResults.addValue("z / um", n*cal.pixelDepth);
-				this.fitResults.addValue("p"+i, results[i]);
+//			for (int i=0;i<length-1;i++) {
+//				this.fitResults.addValue("z / um", n*cal.pixelDepth);
+//				this.fitResults.addValue("p"+i, results[i]);
 					//fitResults.addValue(fitFunc.header[i], results[i]);
-			}
+//			}
 			
 			this.fitResults.addValue("max", fitFunc.getMax());
 			

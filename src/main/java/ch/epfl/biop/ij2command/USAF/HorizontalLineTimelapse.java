@@ -50,6 +50,9 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 		ImagePlus imp=analysis.getImage();
 		for (int t=0;t<frames;t+=1) {
 			imp.setSliceWithoutUpdate(sliceZ+t*slices);
+			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).findHorizontalLine());
+			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
+			analysis.getImage().setRoi(analysis.getHorizontalLine());
 			profiles.add(imp.getProcessor().getLine(line.x1d,line.y1d,line.x2d,line.y2d));
 						
 		}
