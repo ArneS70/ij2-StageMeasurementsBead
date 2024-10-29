@@ -65,7 +65,7 @@ import ij.gui.Line;
 			}
 			
 			public Function fun = new Function(){
-			    double [] parameters;
+			    
 				@Override
 			    public double evaluate(double[] values, double[] parameters) {
 			        double A = parameters[0];
@@ -92,7 +92,7 @@ import ij.gui.Line;
 			    }
 			};
 			public void fit(){
-				
+				double [] parameters;
 				double[][] xs = new double[x.length][1];
 				for (int i=0;i<x.length;i++) {
 					xs[i][0]=x[i];
@@ -103,6 +103,7 @@ import ij.gui.Line;
 				fit.setParameters(new double[]{10000,11000,500,150,80,150});
 
 				fit.fitData();
+				fun.parameters=fit.getParameters();
 				IJ.log(Arrays.toString(fit.getParameters()));
 				
 			}
