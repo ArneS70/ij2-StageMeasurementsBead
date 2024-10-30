@@ -15,14 +15,14 @@ import ij.gui.Line;
 	import ij.process.ImageProcessor;
 
 
-	public class Asym2SigFitter{ //extends FitterFunction{
+	public class Asym2SigFitterFixed{ //extends FitterFunction{
 
 			private double fwhm;
 			private double [] parameters;
 			private double [] x,y;
 			Function func;
 			
-			public Asym2SigFitter(double []x,double[]y){
+			public Asym2SigFitterFixed(double []x,double[]y){
 				this.x=x;
 				this.y=y;
 			}	
@@ -35,12 +35,12 @@ import ij.gui.Line;
 			        double A = parameters[0];
 			        double B = parameters[1];
 			        double C = parameters[2];
-			        double D = parameters[3];
-			        double E = parameters[4];
-			        double F = parameters[5];
+//			        double D = parameters[3];
+//			        double E = parameters[4];
+//			        double F = parameters[5];
 			        
 			        double x = values[0];
-			        return A+B*(1/(1+Math.exp(-(1*x-C+(D/2))/E)))*(1-(1/(1+Math.exp(-(1*x-C-(D/2))/F))));
+			        return A+B*(1/(1+Math.exp(-(1*x-C+(parameters[3]/2))/parameters[4])))*(1-(1/(1+Math.exp(-(1*x-C-(parameters[3]/2))/parameters[5]))));
 			    }
 			    
 			    public double [] getParameters() {
