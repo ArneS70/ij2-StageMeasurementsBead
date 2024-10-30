@@ -64,7 +64,7 @@ import ij.gui.Line;
 				
 				Fitter fit=new MarquardtFitter(fun);
 				fit.setData(xs, y);
-				fit.setParameters(new double[]{10000,11000,500,150,80,150});
+				fit.setParameters(new double[]{10000,11000,500,100,100,100});
 
 				fit.fitData();
 				parameters=fit.getParameters();
