@@ -321,17 +321,17 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		for (int i=0;i<profile.length;i++) {
 			xvalues[i]=i*cal.pixelWidth;
 		}
-/*      Poly3Fitter
+		//*************Poly3Fitter****************************
 		int length=Poly3Fitter.header.length;
 		this.fitFunc=new Poly3Fitter(xvalues,profile);
 		fitFunc.setHeader(Poly3Fitter.header);
 		this.method=FitterFunction.Poly3;
 		double [] results=this.fitFunc.getParameter();
 		String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
-*/
-		this.fitFunc=new Asym2SigFitter(xvalues,profile);
-		double [] results=fitFunc.getParameter();
-		String test="test";
+
+//		this.fitFunc=new Asym2SigFitter(xvalues,profile);
+//		double [] results=fitFunc.getParameter();
+//		String test="test";
 //		fitFunc.getPlot().show();
 		
 		for (int n=start;n<=stop;n+=zstep) {
@@ -424,7 +424,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				xvalues[i]=i*cal.pixelWidth;
 			}
 			if (method==FitterFunction.AsymGauss) {
-				this.fitFunc=new Asym2SigFitter(xvalues,profile);
+//				this.fitFunc=new Asym2SigFitter(xvalues,profile);
 				this.method=FitterFunction.AsymGauss;
 //				fitResults.updateResults();
 			}

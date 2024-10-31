@@ -42,6 +42,7 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 			
 			}
 	}
+	
 	Vector<double []> getTimeProfiles() {
 		Vector <double []> profiles=new Vector<double[]>();
 		Line line=analysis.getHorizontalLine();
@@ -50,6 +51,22 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 		ImagePlus imp=analysis.getImage();
 		for (int t=0;t<frames;t+=1) {
 			imp.setSliceWithoutUpdate(sliceZ+t*slices);
+			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).findHorizontalLine());
+			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
+			analysis.getImage().setRoi(analysis.getHorizontalLine());
+			profiles.add(imp.getProcessor().getLine(line.x1d,line.y1d,line.x2d,line.y2d));
+						
+		}
+		return profiles;
+	}
+	Vector<double []> getTimeProfiles(int startT,int stopT) {
+		Vector <double []> profiles=new Vector<double[]>();
+		Line line=analysis.getHorizontalLine();
+	
+		int sliceZ=analysis.getStartZ();
+		ImagePlus imp=analysis.getImage();
+		for (int t=startT;t<stopT;t+=1) {
+			imp.setSliceWithoutUpdate(sliceZ+t);
 			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).findHorizontalLine());
 			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
 			analysis.getImage().setRoi(analysis.getHorizontalLine());

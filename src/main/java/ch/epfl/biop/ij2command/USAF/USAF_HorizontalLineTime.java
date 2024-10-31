@@ -19,6 +19,7 @@ import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
+import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
@@ -34,7 +35,13 @@ public class USAF_HorizontalLineTime implements Command{
 	@Parameter(label="z-slice")
 	int startZ;
 	
-	@Parameter(label="Show Focus Shift Plot")
+	@Parameter(label="start T")
+	int startT;
+	
+	@Parameter(label="stop T")
+	int stopT;
+	
+	@Parameter(label="Show Plot(s)")
 	boolean showPlot;
 
 	@Parameter(label="Show result tables?")
@@ -43,7 +50,7 @@ public class USAF_HorizontalLineTime implements Command{
 	@Parameter(label="Show profile tables?")
 	boolean showProfile;
 	
-	@Parameter(label="Save Plot?")
+	@Parameter(label="Save Plots?")
 	boolean savePlot;
 	
 	@Parameter(label="Save result tables?")
@@ -55,7 +62,7 @@ public class USAF_HorizontalLineTime implements Command{
 	public void run() {
 		ImagePlus imp=WindowManager.getCurrentImage();	
 		if (imp!=null){
-			HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).
+			HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(startZ).setStartT(startT).setStopT(stopT).
 																			savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
 																			saveTables(saveTables).showTables(showTable).showProfile(showProfile).build();
 			
@@ -64,7 +71,7 @@ public class USAF_HorizontalLineTime implements Command{
 			analysis.setHorizontalLine( new HorizontalLine(imp.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
 			analysis.getImage().setRoi(analysis.getHorizontalLine());
 			
-			Vector <double []>profiles=horizontal.getTimeProfiles();
+			Vector <double []>profiles=horizontal.getTimeProfiles(startT,stopT);
 			IJ.log(""+profiles.size());
 			fit(profiles);
 		
@@ -114,10 +121,23 @@ public class USAF_HorizontalLineTime implements Command{
 //				fitResults.addValue("p"+n, results[n]);
 //					//fitResults.addValue(fitFunc.header[i], results[i]);
 		}
-		new ImagePlus ("Plots",fitPlots).show();
-		Plot plot=new Plot("A", "B", "C", x, p2);
-		plot.show();
 		
+		if (showTable) {
+			ResultsTable table=new ResultsTable();
+			table.setValues("x", x);
+			table.setValues("p0", p0);
+			table.setValues("p1", p1);
+			table.setValues("p2", p2);
+			table.setValues("p3", p3);
+			table.show("Time_Focus_Shift");
+			
+		}
+		if (showPlot) {
+			new ImagePlus ("Plots",fitPlots).show();
+			Plot plot=new Plot("A", "B", "C");
+			plot.addPoints(x, p2, Plot.CIRCLE);
+			plot.show();
+		}
 	}
 	
 	public static void main(final String... args) throws Exception {
