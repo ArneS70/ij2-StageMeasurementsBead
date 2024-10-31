@@ -103,21 +103,26 @@ public class AsymGaussFunction {
 		        	double nom,denom;
 		        	
 		        	jacobian[i][0] = 1.0;
-		            	nom=1-(1/(term2+1));
-		            	denom=term1+1;
-		        	jacobian[i][1] = nom/denom;
-		        		nom=variables[1]*((variables[4]-variables[5])*term2+variables[4]*term1*term2-variables[5])*term1;
-		        		denom=variables[4]*variables[5]*Math.pow(term2+1, 2)*Math.pow(term1+1, 2);
-		            jacobian[i][2] = nom/denom;
-		            	nom=variables[1]*term1*(variables[4]*term1*term2+(variables[5]+variables[4])*term2+variables[5]);
-		            	denom=variables[5]*variables[4]*Math.pow(term2+1, 2)*Math.pow(term1+1, 2);
-		            jacobian[i][3] =nom/denom;
-		            	nom=variables[1]*(-variables[2]-x.get(i)-variables[3])*term1;
-		            	denom=(term2+1)*variables[4]*variables[4]*(term1+1)*(term1+1);
-		            jacobian[i][4] =nom/denom;
-		            	nom=variables[1]*(-variables[2]+x.get(i)-variables[3])*term2;
-		            	denom=(term1+1)*variables[5]*variables[5]*(term2+1)*(term2+1);
-		            jacobian[i][5] =nom/denom;
+	            	
+		        	nom=1-(1/(term2+1));
+	            	denom=term1+1;
+		        		jacobian[i][1] = nom/denom;
+	        		
+		        	nom=variables[1]*((variables[4]-variables[5])*term2+variables[4]*term1*term2-variables[5])*term1;
+	        		denom=variables[4]*variables[5]*Math.pow(term2+1, 2)*Math.pow(term1+1, 2);
+		            	jacobian[i][2] = nom/denom;
+	            	
+		            nom=variables[1]*term1*(variables[4]*term1*term2+(variables[5]+variables[4])*term2+variables[5]);
+	            	denom=variables[5]*variables[4]*Math.pow(term2+1, 2)*Math.pow(term1+1, 2);
+		            	jacobian[i][3] =nom/denom;
+		            
+		            nom=variables[1]*(-variables[2]-x.get(i)-variables[3])*term1;
+	            	denom=(term2+1)*variables[4]*variables[4]*(term1+1)*(term1+1);
+	            		jacobian[i][4] =nom/denom;
+	            	
+	            	nom=variables[1]*(-variables[2]+x.get(i)-variables[3])*term2;
+	            	denom=(term1+1)*variables[5]*variables[5]*(term2+1)*(term2+1);
+	            		jacobian[i][5] =nom/denom;
 		        }
 		        return jacobian;
 		    }
