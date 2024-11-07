@@ -24,9 +24,16 @@ import net.imagej.ImageJ;
 
 			ImagePlus fileInput;
 			String fileName, filePath;
+			int [] stackParam=new int[6];
 
 //			@Parameter(style="open")
 //		    File fileInput;
+			
+			@Parameter(label="Process Z-stack")
+			boolean  entireZStack;
+			
+			@Parameter(label="Process T-stack")
+			boolean  entireTStack;
 			
 			@Parameter(label="z-start")
 			int startZ;
@@ -36,6 +43,15 @@ import net.imagej.ImageJ;
 			
 			@Parameter(label="z-step")
 			int stepZ;
+			
+			@Parameter(label="T-start")
+			int startT;
+			
+			@Parameter(label="T-stop")
+			int stopT;
+			
+			@Parameter(label="T-step")
+			int stepT;
 			
 			@Parameter(label="Show Focus Shift Plot")
 			boolean showPlot;
@@ -65,8 +81,12 @@ import net.imagej.ImageJ;
 		public void run() {
 		
 			ImagePlus imp=WindowManager.getCurrentImage();	
+			
 			if (imp!=null){
-				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStepZ(stepZ).setStartZ(startZ).setStopZ(stopZ).
+				stackParam=new HorizontalAnalysisMethods().checkParameters(imp,entireZStack,entireTStack,new int [] {startZ,stopZ,stepZ,startT,stopT,stepZ});
+				
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStepZ(stackParam[2]).setStartZ(stackParam[0]).setStopZ(stackParam[1]).
+																				setStepT(stackParam[5]).setStartT(stackParam[3]).setStopT(stackParam[4]).
 																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
 																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).
 																				multiThread(multiThread).

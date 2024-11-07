@@ -6,6 +6,7 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
 import ij.WindowManager;
+import ij.gui.GenericDialog;
 import ij.gui.Line;
 import ij.gui.Roi;
 import ij.measure.Calibration;
@@ -123,6 +124,39 @@ public class HorizontalAnalysisMethods {
 			if (analysis.getStartZ()<1)analysis.setStartZ(1);
 			if (analysis.getStopZ()>max)analysis.setStopZ(max);
 			if (analysis.getStopZ()<analysis.getStartZ())analysis.setStartZ(analysis.getStopZ());
+			
+		}
+		public int [] getStackParameters(ImagePlus imp) {
+			int nSlices=imp.getNSlices();
+			int nFrames=imp.getNFrames();
+			
+			GenericDialog gd=new GenericDialog("Stack Parameters");
+			gd.addNumericField("Z start", 1, 0);
+			gd.addNumericField("Z stop", nSlices, 0);
+			gd.addNumericField("Z step", 1, 0);
+			gd.addNumericField("T start", 1, 0);
+			gd.addNumericField("T stop", nFrames, 0);
+			gd.addNumericField("T step", 1, 0);
+			
+			gd.showDialog();
+			
+			int startZ=(int)gd.getNextNumber();
+			int stopZ=(int)gd.getNextNumber();
+			int stepZ=(int)gd.getNextNumber();
+			int startT=(int)gd.getNextNumber();
+			int stopT=(int)gd.getNextNumber();
+			int stepT=(int)gd.getNextNumber();
+			
+			if (startZ<1)startZ=1; if (startZ>nSlices)startZ=nSlices-1;
+			if (stopZ<1)stopZ=2; if (stopZ>nSlices)stopZ=nSlices;
+			if (stepZ<1)stepZ=1; if (stepZ>nSlices)stepZ=nSlices-1;
+			
+			if (startT<1)startT=1; if (startT>nFrames)startZ=nSlices-1;
+			if (stopZ<1)stopT=2; if (stopT>nFrames)stopT=nFrames;
+			if (stepZ<1)stepT=1; if (stepT>nFrames)stepT=nFrames-1;
+			
+			return new int [] {startZ,stopZ,stepZ,startT,stopT,stepT};
+			
 			
 		}
 		/************************************************************************************************************
