@@ -259,6 +259,18 @@ public class HorizontalAnalysis {
 	}
 	public void setSlice(int slice) {
 		inputImage.setSlice(slice);
+	}
+	public int getStartT() {
+		// TODO Auto-generated method stub
+		return startT;
+	}
+	public int getStopT() {
+		// TODO Auto-generated method stub
+		return stopT;
+	}
+	public int getStepT() {
+		// TODO Auto-generated method stub
+		return stepT;
 	}	
 	
 }	

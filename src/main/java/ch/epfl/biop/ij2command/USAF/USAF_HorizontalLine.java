@@ -83,10 +83,10 @@ import net.imagej.ImageJ;
 			ImagePlus imp=WindowManager.getCurrentImage();	
 			
 			if (imp!=null){
-				stackParam=new HorizontalAnalysisMethods().checkParameters(imp,entireZStack,entireTStack,new int [] {startZ,stopZ,stepZ,startT,stopT,stepZ});
+				stackParam=new HorizontalAnalysisMethods().checkStackParameters(imp,entireZStack,entireTStack,new int [] {startZ,stopZ,stepZ,startT,stopT,stepT});
 				
-				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStepZ(stackParam[2]).setStartZ(stackParam[0]).setStopZ(stackParam[1]).
-																				setStepT(stackParam[5]).setStartT(stackParam[3]).setStopT(stackParam[4]).
+				HorizontalAnalysis analysis=new HorizontalAnalysis.Builder(imp).setStartZ(stackParam[0]).setStopZ(stackParam[1]).setStepZ(stackParam[2]).
+																				setStartT(stackParam[3]).setStopT(stackParam[4]).setStepT(stackParam[5]).
 																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
 																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).
 																				multiThread(multiThread).
@@ -117,8 +117,8 @@ import net.imagej.ImageJ;
 			final ImageJ ij = new ImageJ();
 			ij.ui().showUI();
 			
-			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
-			IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			ij.command().run(USAF_HorizontalLine.class, true);
 		}
 	}		

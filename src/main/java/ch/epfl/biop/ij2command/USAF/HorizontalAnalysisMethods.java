@@ -126,11 +126,13 @@ public class HorizontalAnalysisMethods {
 			if (analysis.getStopZ()<analysis.getStartZ())analysis.setStartZ(analysis.getStopZ());
 			
 		}
-		public int [] getStackParameters(ImagePlus imp) {
+		public int [] checkStackParameters(ImagePlus imp, boolean entireZStack, boolean entireTStack, int[] param) {
 			int nSlices=imp.getNSlices();
 			int nFrames=imp.getNFrames();
 			
-			GenericDialog gd=new GenericDialog("Stack Parameters");
+			
+			
+/*			GenericDialog gd=new GenericDialog("Stack Parameters");
 			gd.addNumericField("Z start", 1, 0);
 			gd.addNumericField("Z stop", nSlices, 0);
 			gd.addNumericField("Z step", 1, 0);
@@ -139,21 +141,27 @@ public class HorizontalAnalysisMethods {
 			gd.addNumericField("T step", 1, 0);
 			
 			gd.showDialog();
+*/			
 			
-			int startZ=(int)gd.getNextNumber();
-			int stopZ=(int)gd.getNextNumber();
-			int stepZ=(int)gd.getNextNumber();
-			int startT=(int)gd.getNextNumber();
-			int stopT=(int)gd.getNextNumber();
-			int stepT=(int)gd.getNextNumber();
+			int startZ=param[0];
+			int stopZ=param[1];
+			int stepZ=param[2];
+			int startT=param[3];
+			int stopT=param[4];
+			int stepT=param[5];
 			
-			if (startZ<1)startZ=1; if (startZ>nSlices)startZ=nSlices-1;
-			if (stopZ<1)stopZ=2; if (stopZ>nSlices)stopZ=nSlices;
-			if (stepZ<1)stepZ=1; if (stepZ>nSlices)stepZ=nSlices-1;
+			if (entireZStack) {startZ=1;stopZ=nSlices;};
+			if (entireTStack) {startT=1;stopT=nFrames;};
 			
-			if (startT<1)startT=1; if (startT>nFrames)startZ=nSlices-1;
-			if (stopZ<1)stopT=2; if (stopT>nFrames)stopT=nFrames;
-			if (stepZ<1)stepT=1; if (stepT>nFrames)stepT=nFrames-1;
+			if (startZ<1)startZ=1; if (startZ>nSlices)startZ=nSlices;
+			if (stopZ<2)stopZ=2; if (stopZ>nSlices)stopZ=nSlices;
+			if (stepZ<1)stepZ=1; if (stepZ>nSlices)stepZ=nSlices;
+			if (startZ==stopZ) stopZ++;
+			
+			if (startT<1)startT=1; if (startT>nFrames)startT=nFrames;
+			if (stopT<2)stopT=2; if (stopT>nFrames)stopT=nFrames;
+			if (stepT<1)stepT=1; if (stepT>nFrames)stepT=nFrames;
+			if (startT==stopT) stopT++;
 			
 			return new int [] {startZ,stopZ,stepZ,startT,stopT,stepT};
 			

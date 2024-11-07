@@ -20,12 +20,15 @@ public class HorizontalLineTimelapse extends HorizontalLineAnalysis{
 	void analyseTimeLapse(){
 //		analysis.disableStack();
 //		inputHLFA.ignoreTimelapse();	
-		int initialStart=analysis.getStartZ();
-		int initialStop=analysis.getStopZ();
-		int delta=initialStop-initialStart;
+		int initialStartZ=analysis.getStartZ();
+		int initialStopZ=analysis.getStopZ();
+		int delta=initialStopZ-initialStartZ;
+		int startT=analysis.getStartT();
+		int stopT=analysis.getStopT();
+		int stepT=analysis.getStepT();
 		
-		for (int t=0;t<frames;t+=1) {
-				int start=initialStart+t*slices;
+		for (int t=startT;t<stopT;t+=stepT) {
+				int start=initialStartZ+(t-1)*slices;
 				int stop=start+delta;
 				
 				analysis.ignoreTime=true;

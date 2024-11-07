@@ -90,6 +90,15 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
+	void writeXvalues(double [] profile) {
+		xvalues=new double [profile.length];
+		for (int n=0;n<profile.length;n++) {
+			xvalues[n]=n*cal.pixelWidth;
+		}
+		lineProfiles=new ResultsTable();
+		lineProfiles.setValues("x", xvalues);
+		lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
+	}
 	void run() {
 		
 		if (checkInputImage()) {
@@ -101,7 +110,15 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					analysis.getImage().setRoi(analysis.getHorizontalLine());
 			}
 		}
-		
+		if (analysis.getImage().getNFrames()>1&&analysis.getImage().getNSlices()==1) {
+			int startT=analysis.getStartT();
+			int stopT=analysis.getStopT();
+			int stepT=analysis.getStepT();
+			
+			for (int t=startT;t<=stopT;t+=stepT) {
+				
+			}
+		}
 		
 		if (analysis.getImage().getNFrames()>1&&!analysis.ignoreTime) {
 			
