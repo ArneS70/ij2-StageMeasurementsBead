@@ -90,15 +90,10 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //		a2s=new Asym2SigFitter(x,profile);
 //		a2s.fit();
 	}
-	void writeXvalues(double [] profile) {
-		xvalues=new double [profile.length];
-		for (int n=0;n<profile.length;n++) {
-			xvalues[n]=n*cal.pixelWidth;
-		}
-		lineProfiles=new ResultsTable();
-		lineProfiles.setValues("x", xvalues);
-		lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
-	}
+	/*************************************************************************************************************************
+	 *  Creates line profiles and fits it to find the maximum. 
+	 *  Line profiles are stored in a results table. 
+	 */
 	void run() {
 		
 		if (checkInputImage()) {
@@ -110,16 +105,39 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					analysis.getImage().setRoi(analysis.getHorizontalLine());
 			}
 		}
-		if (analysis.getImage().getNFrames()>1&&analysis.getImage().getNSlices()==1) {
-			int startT=analysis.getStartT();
-			int stopT=analysis.getStopT();
-			int stepT=analysis.getStepT();
+		horizontalLine=analysis.getHorizontalLine();	//defines the horizontal line
+		inputImage=analysis.getImage();					//defines the input image
+		analysis.ignoreTime=true;
+		// Image Stack is only time-lapse
+		if (analysis.getImage().getNFrames()>1&&analysis.getImage().getNSlices()==1) {		
+			
+			int startT=analysis.getStartT();			//starting frame
+			int stopT=analysis.getStopT();				//stop frame
+			int stepT=analysis.getStepT();				//step between frames
 			
 			for (int t=startT;t<=stopT;t+=stepT) {
+				inputImage.setSliceWithoutUpdate(t);
+				analysis.setHorizontalLine( new HorizontalLine(inputImage.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
+				analysis.getImage().setRoi(analysis.getHorizontalLine());
 				
+				profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
+				//Creates x-values
+		    	if (lineProfiles==null) {
+		    		xvalues=new double [profile.length];
+		    		for (int n=0;n<profile.length;n++) {
+						xvalues[n]=n*cal.pixelWidth;
+					}
+		    		lineProfiles=new ResultsTable();
+					lineProfiles.setValues("x", xvalues);
+					lineProfiles.setValues("t="+t, profile);
+					
+		    	} else {	
+					
+				lineProfiles.setValues("t="+t, profile);
+		    	};
 			}
 		}
-		
+		// Z-Stack line profiles
 		if (analysis.getImage().getNFrames()>1&&!analysis.ignoreTime) {
 			
 			HorizontalLineTimelapse hft=new HorizontalLineTimelapse(analysis);
@@ -136,9 +154,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			final int start=analysis.getStartZ();
 			final int stop=analysis.getStopZ();
 			final int zstep=analysis.getStepZ();
-	    	final int iterations=(stop-start)/zstep;
-	    	horizontalLine=analysis.getHorizontalLine();
-	    	inputImage=analysis.getImage();
+	    	
+	    	
 	    	
 	    	for (int z=start;z<stop;z+=zstep) {
 	    		
@@ -159,7 +176,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
 		    	};
 	    	}
-			if (!analysis.getMultiThread()) writeGlobalFitResults();     //non multithreaded fit, slow;			
+			// Fit the line profiles
+	    	if (!analysis.getMultiThread()) writeGlobalFitResults();     //non multithreaded fit, slow;			
 			
 			else {
 				MultiThreadFit fastFit=new MultiThreadFit(this);
@@ -322,7 +340,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	
 	void writeGlobalFitResults() {
 		
-		horizontalLine=analysis.getHorizontalLine();
+/*		horizontalLine=analysis.getHorizontalLine();
 		ImagePlus inputImage=analysis.getImage();
 		this.cal=inputImage.getCalibration();
 		inputImage.getProcessor().setLineWidth(1);
@@ -338,6 +356,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		for (int i=0;i<profile.length;i++) {
 			xvalues[i]=i*cal.pixelWidth;
 		}
+*/
+		
+		
 		//*************Poly3Fitter****************************
 		int length=Poly3Fitter.header.length;
 		this.fitFunc=new Poly3Fitter(xvalues,profile);
@@ -350,18 +371,19 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //		double [] results=fitFunc.getParameter();
 //		String test="test";
 //		fitFunc.getPlot().show();
+		int stop=lineProfiles.getLastColumn();
 		
-		for (int n=start;n<=stop;n+=zstep) {
+		for (int n=1;n<=stop;n++) {
 			
 			IJ.log("===================================");
 			IJ.log("Slice: "+n);
 
 			if (this.fitResults==null) this.fitResults=new ResultsTable();
 			
-			inputImage.setSliceWithoutUpdate(n);
-			this.profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
-			CurveFitter cf=new CurveFitter(xvalues,profile);
-//			cf.doCustomFit(function, new double [] {1, 1,1},false);
+			
+
+			CurveFitter cf=new CurveFitter(lineProfiles.getColumnAsDoubles(0),lineProfiles.getColumnAsDoubles(n));
+			cf.doCustomFit(function, new double [] {1, 1,1},false);
 			results=cf.getParams();
 			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
@@ -375,24 +397,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //			}
 			
 			this.fitResults.addValue("max", fitFunc.getMax());
-			
-			if (this.lineProfiles==null) {
-					this.lineProfiles=new ResultsTable();
-					this.lineProfiles.setValues("x", this.xvalues);
-					this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
-					
-			} else {	
-					
-				this.lineProfiles.setValues(""+IJ.d2s(n*cal.pixelDepth), this.profile);
-			};
 		}
 			
-		
-		if (analysis.getShowTable()) {
-										lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
-										fitResults.show(HorizontalLineAnalysis.titleFitResults);
-		}
-		if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
 	}
 //	int length=Poly3Fitter.header.length;
 //	this.fitFunc=new Poly3Fitter(xvalues,profile);

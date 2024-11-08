@@ -4,7 +4,7 @@ import ij.IJ;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
 
-public class FitterFunction {
+   public class FitterFunction {
 	protected static final int Gauss=0;
 	public static final int AsymGauss=1;
 	public static final int Poly3=2;

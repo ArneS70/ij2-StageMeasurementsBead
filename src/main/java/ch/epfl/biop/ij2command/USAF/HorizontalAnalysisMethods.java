@@ -20,6 +20,7 @@ public class HorizontalAnalysisMethods {
 		protected Calibration cal;
 		protected double [] profile;
 		public double [] xvalues;
+		private boolean isTimeLapse;
 		
 		HorizontalAnalysisMethods(){
 			
@@ -99,11 +100,11 @@ public class HorizontalAnalysisMethods {
 				check=false;
 			}
 			
-			if (analysis.getImage().getNSlices()==1) {
-				IJ.log("Please provide an z-stack");
-				check=false;
-			}
-//			if (inputImage.getNFrames()>1) this.isTimeLapse=true;
+//			if (analysis.getImage().getNSlices()==1) {
+//				IJ.log("Please provide an z-stack");
+//				check=false;
+//			}
+			if (analysis.getImage().getNFrames()>1) this.isTimeLapse=true;
 			return check;
 			
 		}
