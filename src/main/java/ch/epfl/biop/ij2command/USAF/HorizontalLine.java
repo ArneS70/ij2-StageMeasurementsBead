@@ -38,8 +38,8 @@ public class HorizontalLine  {
 		double mean1=new ArrayStatistics(inputIP.getLine(20,maxima[pos]-space/2,width-20,maxima[pos]-space/2)).getMean();
 		double mean2=new ArrayStatistics(inputIP.getLine(20,maxima[pos]+space/2,width-20,maxima[pos]+space/2)).getMean();
 				
-		if (mean1>mean2) {horizontal=new Line(1,maxima[pos]-space/2,width,maxima[pos]-space/2);}
-		else {horizontal=new Line(1,maxima[pos]+space/2,width,maxima[pos]+space/2);}
+		if (mean1>mean2) {horizontal=new Line(20,maxima[pos]-space/2,width-20,maxima[pos]-space/2);}
+		else {horizontal=new Line(20,maxima[pos]+space/2,width-20,maxima[pos]+space/2);}
 		
 		
 /*		
@@ -101,7 +101,7 @@ public class HorizontalLine  {
 	Line optimizeHorizontalMaxima(Line line) {
 		
 		double space=getHorizontalSpacing();		
-		double profile []=inputIP.getLine(line.x1d+20,line.y1d-space,line.x1d+20,line.y1d+space);
+		double profile []=inputIP.getLine(line.x1d,line.y1d-space,line.x1d,line.y1d+space);
 		double [] x=new double[profile.length];
 		int profLen=x.length;
 		for (int i=0;i<profLen;i++) {
@@ -112,13 +112,13 @@ public class HorizontalLine  {
 //		cf.getPlot().show();
 		double [] paramLeft=cf.getParams();
 		
-		profile=inputIP.getLine(line.x2d-20,line.y2d-space,line.x2d-20,line.y2d+space);
+		profile=inputIP.getLine(line.x2d,line.y2d-space,line.x2d,line.y2d+space);
 		
 		cf=new CurveFitter(x,profile);
 		cf.doFit(CurveFitter.GAUSSIAN);
 //		cf.getPlot().show();
 		double [] paramRight=cf.getParams();
-		return new Line(20,line.y1d-space+paramLeft[2],line.x2d-20,line.y2d-space+paramRight[2]);
+		return new Line(line.x1d,line.y1d-space+paramLeft[2],line.x2d,line.y2d-space+paramRight[2]);
 
 	}
 }
