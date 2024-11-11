@@ -7,9 +7,11 @@ import ij.measure.CurveFitter;
    public class FitterFunction {
 	protected static final int Gauss=0;
 	public static final int AsymGauss=1;
-	public static final int Poly3=2;
-	protected static final int Poly4=3;
-	private static final String [] methodString= {"Gauss","Asymetric Gauss","Polynomal3","Polynomal4"};
+	public static final int Poly3=3;
+	protected static final int Poly4=4;
+	public static final int Poly8=8;
+	private static final String [] methodString= {"Gauss","Asymetric Gauss","null","Polynomal3","Polynomal4","null","null","null","Polynomal8"};
+	private static final int [] methodInt= {CurveFitter.GAUSSIAN,1,0,CurveFitter.POLY3,CurveFitter.POLY4,0,0,0,CurveFitter.POLY8};
 	private String functionName;
 	private String [] header;
 	protected double [] x;
@@ -22,7 +24,7 @@ import ij.measure.CurveFitter;
 	
 	protected FitterFunction(double [] inputX, double [] inputY,int method){
 		this.functionName=methodString[method];
-		this.method=method;
+		this.method=methodInt[method];
 		setX(inputX);
 		setY(inputY);
 		this.cf=new CurveFitter(x,y);

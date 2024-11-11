@@ -9,7 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ch.epfl.biop.ij2command.stage.general.GlobalFitter;
-import ch.epfl.biop.ij2command.stage.general.Poly3Fitter;  
+import ch.epfl.biop.ij2command.stage.general.Poly3Fitter;
+import ch.epfl.biop.ij2command.stage.general.Poly8Fitter;  
   
 
 public class MultiThreadFit extends HorizontalLineAnalysis {
@@ -46,13 +47,19 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     				public void run() {  
     					
     					final int last=parameters.lineProfiles.size();
-    					final int length=Poly3Fitter.header.length;
+    					final int length=Poly8Fitter.header.length;
     					
-    					method=FitterFunction.Poly3;
-    					fitFunc=new Poly3Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
-    					fitFunc.setHeader(Poly3Fitter.header);
+//    					method=FitterFunction.Poly3;
+//    					fitFunc=new Poly3Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
+//    					fitFunc.setHeader(Poly3Fitter.header);
+    					method=FitterFunction.Poly8;
+    					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
+    					fitFunc.setHeader(Poly8Fitter.header);
     					double [] results=fitFunc.getParameter();
-    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
+    					
+//    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
+    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3],results[4],results[5],results[6],results[7],results[8]});
+    					
     					try {
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {

@@ -28,6 +28,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	final static String saveProfiles="Horizontal_Line_Profiles";
 	final static String saveFitResults="Analysis_Fit_Results";
 	
+	protected boolean isPureTimeLapse=false;
+	protected boolean isSingleZStack=false;
+	protected boolean isTimeStack=false;
 		
 	protected int method,counter;
 	protected FitterFunction fitFunc;
@@ -115,8 +118,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		// Image Stack is only time-lapse
 		if (analysis.getImage().getNFrames()>1&&analysis.getImage().getNSlices()==1) {		
 			
+			this.isPureTimeLapse=true;
 			Vector <Line>horizontalLines=new Vector<Line>();
-			Vector <double []>lineProfiles=new Vector<double []>();
+			
 			
 			int startT=analysis.getStartT();			//starting frame
 			int stopT=analysis.getStopT();				//stop frame
@@ -153,8 +157,10 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			HorizontalLineTimelapse hft=new HorizontalLineTimelapse(analysis);
 			hft.analyseTimeLapse();
-		} else {
+		}; 
+		if (analysis.getImage().getNFrames()==1) {
 			
+			this.isSingleZStack=true;
 			summary=ResultsTable.getResultsTable(HorizontalLineAnalysis.titleSummary);
 			if (summary==null) summary=new ResultsTable();
 			counter=summary.getCounter();
@@ -187,7 +193,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					
 				lineProfiles.addElement(profile);
 		    	};
-	    	}
+	    	}}
 			// Fit the line profiles
 	    	if (!analysis.getMultiThread()) {
 	    		writeGlobalFitResults();     //non multithreaded fit, slow;			
@@ -199,10 +205,11 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				fastFit.run();
 				this.fitResults=fastFit.getFitResults();
 				this.fitPlots=fastFit.getFitPlots();
-				LogToSummaryTable();
-				getSlope(3);
-				analysis.counter=this.counter;
-			
+				if (isSingleZStack || isTimeStack) {
+					LogToSummaryTable();
+					getSlope(3);
+					analysis.counter=this.counter;
+				}
 			}
 			if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 			if (analysis.getSaveTable()) {
@@ -217,7 +224,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			}
 			if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
-	}}
+	}
 //	HorizontalLineAnalysis hla=new HorizontalLineAnalysis(analysis.getImage(),analysis.getHorizontalLine());
 //	hla.setParameters(analysis);
 //	hla.analysis=analysis;
@@ -373,7 +380,18 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		}
 */
 		
+		//*************Poly8Fitter****************************
+		int length=Poly8Fitter.header.length;
+		this.fitFunc=new Poly8Fitter(xvalues,profile);
+		fitFunc.setHeader(Poly8Fitter.header);
+		this.method=FitterFunction.Poly8;
+		double [] results=this.fitFunc.getParameter();
+		String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3],results[4],results[5],results[6],results[7],results[8]});
 		
+		
+		
+		
+/*		
 		//*************Poly3Fitter****************************
 		int length=Poly3Fitter.header.length;
 		this.fitFunc=new Poly3Fitter(xvalues,profile);
@@ -386,9 +404,11 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //		double [] results=fitFunc.getParameter();
 //		String test="test";
 //		fitFunc.getPlot().show();
+*/
+		
 		int stop=lineProfiles.size();
 		
-		for (int n=1;n<=stop;n++) {
+		for (int n=1;n<stop;n++) {
 			
 			IJ.log("===================================");
 			IJ.log("Slice: "+n);
