@@ -45,11 +45,11 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
   
     				public void run() {  
     					
-    					final int last=parameters.lineProfiles.getLastColumn();
+    					final int last=parameters.lineProfiles.size();
     					final int length=Poly3Fitter.header.length;
     					
     					method=FitterFunction.Poly3;
-    					fitFunc=new Poly3Fitter(parameters.lineProfiles.getColumnAsDoubles(0),parameters.lineProfiles.getColumnAsDoubles(last/2));
+    					fitFunc=new Poly3Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
     					fitFunc.setHeader(Poly3Fitter.header);
     					double [] results=fitFunc.getParameter();
     					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
@@ -62,7 +62,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     					for (int i = ai.getAndIncrement(); i < last; i = ai.getAndIncrement()) { 
     					
     						IJ.log("Stack position: "+i);
-    						CurveFitter cf=new CurveFitter(parameters.lineProfiles.getColumnAsDoubles(0),parameters.lineProfiles.getColumnAsDoubles(i));
+    						CurveFitter cf=new CurveFitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
     						cf.doCustomFit(function, new double [] {1, 1,1},false);
     						results=cf.getParams();
     						

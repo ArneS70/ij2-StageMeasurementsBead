@@ -2,6 +2,7 @@ package ch.epfl.biop.ij2command.USAF;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Vector;
 
 import ch.epfl.biop.ij2command.stage.general.*;
 
@@ -31,7 +32,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	protected int method,counter;
 	protected FitterFunction fitFunc;
 	protected ResultsTable fitResults;
-	protected ResultsTable lineProfiles;
+	protected Vector<double[]> lineProfiles=new Vector<double []>();
 	protected ResultsTable summary;
 	private int startSlice,endSlice;
 	private ImageStack fitPlots=new ImageStack(696,415);
@@ -114,6 +115,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		// Image Stack is only time-lapse
 		if (analysis.getImage().getNFrames()>1&&analysis.getImage().getNSlices()==1) {		
 			
+			Vector <Line>horizontalLines=new Vector<Line>();
+			Vector <double []>lineProfiles=new Vector<double []>();
+			
 			int startT=analysis.getStartT();			//starting frame
 			int stopT=analysis.getStopT();				//stop frame
 			int stepT=analysis.getStepT();				//step between frames
@@ -123,26 +127,26 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				analysis.setHorizontalLine( new HorizontalLine(inputImage.getProcessor()).optimizeHorizontalMaxima(analysis.getHorizontalLine()));
 				analysis.getImage().setRoi(analysis.getHorizontalLine());
 				
-				IJ.log(""+analysis.getHorizontalLine().y1d+"  "+analysis.getHorizontalLine().y1d);
+				horizontalLines.add(analysis.getHorizontalLine());
 				
 				profile=inputImage.getProcessor().getLine(analysis.getHorizontalLine().x1d,analysis.getHorizontalLine().y1d,analysis.getHorizontalLine().x2d,analysis.getHorizontalLine().y2d);
 				IJ.log(""+horizontalLine.y1d+"    "+horizontalLine.y2d);
 				//Creates x-values
-		    	if (lineProfiles==null) {
+		    	if (lineProfiles.size()==0) {
 		    		xvalues=new double [profile.length];
 		    		for (int n=0;n<profile.length;n++) {
 						xvalues[n]=n*cal.pixelWidth;
 					}
-		    		lineProfiles=new ResultsTable();
-					lineProfiles.setValues("x", xvalues);
-					lineProfiles.setValues("t="+t, profile);
+		    		
+					lineProfiles.add(xvalues);
+					lineProfiles.addElement(profile);
 					
 		    	} else {	
 					
-				lineProfiles.setValues("t="+t, profile);
+				lineProfiles.addElement(profile);
 		    	};
 			}
-			lineProfiles.show("Test");
+			
 		}
 		// Z-Stack line profiles
 		if (analysis.getImage().getNFrames()>1&&!analysis.ignoreTime) {
@@ -169,18 +173,19 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	    		inputImage.setSliceWithoutUpdate(z);
 				profile=inputImage.getProcessor().getLine((double)horizontalLine.x1,(double)horizontalLine.y1,(double)horizontalLine.x2,(double)horizontalLine.y2);
 				
-		    	if (lineProfiles==null) {
+				if (lineProfiles.size()==0) {
 		    		xvalues=new double [profile.length];
 		    		for (int n=0;n<profile.length;n++) {
 						xvalues[n]=n*cal.pixelWidth;
 					}
-		    		lineProfiles=new ResultsTable();
-					lineProfiles.setValues("x", xvalues);
-					lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
+		    		
+					lineProfiles.add(xvalues);
+					lineProfiles.addElement(profile);
+					
 					
 		    	} else {	
 					
-				lineProfiles.setValues(""+IJ.d2s(z*cal.pixelDepth), profile);
+				lineProfiles.addElement(profile);
 		    	};
 	    	}
 			// Fit the line profiles
@@ -203,10 +208,10 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			if (analysis.getSaveTable()) {
 				
 				saveResultTables(fitResults, saveFitResults);
-				saveResultTables(lineProfiles, saveProfiles);
+//				saveResultTables(lineProfiles, saveProfiles);
 			}
 			if (analysis.getShowTable()) {
-				lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
+//				lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
 				fitResults.show(HorizontalLineAnalysis.titleFitResults);
 
 			
@@ -381,7 +386,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //		double [] results=fitFunc.getParameter();
 //		String test="test";
 //		fitFunc.getPlot().show();
-		int stop=lineProfiles.getLastColumn();
+		int stop=lineProfiles.size();
 		
 		for (int n=1;n<=stop;n++) {
 			
@@ -392,7 +397,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			
 
-			CurveFitter cf=new CurveFitter(lineProfiles.getColumnAsDoubles(0),lineProfiles.getColumnAsDoubles(n));
+			CurveFitter cf=new CurveFitter(lineProfiles.firstElement(),lineProfiles.get(n));
 			cf.doCustomFit(function, new double [] {1, 1,1},false);
 			results=cf.getParams();
 			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
