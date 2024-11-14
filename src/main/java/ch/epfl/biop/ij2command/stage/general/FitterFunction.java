@@ -29,31 +29,31 @@ import ij.measure.CurveFitter;
 		setY(inputY);
 		this.cf=new CurveFitter(x,y);
 	}
-	public void fit() {
+	synchronized public void fit() {
 		
 	}
-	public double [][] getFunctionValues(double [] param) {
+	synchronized public double [][] getFunctionValues(double [] param) {
 		return new double [0][0];
 	}
-	private void run() {
+	synchronized private void run() {
 		cf.doFit(this.method);
 		this.parameters=cf.getParams();
 		this.max=findMax();
 	}
-	private void run(boolean show) {
+	synchronized private void run(boolean show) {
 		cf.doFit(this.method);
 		this.parameters=cf.getParams();
 		if (show) cf.getPlot().show();
 		this.max=findMax();
 	}
 	
-	private void run(String func,double [] param) {
+	synchronized private void run(String func,double [] param) {
 		cf.doCustomFit(func, param, false);
 		cf.getPlot().show();
 		this.parameters=cf.getParams();
 		this.max=findMax();
 	}
-	void logParameters() {
+	synchronized void logParameters() {
 		
 		IJ.log(functionName);
 		for (int i=0;i<parameters.length-1;i++) {

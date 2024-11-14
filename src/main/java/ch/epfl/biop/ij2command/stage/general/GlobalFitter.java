@@ -117,7 +117,7 @@ private ResultsTable fitParameters;
 		for (int n=1;n<poly;n++) {
 		
 		if (parameters[n]>0)formula=formula.concat("+");  
-		formula=formula.concat(IJ.d2s(parameters[n],6));
+		formula=formula.concat(Double.toString(parameters[n]));
 		formula=formula.concat("*pow(x-c,"+n+")");
 		}
 		formula=formula.concat(")");

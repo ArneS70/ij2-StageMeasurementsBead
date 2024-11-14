@@ -71,16 +71,17 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     						IJ.log("Stack position: "+i);
     						CurveFitter cf=new CurveFitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
     						cf.doCustomFit(function, new double [] {1, 1,1},false);
-    						results=cf.getParams();
+    						
+    						double [] allParam=new double [6];
+    						allParam[0]=(double)i;
+    						allParam[5]=cf.getRSquared();
+    						System.arraycopy(cf.getParams(), 0, allParam, 1, 4);
+    						
+    						parameters.fitResults.add(allParam);
+    						
     						
     						fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
-    						fitResults.addRow();
-    						for (int n=0;n<length-1;n++) {
-    							
-    							fitResults.addValue("z / slice", i);
-    							fitResults.addValue("p"+n, results[n]);
-    								//fitResults.addValue(fitFunc.header[i], results[i]);
-    						}
+    						
     						
     					}
     						
