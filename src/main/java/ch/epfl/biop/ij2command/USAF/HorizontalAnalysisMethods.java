@@ -121,10 +121,10 @@ public class HorizontalAnalysisMethods {
 				}while (analysis.getStopZ()<analysis.getStartZ());
 			}
 			
-			
-			if (analysis.getStartZ()<1)analysis.setStartZ(1);
-			if (analysis.getStopZ()>max)analysis.setStopZ(max);
-			if (analysis.getStopZ()<analysis.getStartZ())analysis.setStartZ(analysis.getStopZ());
+			max=analysis.getImage().getNFrames();
+			if (analysis.getStartT()<1)analysis.setStartT(1);
+			if (analysis.getStopT()>max)analysis.setStopT(max);
+			if (analysis.getStopT()<analysis.getStartT())analysis.setStartT(analysis.getStopT());
 			
 		}
 		public int [] checkStackParameters(ImagePlus imp, boolean entireZStack, boolean entireTStack, int[] param) {
@@ -198,6 +198,13 @@ public class HorizontalAnalysisMethods {
 			}
 			ImageProcessor getCenterIP(){
 				analysis.getImage().setSliceWithoutUpdate(getStackCenter());
+				return analysis.getImage().getProcessor();
+			}
+			ImageProcessor getIP(int position){
+				int max=analysis.getImage().getNSlices();
+				if (position>max) position=max;
+				if (position <1)position=1;
+				analysis.getImage().setSliceWithoutUpdate(position);
 				return analysis.getImage().getProcessor();
 			}
 			Line getHorizontalLine() {

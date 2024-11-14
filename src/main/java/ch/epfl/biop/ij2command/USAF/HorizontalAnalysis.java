@@ -271,6 +271,14 @@ public class HorizontalAnalysis {
 	public int getStepT() {
 		// TODO Auto-generated method stub
 		return stepT;
+	}
+	public void setStopT(int stop) {
+		this.stopT=stop;
+		
+	}
+	public void setStartT(int start) {
+		this.startT=start;
+		
 	}	
 	
 }	

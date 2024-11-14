@@ -78,6 +78,56 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		
 		if (checkInputImage()) {
 			
+			HorizontalLineExtractor profiles=new HorizontalLineExtractor(this.analysis);
+			profiles.run();
+			this.lineProfiles=profiles.getProfileStack();
+			
+			//***************************************************************************
+			// Fit the line profiles
+			//
+			//***************************************************************************
+		    	
+				if (!analysis.getMultiThread()) {
+		    		writeGlobalFitResults();     //non multithreaded fit, slow;			
+		    		this.createTables();
+		    		this.tableFitResults.show(titleFitResults);
+		    	}
+				
+				else {
+					MultiThreadFit fastFit=new MultiThreadFit(this);
+					fastFit.run();
+					this.fitResults=fastFit.parameters.fitResults;
+					this.fitPlots=fastFit.getFitPlots();
+					if (isSingleZStack || isTimeStack) {
+						LogToSummaryTable();
+						if (tableFitResults!=null) getSlope(3);
+						analysis.counter=this.counter;
+					}
+				}
+
+				this.createTables();
+		    	if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
+				if (analysis.getSaveTable()) {
+					
+				saveResultTables(tableFitResults, saveFitResults);
+//				saveResultTables(lineProfiles, saveProfiles);
+				}
+				
+				if (analysis.getShowTable()) {
+//					lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
+					tableFitResults.show(HorizontalLineAnalysis.titleFitResults);
+
+				
+				}
+				
+				if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
+
+			
+			
+
+			
+			
+			
 			if (hasLine()) this.setHorizontalLine(this.getLine());
 			else {
 					HorizontalLine hl=new HorizontalLine(getCenterIP());
@@ -187,46 +237,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	    	}
 		}
 			
-		//***************************************************************************
-		// Fit the line profiles
-		//
-		//***************************************************************************
-	    	
-			if (!analysis.getMultiThread()) {
-	    		writeGlobalFitResults();     //non multithreaded fit, slow;			
-	    		this.createTables();
-	    		this.tableFitResults.show(titleFitResults);
-	    	}
-			
-			else {
-				MultiThreadFit fastFit=new MultiThreadFit(this);
-				fastFit.run();
-				this.fitResults=fastFit.parameters.fitResults;
-				this.fitPlots=fastFit.getFitPlots();
-				if (isSingleZStack || isTimeStack) {
-					LogToSummaryTable();
-					if (tableFitResults!=null) getSlope(3);
-					analysis.counter=this.counter;
-				}
 			}
-
-			this.createTables();
-	    	if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
-			if (analysis.getSaveTable()) {
-				
-			saveResultTables(tableFitResults, saveFitResults);
-//			saveResultTables(lineProfiles, saveProfiles);
-			}
-			
-			if (analysis.getShowTable()) {
-//				lineProfiles.show(HorizontalLineAnalysis.titleProfiles);
-				tableFitResults.show(HorizontalLineAnalysis.titleFitResults);
-
-			
-			}
-			
-			if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
-	}
 
 	void createTables() {
 		
@@ -500,6 +511,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		return new Line(10,line.y1d-10+paramLeft[2],line.x2d-10,line.y2d-10+paramRight[2]);
 	
 }
-
+	Vector <double []> getProfileStack(){
+		return lineProfiles;
+	}
 }
 
