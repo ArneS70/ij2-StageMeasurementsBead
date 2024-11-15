@@ -30,6 +30,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
   
     public void run() { 
     	  
+    	method=FitterFunction.POLY8;
     	horizontalLine=analysis.getHorizontalLine();
 		ImagePlus inputImage=analysis.getImage();
 		this.cal=inputImage.getCalibration();
@@ -47,18 +48,18 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     				public void run() {  
     					
     					final int last=parameters.lineProfiles.size();
-    					final int length=Poly8Fitter.header.length;
+//    					final int length=Poly8Fitter.header.length;
     					
 //    					method=FitterFunction.Poly3;
 //    					fitFunc=new Poly3Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
 //    					fitFunc.setHeader(Poly3Fitter.header);
-    					method=FitterFunction.Poly8;
+    					
     					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
     					fitFunc.setHeader(Poly8Fitter.header);
     					double [] results=fitFunc.getParameter();
     					
 //    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
-    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3],results[4],results[5],results[6],results[7],results[8]});
+    					final String function=new GlobalFitter().createPolyFormula(fitFunc.getParameter(),8);
     					
     					try {
 							Thread.sleep(1000);

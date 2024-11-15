@@ -54,7 +54,7 @@ private ResultsTable fitParameters;
 		for (int p=0;p<fitResults.length;p++) {
 			double []initParam=getRow(fitResults,p,5);
 			
-			String formula=createFormula(initParam);
+			String formula=createPolyFormula(initParam,FitterFunction.methodParam[method]);
 			
 			for (int n=1;n<=col;n++) {
 //				IJ.log(p+"/"+n);
@@ -91,7 +91,7 @@ private ResultsTable fitParameters;
 		fitParameters=new ResultsTable();
 		double []initParam=getRow(fitResults,this.bestFitPos,5);
 		int col=inputTable.getLastColumn();
-		String formula=createFormula(initParam);
+		String formula=createPolyFormula(initParam,initParam.length);
 		ImageStack plots=new ImageStack(696,415); 
 		for (int n=1;n<=col;n++) {
 			fitParameters.addRow();
@@ -110,9 +110,9 @@ private ResultsTable fitParameters;
 		fitParameters.show("Fit Parameters");
 	}
 	
-	public String createFormula(double []parameters) {
+	public static String createPolyFormula(double []parameters,int poly) {
 		String formula="y=a+b*("+parameters[0];
-		int poly=parameters.length;
+		
 		
 		for (int n=1;n<poly;n++) {
 		

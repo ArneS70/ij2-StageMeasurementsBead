@@ -7,6 +7,7 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
@@ -25,32 +26,33 @@ import net.imagej.ImageJ;
 			ImagePlus fileInput;
 			String fileName, filePath;
 			int [] stackParam=new int[6];
+			
 
 //			@Parameter(style="open")
 //		    File fileInput;
 			
-			@Parameter(label="Process Z-stack")
+			@Parameter(label="Process Z-stack") 
 			boolean  entireZStack;
 			
 			@Parameter(label="Process T-stack")
 			boolean  entireTStack;
 			
-			@Parameter(label="z-start")
+			@Parameter(label="z-start",min="1")
 			int startZ;
 			
-			@Parameter(label="z-stop")
+			@Parameter(label="z-stop",min="1")
 			int stopZ;
 			
-			@Parameter(label="z-step")
+			@Parameter(label="z-step",min="1")
 			int stepZ;
 			
-			@Parameter(label="T-start")
+			@Parameter(label="T-start",min="1")
 			int startT;
 			
-			@Parameter(label="T-stop")
+			@Parameter(label="T-stop",min="1")
 			int stopT;
 			
-			@Parameter(label="T-step")
+			@Parameter(label="T-step",min="1")
 			int stepT;
 			
 			@Parameter(label="Show Focus Shift Plot")
@@ -68,12 +70,14 @@ import net.imagej.ImageJ;
 			@Parameter(label="Save Plot?")
 			boolean savePlot;
 			
+			@Parameter(label="Fitting Fuction",choices= {"Poly3","Poly4","Poly6","Poly8","AsymGauss"})
+			String fitFunc;
+			
 			@Parameter(label="Save result tables?")
 			boolean saveTables;
 			
 			@Parameter(label="Multi Thread Fit?")
 			boolean multiThread;
-			
 			
 			Line toAnalyse;
 
@@ -89,7 +93,7 @@ import net.imagej.ImageJ;
 																				setStartT(stackParam[3]).setStopT(stackParam[4]).setStepT(stackParam[5]).
 																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
 																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).
-																				multiThread(multiThread).
+																				fitFunc(fitFunc).multiThread(multiThread).
 																				build();
 																					
 				HorizontalLineAnalysis horizontal=new HorizontalLineAnalysis(analysis);

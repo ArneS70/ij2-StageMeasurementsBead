@@ -20,6 +20,7 @@ public class HorizontalAnalysis {
 	//optional parameters
 	private int repetition, startZ, stopZ,stepZ, startT,stopT,stepT;
 	private boolean saveTables,showTables,savePlot,showPlot,showProfile,multiThread;
+	private String fitFunc;
 	boolean summarize;
 	
 	//derived parameters (no input)
@@ -59,6 +60,7 @@ public class HorizontalAnalysis {
 		this.summarize=builder.summarize;
 		this.cal=builder.cal;
 		this.multiThread=builder.multiThread;
+		this.fitFunc=builder.fitFunc;
 	}
 	public ImagePlus getImage(){
 		return inputImage;
@@ -79,7 +81,12 @@ public class HorizontalAnalysis {
 		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize,multiThread;
 		private Calibration cal;
 		private Builder built;
+		private String fitFunc;
 		
+		public Builder fitFunc(String fitFunc) {
+			this.fitFunc=fitFunc;
+			return this;
+		}
 		public Builder(ImagePlus imp) {
 			this.inputImage=imp;
 			
@@ -92,10 +99,6 @@ public class HorizontalAnalysis {
 			this.multiThread=thread;
 			return this;
 		}
-		public Builder setCalibration(Calibration cal) {
-			this.cal=cal;
-			return this;
-		};
 		public Builder showTables(boolean show) {
 			this.showTables=show;
 			return this;
@@ -118,6 +121,14 @@ public class HorizontalAnalysis {
 		}
 		public Builder savePLot(boolean save) {
 			this.savePlot=save;
+			return this;
+		}
+		public Builder setCalibration() {
+			this.cal=inputImage.getCalibration();
+			return this;
+		}
+		public Builder setCalibration(Calibration cal) {
+			this.cal=cal;
 			return this;
 		}
 		public Builder setEntireStack(boolean all) {
@@ -159,10 +170,6 @@ public class HorizontalAnalysis {
 			this.stackCenter=c;
 			return this;
 		}
-		public Builder setCalibration() {
-			this.cal=inputImage.getCalibration();
-			return this;
-		}
 		public HorizontalAnalysis build() {
 			if (inputImage!=null) {
 				setCalibration();
@@ -189,96 +196,95 @@ public class HorizontalAnalysis {
 	 *************************************************************************************************************/
 	
 	public Line getHorizontalLine() {
-		// TODO Auto-generated method stub
 		return horizontalLine;
 	}
+	
 	public ResultsTable getAnalysisTable() {
-		// TODO Auto-generated method stub
 		return this.analysisTable;
 	}
+	public String getFitFunc() {
+		return this.fitFunc;
+	}
 	public int getstackCenter() {
-		// TODO Auto-generated method stub
 		return this.stackCenter;
 	}
+	
 	public int getStackSlices() {
-		// TODO Auto-generated method stub
 		stackSlices=this.inputImage.getNSlices();
 		return this.stackSlices;
 	}
+	
 	public int getStartZ() {
-		// TODO Auto-generated method stub
 		return this.startZ;
 	}
+	
 	public int getStepZ() {
-		// TODO Auto-generated method stub
 		return this.stepZ;
 	}
+	
 	public int getStopZ() {
-		// TODO Auto-generated method stub
 		return stopZ;
 	}
+	
 	public void setHorizontalLine(Line horizontal) {
-		// TODO Auto-generated method stub
 		this.horizontalLine=horizontal;
 	}
+	
 	public void setRepetition(int i) {
-		// TODO Auto-generated method stub
 		this.repetition=i;
 	}
+	
 	public void setStartZ(int i) {
-		// TODO Auto-generated method stub
 		this.startZ=i;
 	}
+	
 	public void setStepZ(int value) {
-		// TODO Auto-generated method stub
 		this.stepZ=value;
 	}
+	
 	public void setStopZ(int slices) {
-		// TODO Auto-generated method stub
 		this.stopZ=slices;
 	}
+	
 	public boolean getSaveTable() {
-		// TODO Auto-generated method stub
 		return this.saveTables;
 	}
 	public boolean getSavePlot() {
-		// TODO Auto-generated method stub
 		return this.savePlot;
 	}
+	
 	public boolean getShowTable() {
-		// TODO Auto-generated method stub
+		
 		return this.showTables;
 	}
 	public boolean getShowPlot() {
-		// TODO Auto-generated method stub
 		return this.showPlot;
 	}
+
 	public int getRepetition() {
-		// TODO Auto-generated method stub
 		return this.repetition;
 	}
+	
 	public void setSlice(int slice) {
 		inputImage.setSlice(slice);
 	}
 	public int getStartT() {
-		// TODO Auto-generated method stub
 		return startT;
 	}
 	public int getStopT() {
-		// TODO Auto-generated method stub
 		return stopT;
 	}
+	
 	public int getStepT() {
-		// TODO Auto-generated method stub
 		return stepT;
 	}
+	
 	public void setStopT(int stop) {
 		this.stopT=stop;
-		
 	}
+	
 	public void setStartT(int start) {
 		this.startT=start;
-		
 	}	
 	
 }	
