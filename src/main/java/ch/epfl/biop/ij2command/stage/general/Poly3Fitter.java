@@ -6,7 +6,11 @@ public class Poly3Fitter extends FitterFunction{
 	
 	public final static String [] header= {"a","b","c","d","sqdiff"};
 	double [] parameters;
-	private Poly3Fitter(double [] x,double [] y) {
+	
+	public Poly3Fitter(){
+		
+	}
+	public Poly3Fitter(double [] x,double [] y) {
 		super(x,y,CurveFitter.POLY3);
 //		this.parameters=super.getParameter();
 		

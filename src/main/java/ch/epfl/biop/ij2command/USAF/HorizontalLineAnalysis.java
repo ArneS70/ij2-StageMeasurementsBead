@@ -88,7 +88,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			//***************************************************************************
 		    	
 				if (!analysis.getMultiThread()) {
-		    		writeGlobalFitResults();     					//non multithreaded fit, slow;			
+		    		int m=FitterFunction.getMethod(this.analysis.getFitFunc());
+					writeGlobalFitResults(m);     					//non multithreaded fit, slow;			
 		    		this.createTables();
 		    		this.tableFitResults.show(titleFitResults);
 		    	}
@@ -258,8 +259,8 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		
 		
 		this.fitFunc=new FitterFunction(lineProfiles.firstElement(),lineProfiles.get(1),FitterFunction.methodInt[method]);
-		fitFunc.setHeader(Poly8Fitter.header);
-		this.method=FitterFunction.Poly8;
+//		fitFunc.setHeader(Poly8Fitter.header);
+//		this.method=FitterFunction.Poly8;
 //		double [] results=this.fitFunc.getParameter();
 		
 		String function=GlobalFitter.createPolyFormula(this.fitFunc.getParameter(),3);
@@ -286,7 +287,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			fitResults.add(allParam);
 			
-			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
+//			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
 			fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
 

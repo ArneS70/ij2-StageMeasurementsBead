@@ -4,11 +4,11 @@ import ij.IJ;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
 
-   public class FitterFunction extends CurveFitter{
+   public class FitterFunction {
 	protected static final int GAUSS=0, ASYMGAUSS=1,POLY3=3, POL4=4,POL6=6;
 	public static final int POLY8=8;
 	public static final String [] methodString= {"Gauss","Asymetric Gauss","null","Polynomal3","Polynomal4","null","Polynomal6","null","Polynomal8"};
-	private static final int [] methodInt= {CurveFitter.GAUSSIAN,1,0,CurveFitter.POLY3,CurveFitter.POLY4,0,CurveFitter.POLY6,0,CurveFitter.POLY8};
+	public static final int [] methodInt= {CurveFitter.GAUSSIAN,1,0,CurveFitter.POLY3,CurveFitter.POLY4,0,CurveFitter.POLY6,0,CurveFitter.POLY8};
 	static final int [] methodParam= {2,3,0,3,4,0,0,0,CurveFitter.POLY8};
 	
 	private String functionName;
@@ -21,16 +21,19 @@ import ij.measure.CurveFitter;
 	private boolean logResults=false;
 	private double max;
 	
-	protected FitterFunction(double [] inputX, double [] inputY,int method){
-		super(inputX,inputY);
+	public FitterFunction() {
+		
+	}
+	public FitterFunction(double [] inputX, double [] inputY,int method){
+		cf=new CurveFitter(inputX,inputY);
 		this.functionName=getMethodstring()[method];
 		this.method=methodInt[method];
 	}
 	synchronized public void fit() {
-		super.doFit(methodInt[method]);
+		cf.doFit(methodInt[method]);
 	}
 	synchronized public void fit(int method) {
-		super.doFit(methodInt[method]);
+		cf.doFit(methodInt[method]);
 	}
 	
 	synchronized public double [][] getFunctionValues(double [] param) {
@@ -104,6 +107,16 @@ import ij.measure.CurveFitter;
 		}
 		return max;
 		
+	}
+	public static int getMethod(String function) {
+		int method=0;
+		for (int i=0;i<FitterFunction.methodString.length;i++) {
+			if (function.equals(FitterFunction.methodString[i])) {
+				method=i;
+				i=FitterFunction.methodString.length;
+			}
+		}
+		return FitterFunction.methodInt[method];
 	}
 	int getMethod(int method) {
 		return FitterFunction.methodInt[method];
