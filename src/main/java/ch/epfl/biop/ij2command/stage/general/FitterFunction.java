@@ -4,33 +4,42 @@ import ij.IJ;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
 
-   public class FitterFunction {
-	protected static final int GAUSS=0, ASYMGAUSS=1,POLY3=3, POL4=4,POL6=6;
-	public static final int POLY8=8;
-	public static final String [] methodString= {"Gauss","Asymetric Gauss","null","Polynomal3","Polynomal4","null","Polynomal6","null","Polynomal8"};
-	public static final int [] methodInt= {CurveFitter.GAUSSIAN,1,0,CurveFitter.POLY3,CurveFitter.POLY4,0,CurveFitter.POLY6,0,CurveFitter.POLY8};
-	static final int [] methodParam= {2,3,0,3,4,0,0,0,CurveFitter.POLY8};
+    public class FitterFunction {
+
+	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25;
+	    public static final String [] methodString= {"Poly3","Poly4","Poly6","Poly8","Gauss","AsymGauss"};
+		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25};
+		public FitterFunction fitFunc;
+			
+//	static final int [] methodParam= {2,3,0,3,4,0,0,0,CurveFitter.POLY8};
 	
-	private String functionName;
-	private String [] header;
-	protected double [] x;
-	protected double [] y;
-	private double [] parameters,initParameters;
-	protected CurveFitter cf;
-	private int method;
-	private boolean logResults=false;
-	private double max;
+		private String functionName;
+		private String [] header;
+		protected CurveFitter cf;
+		private int method;
+		private double max;
+		private static double [] x;
+		private static double [] y;
 	
 	public FitterFunction() {
 		
 	}
+	
+	public FitterFunction(double [] inputX, double [] inputY,String function){
+//		cf=new CurveFitter(inputX,inputY);
+//		this.functionName=getMethodstring()[method];
+		this.x=inputX;
+		this.y=inputY;
+		this.fitFunc=getFitFunc(function);
+	}
+	
 	public FitterFunction(double [] inputX, double [] inputY,int method){
 		cf=new CurveFitter(inputX,inputY);
 		this.functionName=getMethodstring()[method];
 		this.method=methodInt[method];
 	}
 	synchronized public void fit() {
-		cf.doFit(methodInt[method]);
+		if (method<25) cf.doFit(method);
 	}
 	synchronized public void fit(int method) {
 		cf.doFit(methodInt[method]);
@@ -108,15 +117,25 @@ import ij.measure.CurveFitter;
 		return max;
 		
 	}
-	public static int getMethod(String function) {
-		int method=0;
-		for (int i=0;i<FitterFunction.methodString.length;i++) {
-			if (function.equals(FitterFunction.methodString[i])) {
-				method=i;
-				i=FitterFunction.methodString.length;
-			}
-		}
-		return FitterFunction.methodInt[method];
+	public static FitterFunction getFitFunc(String function) {
+		
+		FitterFunction fit=new FitterFunction();
+		switch (function) {
+        case "Poly3":
+            fit = new Poly3Fitter(x,y); 
+            break;
+        case "Poly4":
+        	fit = new Poly4Fitter(x,y);
+            break;
+        case "Poly6":
+        	fit = new Poly6Fitter(x,y);
+            break;
+        default:
+        	fit = new Poly3Fitter(x,y);
+            break;
+    }
+		return fit;
+		
 	}
 	int getMethod(int method) {
 		return FitterFunction.methodInt[method];

@@ -1,5 +1,9 @@
 package ch.epfl.biop.ij2command.stage.general;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import ij.measure.CurveFitter;
 
 public class SuperFunction {
@@ -24,6 +28,8 @@ public class SuperFunction {
 		 CurveFitter cf=new CurveFitter(x,y);
 		 if (!isCustom) cf.doFit(this.method);
 		 else cf.doCustomFit(this.globalFunction, new double []{1, 1,1},false);
+		 List<Double>arrlist=new ArrayList<);
+		 
 		 return cf.getParams();
 	 }
 }

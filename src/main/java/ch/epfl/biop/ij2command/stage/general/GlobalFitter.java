@@ -123,6 +123,7 @@ private ResultsTable fitParameters;
 		formula=formula.concat(")");
 		return formula;
 	}
+	
 	void setMethod(int method){
 		this.method=method;
 	}

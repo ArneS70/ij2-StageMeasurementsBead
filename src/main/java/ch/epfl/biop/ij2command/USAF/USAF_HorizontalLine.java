@@ -70,7 +70,7 @@ import net.imagej.ImageJ;
 			@Parameter(label="Save Plot?")
 			boolean savePlot;
 			
-			@Parameter(label="Fitting Fuction",choices= {"Polynomal3","Polynomal4","Polynomal6","Polynomal8","AsymGauss"})
+			@Parameter(label="Fitting Fuction",choices= {"Poly3","Poly4","Poly6","Poly8","AsymGauss"})
 			String fitFunc;
 			
 			@Parameter(label="Save result tables?")
