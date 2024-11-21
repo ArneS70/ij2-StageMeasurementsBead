@@ -7,6 +7,7 @@ public class Poly8Fitter extends FitterFunction{
 	double [] parameters;
 	private Poly8Fitter(double [] x,double [] y) {
 		super(x,y,FitterFunction.POLY8);
+		super.numParam=9;
 //		this.parameters=super.getParameter();
 		
 	}

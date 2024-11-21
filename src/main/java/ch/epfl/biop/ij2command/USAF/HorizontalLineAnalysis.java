@@ -88,8 +88,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			//***************************************************************************
 		    	
 				if (!analysis.getMultiThread()) {
-		    		int m=FitterFunction.getMethod(this.analysis.getFitFunc());
-					writeGlobalFitResults(m);     					//non multithreaded fit, slow;			
+//		    		FitterFunction fit=FitterFunction.getFitFunc(this.analysis.getFitFunc());
+//					int m=FitterFunction.getMethod(this.analysis.getFitFunc());
+					writeGlobalFitResults();     					//non multithreaded fit, slow;			
 		    		this.createTables();
 		    		this.tableFitResults.show(titleFitResults);
 		    	}
@@ -252,18 +253,20 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		
 	}
 	
-	void writeGlobalFitResults(int method) {
+	void writeGlobalFitResults() {
 		
-		//*************Poly8Fitter****************************
-		//int length=Poly8Fitter.header.length;
-		
-		
-		this.fitFunc=new FitterFunction(lineProfiles.firstElement(),lineProfiles.get(1),FitterFunction.methodInt[method]);
+//*************Poly8Fitter****************************
+//int length=Poly8Fitter.header.length;
+//		this.fitFunc=new FitterFunction(lineProfiles.firstElement(),lineProfiles.get(1),FitterFunction.methodInt[method]);
 //		fitFunc.setHeader(Poly8Fitter.header);
 //		this.method=FitterFunction.Poly8;
 //		double [] results=this.fitFunc.getParameter();
+//		String function=GlobalFitter.createPolyFormula(this.fitFunc.getParameter(),3);
 		
-		String function=GlobalFitter.createPolyFormula(this.fitFunc.getParameter(),3);
+
+		FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
+		double [] results=fit.getFitResults();
+		String function =fit.getGlobalFunction(results,fit.numParam);
 		
 		int stop=lineProfiles.size();
 		position.add(0.0);
@@ -279,7 +282,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 
 			CurveFitter cf=new CurveFitter(lineProfiles.firstElement(),lineProfiles.get(n));
 			cf.doCustomFit(function, new double [] {1, 1,1},false);
-//			results=cf.getParams();
+			results=cf.getParams();
 			double [] allParam=new double [6];
 			allParam[0]=(double)n;
 			allParam[5]=cf.getRSquared();

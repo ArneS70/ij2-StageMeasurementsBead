@@ -7,11 +7,10 @@ public class Poly6Fitter extends FitterFunction{
 	public final static String [] header= {"a","b","c","d","sqdiff"};
 	double [] parameters;
 	
-	public Poly6Fitter(){
-		
-	}
+	
 	public Poly6Fitter(double [] x,double [] y) {
-		super(x,y,CurveFitter.POLY3);
+		super(x,y,CurveFitter.POLY6);
+		super.numParam=7;
 //		this.parameters=super.getParameter();
 		
 	}
