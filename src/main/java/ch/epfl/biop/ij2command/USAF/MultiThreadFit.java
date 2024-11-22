@@ -30,7 +30,8 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
   
     public void run() { 
     	  
-    	method=FitterFunction.POLY8;
+//    	double []x=parameters.lineProfiles.firstElement();
+    	FitterFunction fit=FitterFunction.getFitFunc(parameters.lineProfiles.firstElement(), parameters.lineProfiles.get(1), this.analysis.getFitFunc());
     	horizontalLine=analysis.getHorizontalLine();
 		ImagePlus inputImage=analysis.getImage();
 		this.cal=inputImage.getCalibration();
@@ -54,19 +55,14 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
 //    					fitFunc=new Poly3Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
 //    					fitFunc.setHeader(Poly3Fitter.header);
     					
-    					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
-    					fitFunc.setHeader(Poly8Fitter.header);
-    					double [] results=fitFunc.getParameter();
+//    					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
+//    					fitFunc.setHeader(Poly8Fitter.header);
+    					double [] results=fit.getFitResults();
     					
 //    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
-    					final String function=new GlobalFitter().createPolyFormula(fitFunc.getParameter(),8);
+    					final String function=new GlobalFitter().createPolyFormula(results,fit.numParam);
     					
-    					try {
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+    					
     					for (int i = ai.getAndIncrement(); i < last; i = ai.getAndIncrement()) { 
     					
     						IJ.log("Stack position: "+i);

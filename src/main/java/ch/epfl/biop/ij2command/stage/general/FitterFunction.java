@@ -53,8 +53,30 @@ import ij.measure.CurveFitter;
 		if (method<25) {
 			cf.doFit(this.method);
 		}
-		return cf.getParams();
+		double [] results=cf.getParams();
+		int num=results.length;
+		double [] allParam=new double [num+1];
 		
+		allParam[num]=cf.getRSquared();
+		System.arraycopy(results, 0, allParam, 0, num);
+		return allParam;
+		
+	}
+	public synchronized double [] getFitResults(String function) {
+		
+			cf.doCustomFit(function,new double [] {1,1,1},false);
+		
+			double [] results=cf.getParams();
+			int num=results.length;
+			double [] allParam=new double [num+1];
+			
+			allParam[num]=cf.getRSquared();
+			System.arraycopy(results, 0, allParam, 0, num);
+			return allParam;
+		
+	}
+	public synchronized void updateInput(double []x,double[]y) {
+		this.cf=new CurveFitter(x,y);
 	}
 /*		
 	synchronized private void run(String func,double [] param) {
@@ -102,7 +124,7 @@ import ij.measure.CurveFitter;
 		return cf.getParams();
 	}
 */
-	public Plot getPlot() {
+	public synchronized Plot getPlot() {
 		return cf.getPlot();
 	}
 	double findMax() {

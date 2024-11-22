@@ -279,20 +279,20 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			if (this.tableFitResults==null) this.tableFitResults=new ResultsTable();
 			
 			
-
-			CurveFitter cf=new CurveFitter(lineProfiles.firstElement(),lineProfiles.get(n));
-			cf.doCustomFit(function, new double [] {1, 1,1},false);
-			results=cf.getParams();
-			double [] allParam=new double [6];
-			allParam[0]=(double)n;
-			allParam[5]=cf.getRSquared();
-			System.arraycopy(cf.getParams(), 0, allParam, 1, 4);
+			fit.updateInput(lineProfiles.firstElement(),lineProfiles.get(n));
 			
-			fitResults.add(allParam);
+//			CurveFitter cf=new CurveFitter(lineProfiles.firstElement(),lineProfiles.get(n));
+//			cf.doCustomFit(function, new double [] {1, 1,1},false);
+			
+//			results=fit.getFitResults(function);
+			
+			
+			
+			fitResults.add(fit.getFitResults(function));
 			
 //			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
-			fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
+			fitPlots.addSlice(fit.getPlot().getImagePlus().getProcessor());
 
 			}
 			

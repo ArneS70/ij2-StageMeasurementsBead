@@ -54,7 +54,7 @@ private ResultsTable fitParameters;
 		for (int p=0;p<fitResults.length;p++) {
 			double []initParam=getRow(fitResults,p,5);
 			
-			String formula=createPolyFormula(initParam,FitterFunction.methodParam[method]);
+			String formula=createPolyFormula(initParam,3);
 			
 			for (int n=1;n<=col;n++) {
 //				IJ.log(p+"/"+n);
