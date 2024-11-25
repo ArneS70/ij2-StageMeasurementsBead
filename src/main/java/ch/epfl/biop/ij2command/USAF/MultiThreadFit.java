@@ -51,6 +51,7 @@ public class MultiThreadFit  {
     			// Concurrently run in as many threads as CPUs  
     			IJ.log("ithread="+ithread);
     			FitterFunction fit=FitterFunction.getFitFunc(parameters.lineProfiles.firstElement(), parameters.lineProfiles.get(1), this.analysis.getFitFunc());
+    			double [] results=fit.getFitResults();
     			threads[ithread] = new Thread() {  
     				
     				public void run() {  
@@ -66,7 +67,7 @@ public class MultiThreadFit  {
 //    					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
 //    					fitFunc.setHeader(Poly8Fitter.header);
     					
-    					double [] results=fit.getFitResults();
+    					
     					
 //    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
     					final String function=new GlobalFitter().createPolyFormula(results,fit.numParam);
