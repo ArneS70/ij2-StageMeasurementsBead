@@ -44,7 +44,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	
 	protected ResultsTable summary;
 	private int startSlice,endSlice;
-	private ImageStack fitPlots=new ImageStack(696,415);
+	protected ImageStack fitPlots=new ImageStack(696,415);
 	
 	/***************************************************************************************************************   
 	 * Constructors
@@ -108,7 +108,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					IJ.log("start="+t1);
 					IJ.log("stop="+t2);
 					IJ.log("duration="+(t2-t1)/1000);
-					this.fitResults=fastFit.parameters.fitResults;
+//					this.fitResults=fastFit.fitResults;
 					this.fitPlots=fastFit.getFitPlots();
 					if (isSingleZStack || isTimeStack) {
 						LogToSummaryTable();
@@ -280,10 +280,14 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		
 		int stop=lineProfiles.size();
 		position.add(0.0);
+		double t0=System.currentTimeMillis();
 		for (int n=1;n<stop;n++) {
+			
 			
 			IJ.log("===================================");
 			IJ.log("Slice: "+n);
+			
+			
 			position.add((double)n);
 			
 			if (this.tableFitResults==null) this.tableFitResults=new ResultsTable();
@@ -303,7 +307,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
 			fitPlots.addSlice(fit.getPlot().getImagePlus().getProcessor());
-
+			double t=System.currentTimeMillis();
+			IJ.log("delta t="+IJ.d2s((t-t0)/1000));
+			t0=t;
 			}
 			
 

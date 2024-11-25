@@ -1,6 +1,7 @@
 package ch.epfl.biop.ij2command.USAF;
 
-import ij.*;  
+import ij.*;
+import ij.gui.Line;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
@@ -15,36 +16,36 @@ import ch.epfl.biop.ij2command.stage.general.Poly3Fitter;
 import ch.epfl.biop.ij2command.stage.general.Poly8Fitter;  
   
 
-public class MultiThreadFit extends HorizontalLineAnalysis {
+public class MultiThreadFit  {
 
 	HorizontalLineAnalysis parameters;
-//	private final ResultsTable fitResults=new ResultsTable();
-//	private final ImageStack fitPlots=new ImageStack(696,415);
-	Vector <double []> fitResults=new Vector<double[]>();
+	HorizontalAnalysis analysis;
+	
 	Vector <ImageProcessor> plots=new Vector<ImageProcessor>();
 	
 	MultiThreadFit(HorizontalAnalysis ha){
-		super(ha);
-		this.analysis=super.analysis;
+		
+		this.analysis=ha;
 	}
 	MultiThreadFit(HorizontalLineAnalysis hla){
 		this.parameters=hla;
 		this.analysis=hla.analysis;
+		
 	}
   
     public void run() { 
     	  
 //    	double []x=parameters.lineProfiles.firstElement();
     	
-    	horizontalLine=analysis.getHorizontalLine();
+    	Line horizontalLine=analysis.getHorizontalLine();
 		ImagePlus inputImage=analysis.getImage();
-		this.cal=inputImage.getCalibration();
+		parameters.cal=inputImage.getCalibration();
 		inputImage.getProcessor().setLineWidth(1);
 		
     	final AtomicInteger ai = new AtomicInteger(1);
     	
     	final Thread[] threads = newThreadArray();
-    	final double t0=System.currentTimeMillis();
+    	
   
     		for (int ithread = 0; ithread < threads.length; ithread++) {   
     			// Concurrently run in as many threads as CPUs  
@@ -55,6 +56,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     				public void run() {  
     					
     					final int last=parameters.lineProfiles.size();
+    					double t0=System.currentTimeMillis();
 //    					final int length=Poly8Fitter.header.length;
     					
 //    					method=FitterFunction.Poly3;
@@ -73,7 +75,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     					for (int i = ai.getAndIncrement(); i < last; i = ai.getAndIncrement()) { 
     					
     						double t=System.currentTimeMillis();
-    						IJ.log("Stack position: "+i+"   "+IJ.d2s((t-t0)/1000));
+    						
     						
     						fit.updateInput(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
     						//CurveFitter cf=new CurveFitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
@@ -86,9 +88,10 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
 //    						System.arraycopy(cf.getParams(), 0, allParam, 1, 4);
     						
 //    						parameters.fitResults.add(fit.getFitResults(function));
-    						fitResults.add(fit.getFitResults(function));
+    						parameters.fitResults.add(fit.getFitResults(function));
     						plots.add(fit.getPlot().getImagePlus().getProcessor());
-    						
+    						IJ.log("Stack position: "+i+"   "+IJ.d2s((t-t0)/1000));
+    						t0=t;
 //    						fitPlots.addSlice(fit.getPlot().getImagePlus().getProcessor());
     						
     						
@@ -114,10 +117,20 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
  //       new ImagePlus("Results", stack).show();  
     }  
     ImageStack getFitPlots() {
-    	return fitPlots; 
+    	int size=plots.size();
+    	for (int i=0;i<size;i++) {
+    		parameters.fitPlots.addSlice(plots.elementAt(i));
+    	}
+    	return parameters.fitPlots; 
     }
     ResultsTable getFitResults() {
-    	return fitResults;
+    	
+    	int size=plots.size();
+    	for (int i=0;i<size;i++) {
+    		parameters.tableFitResults.setValues(""+i, parameters.fitResults.elementAt(i));
+    	}
+    	
+    	return parameters.tableFitResults;
     }
     /** Create a Thread[] array as large as the number of processors available. 
     * From Stephan Preibisch's Multithreading.java class. See: 
