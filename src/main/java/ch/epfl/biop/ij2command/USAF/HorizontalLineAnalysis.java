@@ -90,14 +90,24 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				if (!analysis.getMultiThread()) {
 //		    		FitterFunction fit=FitterFunction.getFitFunc(this.analysis.getFitFunc());
 //					int m=FitterFunction.getMethod(this.analysis.getFitFunc());
+					double t1=System.currentTimeMillis();
 					writeGlobalFitResults();     					//non multithreaded fit, slow;			
-		    		this.createTables();
+					double t2=System.currentTimeMillis();
+					IJ.log("start="+t1);
+					IJ.log("stop="+t2);
+					IJ.log("duration="+(t2-t1)/1000);
+					this.createTables();
 		    		this.tableFitResults.show(titleFitResults);
 		    	}
 				
 				else {
 					MultiThreadFit fastFit=new MultiThreadFit(this);
+					double t1=System.currentTimeMillis();
 					fastFit.run();
+					double t2=System.currentTimeMillis();
+					IJ.log("start="+t1);
+					IJ.log("stop="+t2);
+					IJ.log("duration="+(t2-t1)/1000);
 					this.fitResults=fastFit.parameters.fitResults;
 					this.fitPlots=fastFit.getFitPlots();
 					if (isSingleZStack || isTimeStack) {

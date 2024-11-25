@@ -35,7 +35,7 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 		for (int t=startT;t<=stopT;t+=stepT) {
 			count++;
 			int deltaT=t-startT;
-			for (int z=startZ;z<=stopZ;z+=stepZ) {
+			for (int z=startZ;z<stopZ;z+=stepZ) {
 				
 				int n=deltaT*nSlices+z;
 				imp.setSlice(n);

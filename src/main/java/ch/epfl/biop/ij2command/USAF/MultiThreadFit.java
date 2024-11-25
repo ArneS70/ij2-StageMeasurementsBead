@@ -3,7 +3,9 @@ package ch.epfl.biop.ij2command.USAF;
 import ij.*;  
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
+import ij.process.ImageProcessor;
 
+import java.util.Vector;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -16,8 +18,10 @@ import ch.epfl.biop.ij2command.stage.general.Poly8Fitter;
 public class MultiThreadFit extends HorizontalLineAnalysis {
 
 	HorizontalLineAnalysis parameters;
-	private final ResultsTable fitResults=new ResultsTable();
-	private final ImageStack fitPlots=new ImageStack(696,415);
+//	private final ResultsTable fitResults=new ResultsTable();
+//	private final ImageStack fitPlots=new ImageStack(696,415);
+	Vector <double []> fitResults=new Vector<double[]>();
+	Vector <ImageProcessor> plots=new Vector<ImageProcessor>();
 	
 	MultiThreadFit(HorizontalAnalysis ha){
 		super(ha);
@@ -31,7 +35,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     public void run() { 
     	  
 //    	double []x=parameters.lineProfiles.firstElement();
-    	FitterFunction fit=FitterFunction.getFitFunc(parameters.lineProfiles.firstElement(), parameters.lineProfiles.get(1), this.analysis.getFitFunc());
+    	
     	horizontalLine=analysis.getHorizontalLine();
 		ImagePlus inputImage=analysis.getImage();
 		this.cal=inputImage.getCalibration();
@@ -39,13 +43,15 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
 		
     	final AtomicInteger ai = new AtomicInteger(1);
     	
-    	final Thread[] threads = newThreadArray();  
+    	final Thread[] threads = newThreadArray();
+    	final double t0=System.currentTimeMillis();
   
     		for (int ithread = 0; ithread < threads.length; ithread++) {   
     			// Concurrently run in as many threads as CPUs  
-  
+    			IJ.log("ithread="+ithread);
+    			FitterFunction fit=FitterFunction.getFitFunc(parameters.lineProfiles.firstElement(), parameters.lineProfiles.get(1), this.analysis.getFitFunc());
     			threads[ithread] = new Thread() {  
-  
+    				
     				public void run() {  
     					
     					final int last=parameters.lineProfiles.size();
@@ -57,6 +63,7 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     					
 //    					fitFunc=new Poly8Fitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(last/2));
 //    					fitFunc.setHeader(Poly8Fitter.header);
+    					
     					double [] results=fit.getFitResults();
     					
 //    					final String function=new GlobalFitter().createFormula(new double[]{results[0],results[1],results[2],results[3]});
@@ -65,19 +72,24 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     					
     					for (int i = ai.getAndIncrement(); i < last; i = ai.getAndIncrement()) { 
     					
-    						IJ.log("Stack position: "+i);
-    						CurveFitter cf=new CurveFitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
-    						cf.doCustomFit(function, new double [] {1, 1,1},false);
+    						double t=System.currentTimeMillis();
+    						IJ.log("Stack position: "+i+"   "+IJ.d2s((t-t0)/1000));
     						
-    						double [] allParam=new double [6];
-    						allParam[0]=(double)i;
-    						allParam[5]=cf.getRSquared();
-    						System.arraycopy(cf.getParams(), 0, allParam, 1, 4);
+    						fit.updateInput(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
+    						//CurveFitter cf=new CurveFitter(parameters.lineProfiles.firstElement(),parameters.lineProfiles.get(i));
     						
-    						parameters.fitResults.add(allParam);
+    						//cf.doCustomFit(function, new double [] {1, 1,1},false);
     						
+//    						double [] allParam=new double [6];
+//    						allParam[0]=(double)i;
+//    						allParam[5]=cf.getRSquared();
+//    						System.arraycopy(cf.getParams(), 0, allParam, 1, 4);
     						
-    						fitPlots.addSlice(cf.getPlot().getImagePlus().getProcessor());
+//    						parameters.fitResults.add(fit.getFitResults(function));
+    						fitResults.add(fit.getFitResults(function));
+    						plots.add(fit.getPlot().getImagePlus().getProcessor());
+    						
+//    						fitPlots.addSlice(fit.getPlot().getImagePlus().getProcessor());
     						
     						
     					}
@@ -86,7 +98,8 @@ public class MultiThreadFit extends HorizontalLineAnalysis {
     					
             }  
         
-        };  
+        };
+    			  
     }  
     
     startAndJoin(threads);
