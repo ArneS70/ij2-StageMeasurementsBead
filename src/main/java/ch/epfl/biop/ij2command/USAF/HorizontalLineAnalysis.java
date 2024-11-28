@@ -93,15 +93,24 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					double t1=System.currentTimeMillis();
 					writeGlobalFitResults();     					//non multithreaded fit, slow;			
 					double t2=System.currentTimeMillis();
-					IJ.log("start="+t1);
-					IJ.log("stop="+t2);
+					IJ.log("start="+t1+"   stop="+t2);
 					IJ.log("duration="+(t2-t1)/1000);
 					this.createTables();
 		    		this.tableFitResults.show(titleFitResults);
 		    	}
 				
 				else {
-					MultiThreadFit fastFit=new MultiThreadFit(this);
+					FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
+					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles);
+					double [] results=fit.getFitResults();
+//					final String function=new GlobalFitter().createPolyFormula(results,fit.numParam);
+					final String function=new GlobalFitter().createGlobalFormula(results, "y=param+param*x+param*x*x");
+					mtf.multiThreadCalculate(function);
+					this.fitResults=mtf.fitResults;
+					createImageStack(mtf.fitPlots);
+					IJ.log("");
+					
+/*					MultiThreadFit fastFit=new MultiThreadFit(this);
 					double t1=System.currentTimeMillis();
 					fastFit.run();
 					double t2=System.currentTimeMillis();
@@ -114,7 +123,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 						LogToSummaryTable();
 						if (tableFitResults!=null) getSlope(3);
 						analysis.counter=this.counter;
-					}
+					}*/
 				}
 
 				this.createTables();
@@ -133,7 +142,12 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				if (analysis.getShowPlot()) new ImagePlus("FitPlots",fitPlots).show();
 			}
 		}
-		
+		void createImageStack(Vector<ImageProcessor>ips) {
+			int size=ips.size();
+			for (int i=0;i<size;i++) {
+				this.fitPlots.addSlice(ips.elementAt(i));
+			}
+		}
 		void createTables() {
 		
 		tableFitResults=new ResultsTable();

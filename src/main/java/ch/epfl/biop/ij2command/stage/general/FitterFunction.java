@@ -65,7 +65,7 @@ import ij.measure.CurveFitter;
 	public synchronized double [] getFitResults(String function) {
 		
 			cf.doCustomFit(function,new double [] {1,1,1},false);
-		
+//			cf.doCustomFit(function,new double [] {1,1},false);
 			double [] results=cf.getParams();
 			int num=results.length;
 			double [] allParam=new double [num+1];

@@ -1,6 +1,7 @@
 package ch.epfl.biop.ij2command.stage.general;
 
 import java.util.Stack;
+import java.util.Vector;
 
 import ij.IJ;
 import ij.ImagePlus;
@@ -118,12 +119,22 @@ private ResultsTable fitParameters;
 		
 		if (parameters[n]>0)formula=formula.concat("+");  
 		formula=formula.concat(Double.toString(parameters[n]));
-		formula=formula.concat("*pow(x-c,"+n+")");
+		formula=formula.concat("*pow(x-b,"+n+")");
 		}
 		formula=formula.concat(")");
 		return formula;
 	}
-	
+	public String createGlobalFormula(double[]parameters,String function){
+//		Vector <Integer> pos=new Vector<Integer>();
+		int i=0;
+		do {
+			function.replaceFirst("param", Double.toString(parameters[i]));
+			i++;
+		}
+		while (function.indexOf("param")==-1);
+		return function;
+		
+	}
 	void setMethod(int method){
 		this.method=method;
 	}
