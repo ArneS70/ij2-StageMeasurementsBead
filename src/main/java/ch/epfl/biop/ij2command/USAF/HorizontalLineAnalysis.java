@@ -101,10 +101,16 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				
 				else {
 					FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
-					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles);
+					
 					double [] results=fit.getFitResults();
-//					final String function=new GlobalFitter().createPolyFormula(results,fit.numParam);
-					final String function=new GlobalFitter().createGlobalFormula(results, "y=param+param*x+param*x*x");
+					fit.getPlot().show();
+//					final String function1=new GlobalFitter().createPolyFormula(results,fit.numParam);
+//					final String function=new GlobalFitter().createGlobalFormula(results, fit.globalFunction);
+					final String function=fit.createGlobalFormula(results);
+//					fit.getFitResults(function);
+//					fit.getPlot().show();
+					
+					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,function,this.analysis.getFitFunc());
 					mtf.multiThreadCalculate(function);
 					this.fitResults=mtf.fitResults;
 					createImageStack(mtf.fitPlots);

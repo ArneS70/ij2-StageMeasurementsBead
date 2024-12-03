@@ -3,108 +3,94 @@ package ch.epfl.biop.ij2command.stage.general;
 
 	import java.util.Arrays;
 
-import org.orangepalantir.leastsquares.Fitter;
-import org.orangepalantir.leastsquares.Function;
-import org.orangepalantir.leastsquares.fitters.LinearFitter;
-import org.orangepalantir.leastsquares.fitters.MarquardtFitter;
-import org.orangepalantir.leastsquares.fitters.NonLinearSolver;
-
 import ij.IJ;
-import ij.gui.Line;
-	import ij.measure.CurveFitter;
-	import ij.process.ImageProcessor;
+import ij.measure.CurveFitter;
+import ij.measure.UserFunction;
 
 
-	public class Asym2SigFitter{ //extends FitterFunction{
 
-			private double fwhm;
-			private double [] parameters;
-			private double [] x,y;
-			Function func;
-			
-			public Asym2SigFitter(double []x,double[]y){
-				this.x=x;
-				this.y=y;
-			}	
-			
-			
-			public Function fun = new Function(){
-			    
-				@Override
-			    public double evaluate(double[] values, double[] parameters) {
-			        double A = parameters[0];
-			        double B = parameters[1];
-			        double C = parameters[2];
-			        double D = parameters[3];
-			        double E = parameters[4];
-			        double F = parameters[5];
-			        
-			        double x = values[0];
-			        return A+B*(1/(1+Math.exp(-(1*x-C+(D/2))/E)))*(1-(1/(1+Math.exp(-(1*x-C-(D/2))/F))));
-			    }
-			    
-			    public double [] getParameters() {
-			    	return parameters;
-			    }
-			    public int getNParameters() {
-			        return 6;
-			    }
+	public class Asym2SigFitter  extends FitterFunction implements UserFunction{
 
-			    @Override
-			    public int getNInputs() {
-			        return 1;
-			    }
-			};
-			public void fit(){
-				
-				double[][] xs = new double[x.length][1];
-				for (int i=0;i<x.length;i++) {
-					xs[i][0]=x[i];
-				}
-				
-				Fitter fit=new MarquardtFitter(fun);
-				fit.setData(xs, y);
-				fit.setParameters(new double[]{10000,11000,500,150,80,150});
-
-				fit.fitData();
-				parameters=fit.getParameters();
-				IJ.log(Arrays.toString(parameters));
-				
-			}
-			public double [] getParameters(){
-				return parameters;
-			}
-			public double[][] getFunctionValues(double []x, double[] param) {
-				int len=x.length;
-				double A=param[0];
-				double B=param[1];
-				double C=param[2];
-				double D=param[3];
-				double E=param[4];
-				double F=param[5];
-				
-				double deltax=x[1]-x[0];
-				int pos=len*5;
-				double [][] function =new double [2][pos];
-				
-				for (int n=0;n<pos;n++) {
-					double xval=n*deltax/5;
-					function[0][n]=xval;
-					function[1][n]=A+B*(1/(1+Math.exp(-(1*xval-C+(D/2))/E)))*(1-(1/(1+Math.exp(-(1*xval-C-(D/2))/F))));
-				}
-				return function;
-			}
-		}
-	
-	/*			
 	public final static String [] header= {"y0","height","center","w1","w2","w3","R^2","FWHM"};
 	private String fitFunction="y=a+b*(1/(1+exp(-1*(x-c+(d/2))/e)))*(1-(1/(1+exp(-1*(x-c-(d/2))/f))))";
 			
 	
-	public Asym2SigFitter(double []xvalues,double [] yvalues){
-		super(xvalues,yvalues,FitterFunction.AsymGauss);
+	
+	public Asym2SigFitter(double []xInput ,double [] yInput){
+		super(xInput,yInput,FitterFunction.ASYMGAUSS);
+		super.numParam=4;
+		super.function=fitFunction;
+		initParam=getInitParameters();
+		super.globalFunction=fitFunction;
+		
+	}
+	public synchronized double [] getFitResults() {
+		cf.doCustomFit(this, 6, "", initParam,new double [] {0.5,0.5,0.5,0.5,0.5,0.5}, false);
+//		cf.doCustomFit(this, 6, "", x, initParam, false);
+		return cf.getParams();
+	}
+	public synchronized double [] getFitResults(double [] paramVariation) {
+		
+//		cf.doCustomFit(function,new double [] {initParam[0],initParam[1],initParam[2]},false);
+		cf.setMaxIterations(10000);
+		cf.doCustomFit(this, 6, "", initParam,paramVariation, false);
+//		cf.doCustomFit(function,new double [] {1,1},false);
+		double [] results=cf.getParams();
+		int num=results.length;
+		double [] allParam=new double [num+1];
+		
+		allParam[num]=cf.getRSquared();
+		System.arraycopy(results, 0, allParam, 0, num);
+		return allParam;
+	
+}
+	public synchronized double [] getFitResults(String function) {
+		
+//		cf.doCustomFit(function,new double [] {initParam[0],initParam[1],initParam[2]},false);
+		cf.setMaxIterations(10000);
+		cf.doCustomFit(this, 6, "", initParam,new double [] {0.2,0.2,0.2,0.00001,0.00001,0.000001}, false);
+//		cf.doCustomFit(function,new double [] {1,1},false);
+		double [] results=cf.getParams();
+		int num=results.length;
+		double [] allParam=new double [num+1];
+		
+		allParam[num]=cf.getRSquared();
+		System.arraycopy(results, 0, allParam, 0, num);
+		return allParam;
+	
+}
+	public String createGlobalFormula(double []param) {
+		String global=fitFunction.replace("exp", "xxx");
+		global=global.replace("d", IJ.d2s(param[3]));
+		global=global.replace("e", IJ.d2s(param[4]));
+		global=global.replace("f", IJ.d2s(param[5]));
+		global=global.replace("xxx", "exp");
+		return global;
+	}
+	double [] getInitParameters(){
+		double [] param=new double [6];
+		ArrayStatistics statX=new ArrayStatistics(super.x);
+		ArrayStatistics statY=new ArrayStatistics(super.y);
+		param[0]=statY.getMin();
+		param[1]=statY.getMax();
+		param[2]=statX.getMean();
+		param[3]=statX.getMax()/4;
+		param[4]=statX.getMax()/4;
+		param[5]=statX.getMax()/4;
+		
+		return param;
+		
+	}
+	@Override
+	public double userFunction(double[] p, double x) {
+		double a=(1/(1+Math.pow(Math.E,-1*(x-p[2]+(p[3]/2))/p[4])));
+		double b=(1-(1/(1+Math.pow(Math.E,-1*(x-p[2]-(p[3]/2))/p[5]))));
+		return p[0]+p[1]*a*b; 
+		
+	}
 	}
 
+/*	
 	void fit(boolean show) {
 		ArrayStatistics as=new ArrayStatistics(y);
 		double [] intParam= {
@@ -141,6 +127,5 @@ import ij.gui.Line;
 		
 		return 2*sigma*Math.sqrt(Math.log(4));
 	}
-*/
-	
+*/	
 	

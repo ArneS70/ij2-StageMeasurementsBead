@@ -3,14 +3,16 @@ package ch.epfl.biop.ij2command.stage.general;
 import ij.IJ;
 import ij.gui.Plot;
 import ij.measure.CurveFitter;
+import ij.measure.UserFunction;
 
     public class FitterFunction {
 
 	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25;
 	    public static final String [] methodString= {"Poly3","Poly4","Poly6","Poly8","Gauss","AsymGauss"};
 		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25};
-		public String globalFunction;
+		public String function,globalFunction;
 		public int numParam;
+		public double[] initParam; 
 			
 //	static final int [] methodParam= {2,3,0,3,4,0,0,0,CurveFitter.POLY8};
 	
@@ -19,8 +21,8 @@ import ij.measure.CurveFitter;
 		protected CurveFitter cf;
 		private int method;
 		private double max;
-		private static double [] x;
-		private static double [] y;
+		protected double [] x;
+		protected double [] y;
 	
 //	public FitterFunction() {
 		
@@ -35,6 +37,8 @@ import ij.measure.CurveFitter;
 //	}
 	
 	public FitterFunction(double [] inputX, double [] inputY,int method){
+		this.x=inputX;
+		this.y=inputY;
 		cf=new CurveFitter(inputX,inputY);
 //		this.functionName=getMethodstring()[method];
 		this.method=method;
@@ -49,9 +53,42 @@ import ij.measure.CurveFitter;
 //	synchronized public double [][] getFunctionValues(double [] param) {
 //		return new double [0][0];
 //	}
+	public String createGlobalFormula(double[]parameters){
+//		Vector <Integer> pos=new Vector<Integer>();
+		int i=0;
+		
+		do {
+			String val="";
+			int pos=function.indexOf("param");
+			char a=function.charAt(pos-1);
+			
+			if (parameters[i]>0 && a!=40) val="+";
+			val=val.concat(Double.toString(parameters[i]));
+			
+			function=function.replaceFirst("param",val );
+			i++;
+		}
+		while (function.indexOf("param")!=-1);
+		return function;
+		
+	}
+	public synchronized double [] getFitResults(double [] paramVariation) {
+		return null;
+	}
+	public synchronized double [] getGlobalFitResults(double [] param) {
+		return null;
+	}
 	public synchronized double [] getFitResults() {
 		if (method<25) {
 			cf.doFit(this.method);
+		} else {
+			int len=this.initParam.length;
+			double []variation=new double [this.initParam.length];
+			for (int i=0;i<this.initParam.length;i++) {
+				variation[i]=0.1;
+			}
+//			cf.doCustomFit(cf, len, function, initParam, variation, false);
+			cf.doCustomFit(this.function, this.initParam,  false);
 		}
 		double [] results=cf.getParams();
 		int num=results.length;
@@ -156,6 +193,12 @@ import ij.measure.CurveFitter;
         case "Poly6":
         	fit = new Poly6Fitter(x,y);
             break;
+        case "Poly8":
+        	fit = new Poly8Fitter(x,y);
+            break;
+        case "AsymGauss":
+        	fit = new Asym2SigFitter(x,y);
+            break;
         default:
         	fit = new Poly3Fitter(x,y);
             break;
@@ -179,4 +222,6 @@ import ij.measure.CurveFitter;
 	synchronized public String getGlobalFunction(double [] param,int num) {
 		return GlobalFitter.createPolyFormula(param,num);
 	}
+
+	
 }

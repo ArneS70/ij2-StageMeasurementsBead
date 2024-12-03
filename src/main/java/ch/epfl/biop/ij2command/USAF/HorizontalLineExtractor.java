@@ -39,6 +39,7 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 				
 				int n=deltaT*nSlices+z;
 				imp.setSlice(n);
+				setHorizontalLine(n);
 				this.profile=imp.getProcessor().getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
 //				IJ.run("Measure");
 				getProfile();

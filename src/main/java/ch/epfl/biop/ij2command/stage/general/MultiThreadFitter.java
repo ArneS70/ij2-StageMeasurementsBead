@@ -16,7 +16,8 @@ public class MultiThreadFitter extends Thread{
 	private int stop=0;
 	private int multiStackSize=0;
 	private int method=1;
-	private String function;
+	private String functionName;
+	private String fitFunction;
 	//number of processors
 	private final static int n_cpus=Runtime.getRuntime().availableProcessors();
 	Vector <double []>lines;
@@ -31,16 +32,17 @@ public class MultiThreadFitter extends Thread{
 		numLines=lines.size();
 		
 	}
-	public MultiThreadFitter(Vector <double []>input,String function){
+	public MultiThreadFitter(Vector <double []>input,String function,String name){
 		lines=input;
 		numLines=lines.size();
-		this.function=function;
+		this.functionName=name;
+		this.fitFunction=function;
 	}
 	MultiThreadFitter(Vector <double []>input,int start,int stop,String function){
 		this.lines=input;
 		this.start=start;
 		this.stop=stop;
-		this.function=function;
+		this.functionName=function;
 	
 	}
 	
@@ -49,8 +51,8 @@ public class MultiThreadFitter extends Thread{
 		int size=this.lines.size();
 		
 		for (int i=1;i<size;i++) {
-			FitterFunction fit=new FitterFunction(lines.elementAt(0),lines.elementAt(i),method);
-			double [] results=fit.getFitResults(function);
+			FitterFunction fit=FitterFunction.getFitFunc(lines.elementAt(0),lines.elementAt(i),functionName);
+			double [] results=fit.getFitResults(fitFunction);
 			fitResults.add(results);
 			fitPlots.add(fit.getPlot().getImagePlus().getProcessor());
 			IJ.log(Thread.currentThread()+"     "+i+"      "+((System.currentTimeMillis()-t0)/1000.0));
@@ -86,7 +88,9 @@ public class MultiThreadFitter extends Thread{
 				}
 				IJ.log("i="+i+"start="+start[i]+"   stop"+stop[i]);
 				
-				array[i]=new MultiThreadFitter(getLines(start[i],stop[i]),start[i],stop[i],this.function);
+				array[i]=new MultiThreadFitter(getLines(start[i],stop[i]),start[i],stop[i],this.fitFunction);
+				array[i].functionName=this.functionName;
+				array[i].fitFunction=this.fitFunction;
 				
 			}
 			return array;
@@ -101,11 +105,11 @@ public class MultiThreadFitter extends Thread{
 	}
 	public void multiThreadCalculate(String function){
 		
-		this.function=function;
+		this.fitFunction=function;
 //		IJ.log("Start multiThread");
 		long start=System.currentTimeMillis();
 		
-		final MultiThreadFitter [] calculate = new MultiThreadFitter(this.lines,this.function).getArray(); 
+		final MultiThreadFitter [] calculate = new MultiThreadFitter(this.lines,this.fitFunction,this.functionName).getArray(); 
 //		final ImageStack resultStack=new ImageStack(this.width/scaleFactor,this.height/scaleFactor);  
 //		IJ.log("startAndJoin");
 		startAndJoin(calculate);

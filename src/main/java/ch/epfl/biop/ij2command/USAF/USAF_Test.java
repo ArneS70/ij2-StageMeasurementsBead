@@ -6,10 +6,11 @@ import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;
 
-net.imglib2.algorithm.localization
+
 
 import ch.epfl.biop.ij2command.stage.general.Asym2SigFitter;
 import ch.epfl.biop.ij2command.stage.general.Asym2SigFitterFixed;
+import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -34,6 +35,18 @@ public class USAF_Test implements Command{
 			x[i]=i*imp.getCalibration().pixelWidth;
 		}
 		
+		for (int i=0;i<20;i++) {
+			FitterFunction fit=FitterFunction.getFitFunc(x,profile,"AsymGauss");
+			double p=Math.pow(1.2, 20-i);
+			IJ.log(i+"  p="+p);
+			double [] results=fit.getFitResults(new double[] {p,p,p,p,p,p});
+			stack.addSlice(fit.getPlot().getImagePlus().getProcessor());
+			
+		}
+		new ImagePlus ("Stack",stack).show();
+		
+	}
+/*		
 		LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer() {
 	 		// Override your objective function here
 	 		public void setValues(double[] parameters, double[] values) {
@@ -77,7 +90,7 @@ public class USAF_Test implements Command{
 		}
 		new ImagePlus("Fit Plots",stack).show();
 	}
-
+*/
 	public static void main(final String... args) throws Exception {
 		// create the ImageJ application context with all available services
 				

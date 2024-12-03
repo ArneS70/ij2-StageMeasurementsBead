@@ -127,11 +127,19 @@ private ResultsTable fitParameters;
 	public String createGlobalFormula(double[]parameters,String function){
 //		Vector <Integer> pos=new Vector<Integer>();
 		int i=0;
+		
 		do {
-			function.replaceFirst("param", Double.toString(parameters[i]));
+			String val="";
+			int pos=function.indexOf("param");
+			char a=function.charAt(pos-1);
+			
+			if (parameters[i]>0 && a!=40) val="+";
+			val=val.concat(Double.toString(parameters[i]));
+			
+			function=function.replaceFirst("param",val );
 			i++;
 		}
-		while (function.indexOf("param")==-1);
+		while (function.indexOf("param")!=-1);
 		return function;
 		
 	}
