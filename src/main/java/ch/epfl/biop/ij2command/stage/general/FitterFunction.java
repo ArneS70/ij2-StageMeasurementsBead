@@ -206,6 +206,32 @@ import ij.measure.UserFunction;
 		return fit;
 		
 	}
+public static FitterFunction getGlobalFitFunc(double []x,double []y,String function) {
+		
+		FitterFunction fit;
+		switch (function) {
+        case "Poly3":
+            fit = new GlobalPoly3Fitter(x,y); 
+            break;
+        case "Poly4":
+        	fit = new GlobalPoly4Fitter(x,y);
+            break;
+        case "Poly6":
+        	fit = new GlobalPoly6Fitter(x,y);
+            break;
+        case "Poly8":
+        	fit = new GlobalPoly8Fitter(x,y);
+            break;
+        case "AsymGauss":
+        	fit = new GlobalAsym2SigFitter(x,y);
+            break;
+        default:
+        	fit = new GlobalPoly3Fitter(x,y);
+            break;
+    }
+		return fit;
+		
+	}
 	void setMethod(String function) {
 		
 	}

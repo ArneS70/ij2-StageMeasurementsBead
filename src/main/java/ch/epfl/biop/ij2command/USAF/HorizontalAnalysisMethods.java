@@ -201,7 +201,7 @@ public class HorizontalAnalysisMethods {
 				return analysis.getImage().getProcessor();
 			}
 			ImageProcessor getIP(int position){
-				int max=analysis.getImage().getNSlices();
+				int max=analysis.getImage().getImageStackSize();
 				if (position>max) position=max;
 				if (position <1)position=1;
 				analysis.getImage().setSliceWithoutUpdate(position);

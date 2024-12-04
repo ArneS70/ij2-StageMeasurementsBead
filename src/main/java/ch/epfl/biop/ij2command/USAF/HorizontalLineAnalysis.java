@@ -296,7 +296,11 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 
 		FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 		double [] results=fit.getFitResults();
+		fit.getPlot().show();
 		String function =fit.getGlobalFunction(results,fit.numParam);
+		fit=FitterFunction.getGlobalFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
+		fit.getFitResults(results);
+		fit.getPlot().show();
 		
 		int stop=lineProfiles.size();
 		position.add(0.0);
@@ -322,7 +326,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			
 			
-			fitResults.add(fit.getFitResults(function));
+			fitResults.add(fit.getFitResults(results));
 			
 //			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			

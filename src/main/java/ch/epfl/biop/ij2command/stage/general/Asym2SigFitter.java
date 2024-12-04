@@ -29,21 +29,7 @@ import ij.measure.UserFunction;
 //		cf.doCustomFit(this, 6, "", x, initParam, false);
 		return cf.getParams();
 	}
-	public synchronized double [] getFitResults(double [] paramVariation) {
-		
-//		cf.doCustomFit(function,new double [] {initParam[0],initParam[1],initParam[2]},false);
-		cf.setMaxIterations(10000);
-		cf.doCustomFit(this, 6, "", initParam,paramVariation, false);
-//		cf.doCustomFit(function,new double [] {1,1},false);
-		double [] results=cf.getParams();
-		int num=results.length;
-		double [] allParam=new double [num+1];
-		
-		allParam[num]=cf.getRSquared();
-		System.arraycopy(results, 0, allParam, 0, num);
-		return allParam;
 	
-}
 	public synchronized double [] getFitResults(String function) {
 		
 //		cf.doCustomFit(function,new double [] {initParam[0],initParam[1],initParam[2]},false);

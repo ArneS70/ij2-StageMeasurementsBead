@@ -40,8 +40,10 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 				int n=deltaT*nSlices+z;
 				imp.setSlice(n);
 				setHorizontalLine(n);
+				line=analysis.getHorizontalLine();
+//				IJ.log(line.x1+" "+line.x2+"  "+line.y1+"   "+line.y2);
 				this.profile=imp.getProcessor().getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
-//				IJ.run("Measure");
+
 				getProfile();
 				header.add("t="+t+"/z="+z);
 				stackOrder.add(new int [] {t,z});
@@ -67,16 +69,15 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 		};
 	}
 	void setHorizontalLine(int position) {
-		if (hasLine()) this.setHorizontalLine(this.getLine());
-	
-		else {
+		
 				HorizontalLine hl=new HorizontalLine(getIP(position));
 				Line line=hl.findHorizontalLine();
 				analysis.setHorizontalLine(line);
 				line=hl.optimizeHorizontalMaxima(line);
 				analysis.setHorizontalLine( line);
 				analysis.getImage().setRoi(analysis.getHorizontalLine());
-		}
+
+		
 	}
 	
 	ResultsTable getProfileTable() {
