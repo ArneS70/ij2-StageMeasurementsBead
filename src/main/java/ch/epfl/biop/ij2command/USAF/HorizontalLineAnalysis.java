@@ -105,35 +105,14 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 					
 					double [] results=fit.getFitResults();
-					fit.getPlot().show();
-//					final String function1=new GlobalFitter().createPolyFormula(results,fit.numParam);
-//					final String function=new GlobalFitter().createGlobalFormula(results, fit.globalFunction);
-					final String function=fit.createGlobalFormula(results);
-//					fit.getFitResults(function);
-//					fit.getPlot().show();
-					
+
 					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,this.analysis.getFitFunc());
 				
 					mtf.multiThreadCalculate(results);
 					this.fitResults=mtf.fitResults;
 					this.fitOrder=mtf.fitOrder;
 					createImageStack(mtf.fitPlots);
-					IJ.log("");
-					
-/*					MultiThreadFit fastFit=new MultiThreadFit(this);
-					double t1=System.currentTimeMillis();
-					fastFit.run();
-					double t2=System.currentTimeMillis();
-					IJ.log("start="+t1);
-					IJ.log("stop="+t2);
-					IJ.log("duration="+(t2-t1)/1000);
-//					this.fitResults=fastFit.fitResults;
-					this.fitPlots=fastFit.getFitPlots();
-					if (isSingleZStack || isTimeStack) {
-						LogToSummaryTable();
-						if (tableFitResults!=null) getSlope(3);
-						analysis.counter=this.counter;
-					}*/
+
 				}
 
 				this.createTables();
@@ -290,22 +269,15 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			inputImage.updateAndDraw();
 		
 	}
-	
+	/******************************************************************
+	 * Global Fitting of line profiles.
+	 */
 	void writeGlobalFitResults() {
 		
-//*************Poly8Fitter****************************
-//int length=Poly8Fitter.header.length;
-//		this.fitFunc=new FitterFunction(lineProfiles.firstElement(),lineProfiles.get(1),FitterFunction.methodInt[method]);
-//		fitFunc.setHeader(Poly8Fitter.header);
-//		this.method=FitterFunction.Poly8;
-//		double [] results=this.fitFunc.getParameter();
-//		String function=GlobalFitter.createPolyFormula(this.fitFunc.getParameter(),3);
-		
-
 		FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 		double [] results=fit.getFitResults();
 		fit.getPlot().show();
-		String function =fit.getGlobalFunction(results,fit.numParam);
+
 		fit=FitterFunction.getGlobalFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 		fit.getFitResults(results);
 		fit.getPlot().show();
@@ -315,28 +287,17 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		double t0=System.currentTimeMillis();
 		for (int n=1;n<stop;n++) {
 			
-			
 			IJ.log("===================================");
 			IJ.log("Slice: "+n);
-			
-			
 			position.add((double)n);
 			
 			if (this.tableFitResults==null) this.tableFitResults=new ResultsTable();
 			
-			
 			fit.updateInput(lineProfiles.firstElement(),lineProfiles.get(n));
-			
-//			CurveFitter cf=new CurveFitter(lineProfiles.firstElement(),lineProfiles.get(n));
-//			cf.doCustomFit(function, new double [] {1, 1,1},false);
-			
-//			results=fit.getFitResults(function);
-			
 			
 			
 			fitResults.add(fit.getFitResults(results));
 			
-//			IJ.log(results[0]+"  "+results[1]+"   "+results[2]);
 			
 			fitPlots.addSlice(fit.getPlot().getImagePlus().getProcessor());
 			double t=System.currentTimeMillis();
