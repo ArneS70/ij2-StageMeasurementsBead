@@ -37,6 +37,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	protected ResultsTable tableFitResults,tableProfiles;
 	protected Vector<double[]> lineProfiles=new Vector<double []>();
 	protected Vector<double[]> fitResults=new Vector<double []>();
+	protected Vector<Integer>fitOrder=new Vector<Integer>();
 	Vector <Line>horizontalLines=new Vector<Line>();
 	
 	protected Vector<Double> position=new Vector<Double>();
@@ -114,6 +115,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				
 					mtf.multiThreadCalculate(results);
 					this.fitResults=mtf.fitResults;
+					this.fitOrder=mtf.fitOrder;
 					createImageStack(mtf.fitPlots);
 					IJ.log("");
 					
@@ -165,6 +167,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			tableFitResults.addRow();
 						
 			double []param=fitResults.get(i);
+			tableFitResults.addValue("#", this.fitOrder.elementAt(i));
 			for (int j=0;j<col;j++) {
 				tableFitResults.addValue("P"+j, param[j]);
 			}

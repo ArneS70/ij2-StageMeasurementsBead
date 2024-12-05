@@ -24,6 +24,7 @@ public class MultiThreadFitter extends Thread{
 	double [] globalParam;
 	public Vector <double []>fitResults=new Vector <double []>();
 	public Vector <ImageProcessor>fitPlots=new Vector <ImageProcessor>();
+	public Vector <Integer>fitOrder=new Vector<Integer>();
 	
 	private int numLines;
 	private long t0=System.currentTimeMillis();
@@ -56,7 +57,9 @@ public class MultiThreadFitter extends Thread{
 			double [] results=fit.getFitResults(this.globalParam);
 			fitResults.add(results);
 			fitPlots.add(fit.getPlot().getImagePlus().getProcessor());
-			IJ.log(Thread.currentThread()+"     "+i+"      "+((System.currentTimeMillis()-t0)/1000.0));
+			
+			fitOrder.add(this.start+i);
+			IJ.log(Thread.currentThread()+"     "+(i+this.start)+"      "+((System.currentTimeMillis()-t0)/1000.0));
 			
 //			CurveFitter cf=new CurveFitter(lines.elementAt(0),lines.elementAt(i));
 //			cf.doCustomFit(function,new double [] {1, 1,1},false);
@@ -121,6 +124,7 @@ public class MultiThreadFitter extends Thread{
 		for (int i=0;i<size;i++) {
 			int num=calculate[i].fitResults.size();
 			for (int j=0;j<num;j++) {
+				this.fitOrder.add(calculate[i].fitOrder.elementAt(j));
 				this.fitResults.add(calculate[i].fitResults.elementAt(j));
 				this.fitPlots.add(calculate[i].fitPlots.elementAt(j));
 			}
