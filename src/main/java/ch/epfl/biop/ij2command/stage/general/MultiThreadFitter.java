@@ -21,6 +21,7 @@ public class MultiThreadFitter extends Thread{
 	//number of processors
 	private final static int n_cpus=Runtime.getRuntime().availableProcessors();
 	Vector <double []>lines;
+	double [] globalParam;
 	public Vector <double []>fitResults=new Vector <double []>();
 	public Vector <ImageProcessor>fitPlots=new Vector <ImageProcessor>();
 	
@@ -32,11 +33,11 @@ public class MultiThreadFitter extends Thread{
 		numLines=lines.size();
 		
 	}
-	public MultiThreadFitter(Vector <double []>input,String function,String name){
+	public MultiThreadFitter(Vector <double []>input,String name){
 		lines=input;
 		numLines=lines.size();
 		this.functionName=name;
-		this.fitFunction=function;
+		
 	}
 	MultiThreadFitter(Vector <double []>input,int start,int stop,String function){
 		this.lines=input;
@@ -51,8 +52,8 @@ public class MultiThreadFitter extends Thread{
 		int size=this.lines.size();
 		
 		for (int i=1;i<size;i++) {
-			FitterFunction fit=FitterFunction.getFitFunc(lines.elementAt(0),lines.elementAt(i),functionName);
-			double [] results=fit.getFitResults(fitFunction);
+			FitterFunction fit=FitterFunction.getGlobalFitFunc(lines.elementAt(0),lines.elementAt(i),functionName);
+			double [] results=fit.getFitResults(this.globalParam);
 			fitResults.add(results);
 			fitPlots.add(fit.getPlot().getImagePlus().getProcessor());
 			IJ.log(Thread.currentThread()+"     "+i+"      "+((System.currentTimeMillis()-t0)/1000.0));
@@ -63,7 +64,7 @@ public class MultiThreadFitter extends Thread{
 			
 		}
 	}
-	public MultiThreadFitter [] getArray() {
+	public MultiThreadFitter [] getArray(double [] param) {
 //			IJ.log("Start: getArray");
 	    	MultiThreadFitter array []=new MultiThreadFitter[n_cpus];
 			
@@ -91,6 +92,7 @@ public class MultiThreadFitter extends Thread{
 				array[i]=new MultiThreadFitter(getLines(start[i],stop[i]),start[i],stop[i],this.fitFunction);
 				array[i].functionName=this.functionName;
 				array[i].fitFunction=this.fitFunction;
+				array[i].globalParam=param;
 				
 			}
 			return array;
@@ -98,18 +100,19 @@ public class MultiThreadFitter extends Thread{
 	Vector<double []> getLines(int start,int stop){
 		Vector<double []> shortVec=new Vector<double[]>();
 		shortVec.add(this.lines.elementAt(0));
-		for (int i=start;i<stop;i++) {
+		for (int i=start;i<=stop;i++) {
 			shortVec.add(this.lines.elementAt(i));
 		}
 		return shortVec;
 	}
-	public void multiThreadCalculate(String function){
+	public void multiThreadCalculate(double [] param){
 		
-		this.fitFunction=function;
+//		this.fitResults.add(param);
+//		this.fitFunction=function;
 //		IJ.log("Start multiThread");
 		long start=System.currentTimeMillis();
 		
-		final MultiThreadFitter [] calculate = new MultiThreadFitter(this.lines,this.fitFunction,this.functionName).getArray(); 
+		final MultiThreadFitter [] calculate = new MultiThreadFitter(this.lines,this.functionName).getArray(param); 
 //		final ImageStack resultStack=new ImageStack(this.width/scaleFactor,this.height/scaleFactor);  
 //		IJ.log("startAndJoin");
 		startAndJoin(calculate);
@@ -124,7 +127,7 @@ public class MultiThreadFitter extends Thread{
 			
 		}
 		long end=System.currentTimeMillis();    
-		IJ.log("Processing time convolution in sec: "+(end-start)/1000);
+		IJ.log("Processing time for curve fitting in sec: "+(end-start)/1000);
 
 //	    for (int i=0;i<nFrames;i++){
 //	        	resultStack.addSlice(res_ip[i]);

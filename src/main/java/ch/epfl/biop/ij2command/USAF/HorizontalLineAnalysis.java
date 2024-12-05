@@ -110,8 +110,9 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 //					fit.getFitResults(function);
 //					fit.getPlot().show();
 					
-					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,function,this.analysis.getFitFunc());
-					mtf.multiThreadCalculate(function);
+					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,this.analysis.getFitFunc());
+				
+					mtf.multiThreadCalculate(results);
 					this.fitResults=mtf.fitResults;
 					createImageStack(mtf.fitPlots);
 					IJ.log("");
