@@ -11,6 +11,7 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 
 	Vector <String> header=new Vector<String>();
 	Vector <int []>stackOrder=new Vector<int[]>();
+	
 	HorizontalLineExtractor(HorizontalAnalysis analysis){
 		super(analysis);
 	}
@@ -23,7 +24,7 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 		this.profile=imp.getProcessor().getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
 		
 		int nSlices=imp.getNSlices();
-		int nFrames=imp.getNFrames();
+//		int nFrames=imp.getNFrames();
 		int startT=analysis.getStartT();
 		int stopT=analysis.getStopT();
 		int stepT=analysis.getStepT();
@@ -74,7 +75,8 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 				Line line=hl.findHorizontalLine();
 				analysis.setHorizontalLine(line);
 				line=hl.optimizeHorizontalMaxima(line);
-				analysis.setHorizontalLine( line);
+				analysis.setHorizontalLine(line);
+				this.horizontalLines.add(line);
 				analysis.getImage().setRoi(analysis.getHorizontalLine());
 
 		

@@ -58,12 +58,10 @@ public class MultiThreadFitter extends Thread{
 			fitResults.add(results);
 			fitPlots.add(fit.getPlot().getImagePlus().getProcessor());
 			
-			fitOrder.add(this.start+i);
-			IJ.log(Thread.currentThread()+"     "+(i+this.start)+"      "+((System.currentTimeMillis()-t0)/1000.0));
+			fitOrder.add(this.start+i-1);
+			IJ.log(Thread.currentThread()+"     "+(i+this.start-1)+"      "+((System.currentTimeMillis()-t0)/1000.0));
 			
-//			CurveFitter cf=new CurveFitter(lines.elementAt(0),lines.elementAt(i));
-//			cf.doCustomFit(function,new double [] {1, 1,1},false);
-//			IJ.log(i+"  "+cf.getRSquared());
+
 			
 		}
 	}

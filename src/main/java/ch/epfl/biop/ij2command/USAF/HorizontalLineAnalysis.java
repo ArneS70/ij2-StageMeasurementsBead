@@ -82,6 +82,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			HorizontalLineExtractor profiles=new HorizontalLineExtractor(this.analysis);
 			profiles.run();
 			this.lineProfiles=profiles.getProfileStack();
+			this.horizontalLines=profiles.horizontalLines;
 			
 			//***************************************************************************
 			// Fit the line profiles
@@ -165,19 +166,22 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		
 		for (int i=0;i<length;i++) {
 			tableFitResults.addRow();
-						
-			double []param=fitResults.get(i);
 			tableFitResults.addValue("#", this.fitOrder.elementAt(i));
-			for (int j=0;j<col;j++) {
-				tableFitResults.addValue("P"+j, param[j]);
-			}
-			if (this.isPureTimeLapse) {
+			
+			if (this.horizontalLines.size()>0) {
 				Line line=this.horizontalLines.get(i);
 				tableFitResults.addValue("x1", line.x1d);
 				tableFitResults.addValue("x2", line.x2d);
 				tableFitResults.addValue("y1", line.y1d);
 				tableFitResults.addValue("y2", line.y2d);
 			}
+			
+			double []param=fitResults.get(i);
+			
+			for (int j=0;j<col;j++) {
+				tableFitResults.addValue("P"+j, param[j]);
+			}
+			
 		}
 	}
 	void setParameters(HorizontalAnalysis param) {
