@@ -88,7 +88,7 @@ public class MultiThreadFitter extends Thread{
 					start[i]=stop[i-1]+1;
 					stop[i]=start[i]+delta;
 				}
-				IJ.log("i="+i+"start="+start[i]+"   stop"+stop[i]);
+//				IJ.log("i="+i+"start="+start[i]+"   stop"+stop[i]);
 				
 				array[i]=new MultiThreadFitter(getLines(start[i],stop[i]),start[i],stop[i],this.fitFunction);
 				array[i].functionName=this.functionName;

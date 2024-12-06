@@ -24,18 +24,24 @@ import net.imagej.ImageJ;
 		public class USAF_HorizontalLine implements Command {
 
 			ImagePlus fileInput;
-			String fileName, filePath;
+			
 			int [] stackParam=new int[6];
 			
 
 //			@Parameter(style="open")
 //		    File fileInput;
 			
-			@Parameter(label="Process Z-stack") 
+			@Parameter(label="Process entire Z-stack") 
 			boolean  entireZStack;
 			
-			@Parameter(label="Process T-stack")
+			@Parameter(label="z-step",min="1")
+			int stepZ;
+			
+			@Parameter(label="Process entire T-stack")
 			boolean  entireTStack;
+			
+			@Parameter(label="T-step",min="1")
+			int stepT;
 			
 			@Parameter(label="z-start",min="1")
 			int startZ;
@@ -43,17 +49,17 @@ import net.imagej.ImageJ;
 			@Parameter(label="z-stop",min="1")
 			int stopZ;
 			
-			@Parameter(label="z-step",min="1")
-			int stepZ;
-			
 			@Parameter(label="T-start",min="1")
 			int startT;
 			
 			@Parameter(label="T-stop",min="1")
 			int stopT;
 			
-			@Parameter(label="T-step",min="1")
-			int stepT;
+			@Parameter(label="Fitting Fuction",choices= {"Poly3","Poly4","Poly6","Poly8","AsymGauss"})
+			String fitFunc;
+
+			@Parameter(label="Multi Thread Fit?")
+			boolean multiThread;
 			
 			@Parameter(label="Show Focus Shift Plot")
 			boolean showPlot;
@@ -70,21 +76,16 @@ import net.imagej.ImageJ;
 			@Parameter(label="Save Plot?")
 			boolean savePlot;
 			
-			@Parameter(label="Fitting Fuction",choices= {"Poly3","Poly4","Poly6","Poly8","AsymGauss"})
-			String fitFunc;
-			
 			@Parameter(label="Save result tables?")
 			boolean saveTables;
-			
-			@Parameter(label="Multi Thread Fit?")
-			boolean multiThread;
 			
 			Line toAnalyse;
 
 		@Override
 		public void run() {
 		
-			ImagePlus imp=WindowManager.getCurrentImage();	
+			ImagePlus imp=WindowManager.getCurrentImage();
+			IJ.log(imp.getTitle());
 			
 			if (imp!=null){
 				stackParam=new HorizontalAnalysisMethods().checkStackParameters(imp,entireZStack,entireTStack,new int [] {startZ,stopZ,stepZ,startT,stopT,stepT});

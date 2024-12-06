@@ -28,23 +28,23 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	final static String saveProfiles="Horizontal_Line_Profiles";
 	final static String saveFitResults="Analysis_Fit_Results";
 	
+	protected String fileName, filePath;
+	
 	protected boolean isPureTimeLapse=false;
 	protected boolean isSingleZStack=false;
 	protected boolean isTimeStack=false;
-		
-	protected int method,counter;
+	
 	protected FitterFunction fitFunc;
 	protected ResultsTable tableFitResults,tableProfiles;
+	protected ResultsTable summary;
+	
 	protected Vector<double[]> lineProfiles=new Vector<double []>();
 	protected Vector<double[]> fitResults=new Vector<double []>();
 	protected Vector<Integer>fitOrder=new Vector<Integer>();
-	Vector <Line>horizontalLines=new Vector<Line>();
-	
+	protected Vector <Line>horizontalLines=new Vector<Line>();
 	protected Vector<Double> position=new Vector<Double>();
 	
-	
-	protected ResultsTable summary;
-	private int startSlice,endSlice;
+	protected int method,counter;
 	protected ImageStack fitPlots=new ImageStack(696,415);
 	
 	/***************************************************************************************************************   
@@ -58,8 +58,10 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		this.analysis=analysis;
 		this.horizontalLine=analysis.getHorizontalLine();
 		this.cal=analysis.cal;
-		startSlice=1;
-		endSlice=analysis.getStackSlices();
+		String file=analysis.getImage().getTitle();
+		this.fileName=getFileName(file);
+		this.filePath=getFilePath(file);
+		
 	}
 	
 	HorizontalLineAnalysis(ImagePlus imp, Line line){
@@ -119,7 +121,13 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		    	if (analysis.getSavePlot())savePlot(new ImagePlus("FitPlots",fitPlots));
 				if (analysis.getSaveTable()) {
 					
-				saveResultTables(tableFitResults, saveFitResults);
+//				saveResultTables(tableFitResults, filePath+fileName+saveFitResults);
+				String save=filePath.concat(fileName);
+				save=save.concat(saveFitResults);
+				save=save.concat(IJ.pad(analysis.counter, 4));
+				save=save.concat(".csv");
+				
+				tableFitResults.save(filePath+fileName+saveFitResults+IJ.pad(analysis.counter, 4)+".csv");
 //				saveResultTables(lineProfiles, saveProfiles);
 				}
 				
@@ -166,12 +174,13 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 	void setParameters(HorizontalAnalysis param) {
 		this.analysis=param;
 	}
-	void setStartSlice(int start) {
+/*	void setStartSlice(int start) {
 		this.startSlice=start;
 	}
 	void setEndSlice(int end) {
 		this.endSlice=end;
 	}
+*/
 	void LogToSummaryTable() {
 		
 			summary.addRow();

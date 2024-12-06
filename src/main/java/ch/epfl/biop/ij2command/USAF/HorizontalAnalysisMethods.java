@@ -46,8 +46,16 @@ public class HorizontalAnalysisMethods {
 				
 		
 		}
-		
-		
+		String getFilePath(String input) {
+			int pos=input.lastIndexOf("/");
+			
+			return input.substring(0, pos+1);
+		}
+		String getFileName(String input) {
+			int pos=input.lastIndexOf("/");
+			int len=input.length();
+			return input.substring(pos+1, len);
+		}
 		String checkFileName(String input) {
 			String output=new String(input);
 			do   {
