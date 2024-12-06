@@ -58,6 +58,10 @@ public class HorizontalAnalysisMethods {
 		}
 		String checkFileName(String input) {
 			String output=new String(input);
+			int dot=input.indexOf(".")+4;
+			output=input.substring(dot, input.length());
+			
+			
 			do   {
 				output=output.replaceFirst("/", "_");
 			}while (output.contains("/"));
@@ -73,6 +77,12 @@ public class HorizontalAnalysisMethods {
 			do   {
 				output=output.replaceFirst("-", "_");
 			}while (output.contains("-"));
+			
+			if (output.startsWith("_")||output.startsWith("-"))
+				
+				output=output.substring(1);
+			
+			
 			return output;
 		}
 		

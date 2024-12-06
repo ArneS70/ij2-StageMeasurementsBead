@@ -60,7 +60,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 		this.cal=analysis.cal;
 		String file=analysis.getImage().getTitle();
 		this.fileName=getFileName(file);
-		this.filePath=getFilePath(file);
+		this.filePath=analysis.getImage().getOriginalFileInfo().directory;
 		
 	}
 	
@@ -122,12 +122,13 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 				if (analysis.getSaveTable()) {
 					
 //				saveResultTables(tableFitResults, filePath+fileName+saveFitResults);
+				fileName=checkFileName(fileName);
 				String save=filePath.concat(fileName);
 				save=save.concat(saveFitResults);
 				save=save.concat(IJ.pad(analysis.counter, 4));
 				save=save.concat(".csv");
 				
-				tableFitResults.save(filePath+fileName+saveFitResults+IJ.pad(analysis.counter, 4)+".csv");
+				tableFitResults.save(save);
 //				saveResultTables(lineProfiles, saveProfiles);
 				}
 				
