@@ -58,9 +58,10 @@ public class HorizontalAnalysisMethods {
 		}
 		String checkFileName(String input) {
 			String output=new String(input);
-			int dot=input.indexOf(".")+4;
-			output=input.substring(dot, input.length());
-			
+			int length=input.length();
+			int dot=input.indexOf(".");
+			if (length>dot+4) output=input.substring(dot+4, input.length());
+			else output=input.substring(0, dot);
 			
 			do   {
 				output=output.replaceFirst("/", "_");

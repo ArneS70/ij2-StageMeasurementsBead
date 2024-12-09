@@ -39,7 +39,7 @@ public class HorizontalLineExtractor extends HorizontalLineAnalysis{
 			for (int z=startZ;z<stopZ;z+=stepZ) {
 				
 				int n=deltaT*nSlices+z;
-				imp.setSlice(n);
+				imp.setSliceWithoutUpdate(n);
 				setHorizontalLine(n);
 				line=analysis.getHorizontalLine();
 //				IJ.log(line.x1+" "+line.x2+"  "+line.y1+"   "+line.y2);
