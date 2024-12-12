@@ -107,6 +107,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 					FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 					
 					double [] results=fit.getFitResults();
+					IJ.log(results[3]+"  "+results[4]+"  "+results[5]+"  "+results[6]);
 
 					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,this.analysis.getFitFunc());
 				

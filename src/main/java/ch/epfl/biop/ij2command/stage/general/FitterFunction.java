@@ -115,6 +115,9 @@ import ij.measure.UserFunction;
 	public synchronized void updateInput(double []x,double[]y) {
 		this.cf=new CurveFitter(x,y);
 	}
+	void setInitParameters(double []param) {
+		this.initParam=param;
+	}
 /*		
 	synchronized private void run(String func,double [] param) {
 		cf.doCustomFit(func, param, false);
@@ -130,9 +133,7 @@ import ij.measure.UserFunction;
 		}
 		IJ.log("max  :"+this.max);
 	}
-	void setInitParameters(double []param) {
-		this.initParameters=param;
-	}
+	
 	
 	public void setX(double []values) {
 		FitterFunction.x=values;

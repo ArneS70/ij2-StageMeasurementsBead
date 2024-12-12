@@ -11,6 +11,9 @@ public class ArrayStatistics {
 		
 	}
 	
+	public double []getMeanMinMax(){
+		return new double [] {getMean(),getMin(),getMax()};
+	}
 	public double getMean() {
 		int size=this.array.length;
 		double mean=0;
