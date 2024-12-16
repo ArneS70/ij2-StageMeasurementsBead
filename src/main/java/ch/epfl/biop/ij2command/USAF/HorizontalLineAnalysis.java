@@ -83,6 +83,7 @@ public class HorizontalLineAnalysis extends HorizontalAnalysisMethods{
 			
 			HorizontalLineExtractor profiles=new HorizontalLineExtractor(this.analysis);
 			profiles.run();
+			
 			this.lineProfiles=profiles.getProfileStack();
 			this.horizontalLines=profiles.horizontalLines;
 			
