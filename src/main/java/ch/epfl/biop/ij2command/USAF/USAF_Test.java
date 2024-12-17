@@ -1,15 +1,19 @@
 package ch.epfl.biop.ij2command.USAF;
 
 import java.awt.Color;
+import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
 import org.scijava.command.Command;
+import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
 import ch.epfl.biop.ij2command.stage.general.Asym2SigFitter;
 import ch.epfl.biop.ij2command.stage.general.Asym2SigFitterFixed;
+import ch.epfl.biop.ij2command.stage.general.BioformatsReader;
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ij.IJ;
 import ij.ImagePlus;
@@ -17,17 +21,25 @@ import ij.ImageStack;
 import ij.WindowManager;
 import ij.gui.Line;
 import ij.gui.Plot;
+import ij.io.FileInfo;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.process.ImageProcessor;
+import loci.formats.FormatException;
+import mdbtools.libmdb.file;
 import net.imagej.ImageJ;
 
 @Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Test")
 public class USAF_Test implements Command{
 
+//	@Parameter(style="open")							//File to analyse
+//    File fileInput;
+	
 	@Override
 	public void run() {
+//		getTablePositions();
 		ImagePlus imp=WindowManager.getCurrentImage();
+		
 		ImageProcessor ip=imp.getProcessor();
 		
 		int width=imp.getWidth();
@@ -37,12 +49,18 @@ public class USAF_Test implements Command{
 		ImageProcessor outStdev=ip.createProcessor(width, slices);
 		Vector <double []>lineProfilesMax=new Vector <double []>();
 		Vector <double []>lineProfilesMean=new Vector <double []>();
+		Vector <double []>stagePositions=new Vector <double []>();
 		
 		
 		double [] x=new double [width];
 		
 		for (int s=1;s<=slices;s++) {
 			imp.setSlice(s);
+			
+			stagePositions.add(new double []{Double.valueOf(imp.getProp("StagePosX")),Double.valueOf(imp.getProp("StagePosY"))});
+			IJ.log(imp.getProp("StagePosX"));
+			IJ.log(imp.getProp("StagePosY"));
+			imp.getProp("FlatHorizontal/Position004 Image #0|ATLCameraSettingDefinition #0|XYZStagePointDefinitionList #0|XYZStagePointDefinition #0|StageXPos = 0.0315007893928");
 			ip=imp.getProcessor();
 			
 			double [] profileMean= new double [width];
@@ -71,15 +89,42 @@ public class USAF_Test implements Command{
 			double center=new ArrayStatistics(lineProfilesMax.get(0)).getMax()/2;
 			cf.setInitialParameters(new double [] {min,10,center,max});
 			cf.doFit(CurveFitter.RODBARD);
-//			cf.getPlot().show();
+			cf.getPlot().show();
 			double [] param=cf.getParams();
 			results.addRow();
+			results.addValue("#",s);
+			results.addValue("Stage x",stagePositions.get(s-1)[0]);
+			results.addValue("Stage y",stagePositions.get(s-1)[1]);
 			for (int p=0;p<param.length;p++) {
 				results.addValue("p"+p, param[p]);
 			}
 			
 		}
 		results.show("FitResults");
+		
+		
+	}
+	void getTablePositions(){
+		
+
+		BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
+		try {
+			ImagePlus [] imps=bfr.open();
+			
+			IJ.log(imps[0].getProp("SizeC"));
+			IJ.log(imps[0].getProp("StagePosX"));
+			IJ.log(imps[0].getProp("StagePosY"));
+			String []properties=imps[0].getPropertiesAsArray();
+			IJ.log(""+imps.length);
+			
+		} catch (FormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		
 		
 	}

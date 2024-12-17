@@ -16,8 +16,10 @@ import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
 import ch.epfl.biop.ij2command.stage.general.BioformatsReader;
+import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
+import ij.io.FileInfo;
 import ij.measure.ResultsTable;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
@@ -51,6 +53,8 @@ import net.imagej.ImageJ;
 		 * Opens the image using Bioformats and passes it on the the EdgeWidthAnalyser
 		 */
 		public void run() {
+			
+
 			BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
 			try {
 				ImagePlus [] imps=bfr.open();
