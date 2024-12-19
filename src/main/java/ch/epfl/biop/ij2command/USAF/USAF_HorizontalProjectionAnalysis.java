@@ -79,6 +79,13 @@ import net.imagej.ImageJ;
 			@Parameter(label="Save result tables?")
 			boolean saveTables;
 			
+			@Parameter(label="Summarize results ?")
+			boolean summarize;
+			
+			@Parameter(label="Use Summarize results ?")
+			boolean useSummary;
+			
+			
 			Line toAnalyse;
 
 		@Override
@@ -95,6 +102,7 @@ import net.imagej.ImageJ;
 																				savePLot(savePlot).showPlot(showPlot).setCalibration(imp.getCalibration()).
 																				saveTables(saveTables).showTables(showTable).showProfile(showProfile).
 																				fitFunc(fitFunc).multiThread(multiThread).
+																				summarize(summarize).useSummary(useSummary).
 																				build();
 																					
 				HorizontalProjectionAnalysis project=new HorizontalProjectionAnalysis(analysis);
@@ -125,7 +133,7 @@ import net.imagej.ImageJ;
 			//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			
-			IJ.run("Bio-Formats", "open=[D:/01-Data/StageMeasurements/New folder/USAF_newHolderTimelapse03.lsm] color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
+			//IJ.run("Bio-Formats", "open=[D:/01-Data/StageMeasurements/New folder/USAF_newHolderTimelapse03.lsm] color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 			ij.command().run(USAF_HorizontalLine.class, true);
 		}
 	}		

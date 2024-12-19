@@ -46,6 +46,8 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 	
 	protected int method,counter;
 	protected ImageStack fitPlots=new ImageStack(696,415);
+	protected double[] fitShift; 
+	protected double [] globalFitParam;
 	
 	/***************************************************************************************************************   
 	 * Constructors
@@ -106,12 +108,12 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 				else {
 					FitterFunction fit=FitterFunction.getFitFunc(lineProfiles.firstElement(), lineProfiles.get(1), this.analysis.getFitFunc());
 					
-					double [] results=fit.getFitResults();
-					IJ.log(results[3]+"  "+results[4]+"  "+results[5]+"  "+results[6]);
+					this.globalFitParam=fit.getFitResults();
+					
 
 					MultiThreadFitter mtf=new MultiThreadFitter(this.lineProfiles,this.analysis.getFitFunc());
 				
-					mtf.multiThreadCalculate(results);
+					mtf.multiThreadCalculate(this.globalFitParam);
 					this.fitResults=mtf.fitResults;
 					this.fitOrder=mtf.fitOrder;
 					createImageStack(mtf.fitPlots);
@@ -156,6 +158,7 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 		for (int i=0;i<length;i++) {
 			tableFitResults.addRow();
 			tableFitResults.addValue("#", this.fitOrder.elementAt(i));
+			tableFitResults.addValue("z /um", this.fitOrder.elementAt(i)*this.cal.pixelDepth*this.analysis.getStepZ());
 			
 			double []param=fitResults.get(i);
 			
@@ -164,13 +167,23 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 			}
 			
 		}
+		CurveFitter cf=new CurveFitter(tableFitResults.getColumn("z /um"),tableFitResults.getColumn("P2"));
+		cf.doFit(CurveFitter.STRAIGHT_LINE);
+		this.fitShift=Arrays.copyOf(cf.getParams(),cf.getNumParams()+2);
+		this.fitShift[cf.getNumParams()+1]=cf.getRSquared();
+		cf.getPlot().show();
+		if (this.analysis.summarize) LogToSummaryTable();
 	}
 	void setParameters(HorizontalAnalysis param) {
 		this.analysis=param;
 	}
 
 	void LogToSummaryTable() {
-		
+			
+			summary=ResultsTable.getResultsTable(this.titleSummary);
+			
+			if (summary==null) summary=new ResultsTable();
+			
 			summary.addRow();
 			summary.addValue("#", this.counter);
 			summary.addValue("File", analysis.fileName);
@@ -178,14 +191,16 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 			summary.addValue("z step", analysis.getStepZ());
 			summary.addValue("z start", analysis.getStartZ());
 			summary.addValue("z stop", analysis.getStopZ());
+			summary.addValue("delta z / um", (analysis.getStopZ()-analysis.getStartZ())*cal.pixelDepth);
 			double space=1000/(2*analysis.spacing*analysis.cal.pixelWidth);
-			summary.addValue("Grid spacing LP/mm", space);
-			Line line=analysis.getHorizontalLine();
-			summary.addValue("x1", line.x1d);
-			summary.addValue("y1", line.y1d);
-			summary.addValue("x2", line.x2d);
-			summary.addValue("y2", line.y2d);
-			if (analysis.summarize) summary.show(HorizontalLineAnalysis.titleSummary);
+//			summary.addValue("Grid spacing LP/mm", space);
+			summary.addValue("Slope", this.fitShift[1]);
+			summary.addValue("R^2", this.fitShift[3]);
+			summary.addValue("w1", globalFitParam[3]);
+			summary.addValue("w2", globalFitParam[4]);
+			summary.addValue("w3", globalFitParam[5]);
+			
+			if (analysis.summarize) summary.show(this.titleSummary);
 		}
 		
 		

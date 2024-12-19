@@ -21,7 +21,7 @@ public class HorizontalAnalysis {
 	private int repetition, startZ, stopZ,stepZ, startT,stopT,stepT;
 	private boolean saveTables,showTables,savePlot,showPlot,showProfile,multiThread;
 	private String fitFunc;
-	boolean summarize;
+	boolean summarize,useSummary;
 	
 	//derived parameters (no input)
 	protected String filePath,fileName;
@@ -58,6 +58,7 @@ public class HorizontalAnalysis {
 		this.showPlot=builder.showPlot;
 		this.showProfile=builder.showProfile;
 		this.summarize=builder.summarize;
+		this.useSummary=builder.useSummary;
 		this.cal=builder.cal;
 		this.multiThread=builder.multiThread;
 		this.fitFunc=builder.fitFunc;
@@ -78,7 +79,7 @@ public class HorizontalAnalysis {
 		private Line horizontalLine;
 		private int repetition;
 		private int startZ, stopZ, stepZ, startT, stopT, stepT,stackCenter;
-		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize,multiThread;
+		private boolean allStack, saveTables,showTables,savePlot,showPlot,showProfile,summarize, useSummary, multiThread;
 		private Calibration cal;
 		private Builder built;
 		private String fitFunc;
@@ -105,6 +106,10 @@ public class HorizontalAnalysis {
 		}
 		public Builder summarize(boolean summarize) {
 			this.summarize=summarize;
+			return this;
+		}
+		public Builder useSummary(boolean useSummary) {
+			this.useSummary=useSummary;
 			return this;
 		}
 		public Builder showProfile(boolean profile) {
