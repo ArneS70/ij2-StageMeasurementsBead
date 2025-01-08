@@ -1,6 +1,5 @@
 package ch.epfl.biop.ij2command.USAF;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Vector;
 
@@ -66,19 +65,12 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 		
 	}
 	
-	HorizontalProjectionAnalysis(ImagePlus imp, Line line){
-		this.inputImage=imp;
-		this.horizontalLine=line;
-		this.cal=imp.getCalibration();
-		ImageProcessor ip=imp.getProcessor();
-		this.profile=ip.getLine((double)line.x1,(double)line.y1,(double)line.x2,(double)line.y2);
-	}
-
 	/*************************************************************************************************************************
 	 *  Creates line profiles and fits a function to the intensity profile to find the maximum. 
 	 *  - Line profiles can be displayed and saved as a ResultsTable.
 	 *  - Fit results can be displayed and saved as a ResultsTable. 
 	 *************************************************************************************************************************/
+	
 	void run() {
 		
 		if (checkInputImage()) {
@@ -186,7 +178,7 @@ public class HorizontalProjectionAnalysis extends HorizontalAnalysisMethods{
 			
 			summary.addRow();
 			summary.addValue("#", this.counter);
-			summary.addValue("File", analysis.fileName);
+			summary.addValue("File", this.fileName);
 			summary.addValue("z depth/um", cal.pixelDepth);
 			summary.addValue("z step", analysis.getStepZ());
 			summary.addValue("z start", analysis.getStartZ());

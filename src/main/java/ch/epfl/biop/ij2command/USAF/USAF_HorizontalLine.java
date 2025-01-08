@@ -16,6 +16,8 @@ import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
+import ij.process.ByteProcessor;
+import ij.process.ImageProcessor;
 import loci.formats.FormatException;
 import net.imagej.ImageJ;
 
@@ -101,7 +103,7 @@ import net.imagej.ImageJ;
 				horizontal.run();
 //				MultiThreadHLA horizontal=new MultiThreadHLA(analysis);
 //				horizontal.run();
-				
+				ImageProcessor ip=new ByteProcessor(startT, startT);
 			}
 		}
 				

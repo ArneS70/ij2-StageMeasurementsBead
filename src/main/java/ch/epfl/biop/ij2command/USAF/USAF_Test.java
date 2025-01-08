@@ -3,6 +3,7 @@ package ch.epfl.biop.ij2command.USAF;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Vector;
 
 import org.apache.commons.math3.fitting.leastsquares.LevenbergMarquardtOptimizer;
@@ -15,6 +16,9 @@ import ch.epfl.biop.ij2command.stage.general.Asym2SigFitter;
 import ch.epfl.biop.ij2command.stage.general.Asym2SigFitterFixed;
 import ch.epfl.biop.ij2command.stage.general.BioformatsReader;
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
+import ch.epfl.biop.ij2command.stage.general.LeicaStagePositionReader;
+import ch.epfl.biop.ij2command.stage.general.NikonStagePositionReader;
+import ch.epfl.biop.ij2command.stage.general.StagePositionReader;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -30,43 +34,60 @@ import mdbtools.libmdb.file;
 import net.imagej.ImageJ;
 
 @Plugin(type = Command.class, menuPath = "Plugins>BIOP>USAF Test")
+
 public class USAF_Test implements Command{
 
-//	@Parameter(style="open")							//File to analyse
-//    File fileInput;
+	@Parameter(label="Fitting Fuction",choices= {"Nikon","Leica","Zeiss","Evident"})
+	String brand;
+	
+	@Parameter(style="open")							//XML File to analyse (stage positions)
+    File fileXML;
+	
+	@Parameter(style="open")							//Image File to analyse
+    File fileImage;
+	
+	@Parameter(label="Show step function fits")			//show fit of step function
+    boolean showFit;
+	
+	@Parameter(label="Line fit to data")				//Line fit stage position vs. step function results
+    boolean lineFit;
 	
 	@Override
 	public void run() {
-//		getTablePositions();
-		ImagePlus imp=WindowManager.getCurrentImage();
 		
-		ImageProcessor ip=imp.getProcessor();
+		ImageStack fit=new ImageStack(696,415);
+		StagePositionReader reader=null;
+		
+		if (brand.equals("Nikon")) reader=new NikonStagePositionReader(fileXML.getAbsolutePath());
+		if (brand.equals("Leica")) reader=new LeicaStagePositionReader(fileXML.getAbsolutePath());		
+		
+		
+		ArrayList <Double> xpos=reader.getList(StagePositionReader.xPos);
+		ArrayList <Double> ypos=reader.getList(StagePositionReader.yPos);
+		
+		ImagePlus imp=IJ.openImage(fileImage.getAbsolutePath());
 		
 		int width=imp.getWidth();
 		int height=imp.getHeight();
-		int slices=imp.getNSlices();
+		int slices=imp.getImageStackSize();
+		
+		ImageProcessor ip=imp.getProcessor();
 		ImageProcessor outMean=ip.createProcessor(width, slices);
 		ImageProcessor outStdev=ip.createProcessor(width, slices);
-		Vector <double []>lineProfilesMax=new Vector <double []>();
-		Vector <double []>lineProfilesMean=new Vector <double []>();
-		Vector <double []>stagePositions=new Vector <double []>();
-		
 		
 		double [] x=new double [width];
+		ArrayList <double []>lineProfilesMax=new ArrayList <double []>();
+		ArrayList <double []>lineProfilesMean=new ArrayList <double []>();
+		ArrayList <double []>stagePositions=new ArrayList <double []>();
 		
 		for (int s=1;s<=slices;s++) {
 			imp.setSlice(s);
-			
-			stagePositions.add(new double []{Double.valueOf(imp.getProp("StagePosX")),Double.valueOf(imp.getProp("StagePosY"))});
-			IJ.log(imp.getProp("StagePosX"));
-			IJ.log(imp.getProp("StagePosY"));
-			imp.getProp("FlatHorizontal/Position004 Image #0|ATLCameraSettingDefinition #0|XYZStagePointDefinitionList #0|XYZStagePointDefinition #0|StageXPos = 0.0315007893928");
 			ip=imp.getProcessor();
 			
 			double [] profileMean= new double [width];
 			double [] profileMax= new double [width];
-			
 			for (int i=0;i<width;i++) {
+				
 				double [] line=ip.getLine(i, 0, i, height);
 				if (s==1) x[i]=i*imp.getCalibration().pixelWidth;
 				profileMean[i]=new ArrayStatistics(line).getMean();
@@ -89,118 +110,48 @@ public class USAF_Test implements Command{
 			double center=new ArrayStatistics(lineProfilesMax.get(0)).getMax()/2;
 			cf.setInitialParameters(new double [] {min,10,center,max});
 			cf.doFit(CurveFitter.RODBARD);
-			cf.getPlot().show();
+			if (showFit) {
+				fit.addSlice(cf.getPlot().getImagePlus().getProcessor());
+			}
 			double [] param=cf.getParams();
 			results.addRow();
 			results.addValue("#",s);
-			results.addValue("Stage x",stagePositions.get(s-1)[0]);
-			results.addValue("Stage y",stagePositions.get(s-1)[1]);
+			results.addValue("Stage x",xpos.get(s-1));
+			results.addValue("Stage y",ypos.get(s-1));
 			for (int p=0;p<param.length;p++) {
 				results.addValue("p"+p, param[p]);
 			}
 			
 		}
+		if (showFit) new ImagePlus("Step Function Fit",fit).show();
 		results.show("FitResults");
 		
-		
-	}
-	void getTablePositions(){
-		
-
-		BioformatsReader bfr=new BioformatsReader(fileInput.getAbsolutePath());
-		try {
-			ImagePlus [] imps=bfr.open();
-			
-			IJ.log(imps[0].getProp("SizeC"));
-			IJ.log(imps[0].getProp("StagePosX"));
-			IJ.log(imps[0].getProp("StagePosY"));
-			String []properties=imps[0].getPropertiesAsArray();
-			IJ.log(""+imps.length);
-			
-		} catch (FormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (lineFit) {
+			CurveFitter cf=new CurveFitter(results.getColumn("Stage x"),results.getColumn("p2"));
+			cf.doFit(CurveFitter.STRAIGHT_LINE);
+			cf.getPlot().show();
 		}
 		
 		
 		
-	}
+		
+		
+		
+//		ArrayList <Double> ypos=reader.getList(NikonStagePositionReader.yPos);
+//		ArrayList <Double> zpos=reader.getList(NikonStagePositionReader.zPos);
+		
 	
-
-	//		
-	Plot plot=new Plot("Profile", "x axis", "y axis");
-//		plot.addPoints(x, profile, Plot.CIRCLE);
-//		plot.show();
-/*		
-		
-		ImageStack stack=new ImageStack(640,480);
-		ImagePlus imp=WindowManager.getCurrentImage();
-		Line l=(Line)imp.getRoi();
-		double []profile=imp.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-		int len=profile.length;
-		double []x=new double[len];
-		
-		for (int i=0;i<len;i++) {
-			x[i]=i*imp.getCalibration().pixelWidth;
-		}
-		
-		for (int i=0;i<20;i++) {
-			FitterFunction fit=FitterFunction.getFitFunc(x,profile,"AsymGauss");
-			double p=Math.pow(1.2, 20-i);
-			IJ.log(i+"  p="+p);
-			double [] results=fit.getFitResults(new double[] {p,p,p,p,p,p});
-			stack.addSlice(fit.getPlot().getImagePlus().getProcessor());
-			
-		}
-		new ImagePlus ("Stack",stack).show();
-		
-		LevenbergMarquardtOptimizer optimizer = new LevenbergMarquardtOptimizer() {
-	 		// Override your objective function here
-	 		public void setValues(double[] parameters, double[] values) {
-	 			values[0] = parameters[0] * 0.0 + parameters[1];
-	 			values[1] = parameters[0] * 2.0 + parameters[1];
-	 		}
-	 	};
-	 
-	 	// Set solver parameters
-	 	optimizer.setInitialParameters(new double[] { 0, 0 });
-	 	optimizer.setWeights(new double[] { 1, 1 });
-	 	optimizer.setMaxIteration(100);
-	 	optimizer.setTargetValues(new double[] { 5, 10 });
-	 
-	 	optimizer.run();
-	 
-	 	double[] bestParameters = optimizer.getBestFitParameters();
-		
-		
-		
-		Asym2SigFitter firstFit=new Asym2SigFitter(x, profile);
-		
-		
-		
-		for (int s=1;s<=3;s++) {
-			IJ.log("Slice   :"+s+"    started:");
-			imp.setSlice(s);
-			profile=imp.getProcessor().getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-			Asym2SigFitterFixed fit=new Asym2SigFitterFixed(x, profile);
-			fit.fit();
-			IJ.log("Fit Done");
-			double [][] func=fit.getFunctionValues(x,fit.getParameters());
-			Plot plot=new Plot("A","B","C");
-			plot.setSize(640, 480);
-			plot.addPoints(x, profile, Plot.CIRCLE);
-			plot.setColor(new Color(255,0,0));
-			plot.draw();
-			plot.setLineWidth(3);
-			plot.addPoints(func[0], func[1], Plot.LINE);
-			stack.addSlice(plot.getImagePlus().getProcessor());
-		}
-		new ImagePlus("Fit Plots",stack).show();
+	
 	}
-*/
+	double [] getArray(ArrayList list) {
+		int len=list.size();
+		double [] out=new double[len];
+		for (int i=0;i<len;i++) {
+			out[i]=(double) list.get(i);
+		}
+		return out;
+	}
+
 	public static void main(final String... args) throws Exception {
 		// create the ImageJ application context with all available services
 				
@@ -210,4 +161,5 @@ public class USAF_Test implements Command{
 		//IJ.run("Bio-Formats", "open=N:/temp-Arne/StageTest/240923/USAF_30LP.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 		//IJ.run("Bio-Formats", "open=D:/01-Data/StageMeasurements/240812/USAF_10x_Tilt05_horizizontal.lif color_mode=Composite rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT use_virtual_stack series_1");
 		ij.command().run(USAF_Test.class, true);
-	}}
+	}
+}
