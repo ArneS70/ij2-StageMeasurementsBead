@@ -51,35 +51,21 @@ public class LeicaStagePositionReader extends StagePositionReader{
           // optional, but recommended
           // http://stackoverflow.com/questions/13786607/normalization-in-dom-parsing-with-java-how-does-it-work
           doc.getDocumentElement().normalize();
-          Element e=doc.getElementById(tag);
-          Node n=doc.getFirstChild();
-          n=doc.getLastChild();
-          NodeList list= n.getChildNodes();
-          String s=n.getNodeValue();
-          Node m=n.getFirstChild();
-          NamedNodeMap map=m.getAttributes();
-          map.getNamedItem(tag);
+//          Element e=doc.getElementById(tag);
+          NodeList list=doc.getElementsByTagName("XYZStagePointDefinition");
+          int len=list.getLength();
           
-          
-          
-          list = doc.getChildNodes();
-          IJ.log(""+list.getLength());
-
-          for (int temp = 0; temp < list.getLength(); temp++) {
-
-              Node node = list.item(temp);
-
-              if (node.getNodeType() == Node.ELEMENT_NODE) {
-
-                  Element element = (Element) node;
-                  
-                  // get tags's attribute
-                  String id = element.getAttribute("value");
-                 System.out.println(temp+"  "+tag+" :" + id);
-                  pList.add(Double.valueOf(id));
- 
-              }
+          for (int i=0;i<len;i++) {
+        	  Node n=list.item(i);
+        	  NamedNodeMap map=n.getAttributes();
+        	  Node nn=map.getNamedItem(tag);
+        	  IJ.log(i+"  "+nn.getTextContent());
+        	  pList.add(Double.valueOf(nn.getTextContent())*1000);
           }
+          
+//         
+              
+          
 
       } catch (ParserConfigurationException | SAXException | IOException e) {
           e.printStackTrace();
