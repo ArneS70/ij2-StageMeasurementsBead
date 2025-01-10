@@ -6,6 +6,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import ij.IJ;
+import ij.ImagePlus;
+import ij.WindowManager;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -61,7 +65,7 @@ public class NikonStagePositionReader extends StagePositionReader{
                   // get tags's attribute
                   String id = element.getAttribute("value");
  //                 System.out.println(temp+"  "+tag+" :" + id);
-                  pList.add(Double.valueOf(id));
+                  pList.add(Double.valueOf(id)/1000);
  
               }
           }
@@ -71,7 +75,13 @@ public class NikonStagePositionReader extends StagePositionReader{
       }
 	  return pList;
   }
-  
+  public static ImagePlus openImage(String path) {
+	  
+	  IJ.run("Bio-Formats", "open="+path+" color_mode=Default concatenate_series open_all_series rois_import=[ROI manager] view=Hyperstack stack_order=XYCZT");
+	  ImagePlus imp=WindowManager.getCurrentImage().duplicate();
+	  WindowManager.getCurrentWindow().close();
+	  return imp;
+  }
 
 
 }

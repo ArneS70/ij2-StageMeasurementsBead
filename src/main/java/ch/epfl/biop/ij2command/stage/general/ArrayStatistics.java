@@ -67,5 +67,26 @@ public class ArrayStatistics {
 		}
 		return max;
 	}
+	public static double[] arrayDivide(double[] a, double[] b) {
+        double[] out = new double[a.length];
+        for (int i = 0; i < a.length; i++) {
+            out[i] = a[i] / b[i];
+        }
+        return out;
+    }
+	public static double[] arrayDivide(double[] a, double b) {
+        double[] out = new double[a.length];
+        for (int i = 0; i < a.length; i++) {
+            out[i] = a[i] / b;
+        }
+        return out;
+    }
+	public static double[] arrayDifference(double[] a, double b) {
+        double[] out = new double[a.length];
+        for (int i = 0; i < a.length; i++) {
+            out[i] = a[i]-b;
+        }
+        return out;
+    }
 }
 

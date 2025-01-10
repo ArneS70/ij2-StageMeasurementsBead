@@ -52,20 +52,28 @@ public class USAF_Test implements Command{
 	@Parameter(label="Line fit to data")				//Line fit stage position vs. step function results
     boolean lineFit;
 	
+	@Parameter(label="Summarize results?")				//summarize results
+    boolean summarize;
+	
 	@Override
 	public void run() {
 		
 		ImageStack fit=new ImageStack(696,415);
 		StagePositionReader reader=null;
+		ImagePlus imp=null;
 		
-		if (brand.equals("Nikon")) reader=new NikonStagePositionReader(fileXML.getAbsolutePath());
+		if (brand.equals("Nikon")) {
+			reader=new NikonStagePositionReader(fileXML.getAbsolutePath());
+			String path=fileImage.getPath();
+			imp=NikonStagePositionReader.openImage(fileImage.getPath());
+		}
 		if (brand.equals("Leica")) reader=new LeicaStagePositionReader(fileXML.getAbsolutePath());		
 		
 		
 		ArrayList <Double> xpos=reader.getList(StagePositionReader.xPos);
 		ArrayList <Double> ypos=reader.getList(StagePositionReader.yPos);
 		
-		ImagePlus imp=IJ.openImage(fileImage.getAbsolutePath());
+		
 		
 		int width=imp.getWidth();
 		int height=imp.getHeight();
@@ -123,13 +131,21 @@ public class USAF_Test implements Command{
 			}
 			
 		}
+		double [] deltax=results.getColumn("Stage x");
+		double [] deltaShift=ArrayStatistics.arrayDivide(results.getColumn("p2"),1000);
+		
+		deltaShift=ArrayStatistics.arrayDifference(deltaShift, deltaShift[0]);
+		deltax=ArrayStatistics.arrayDifference(deltax, deltax[0]);
+		
+		
 		if (showFit) new ImagePlus("Step Function Fit",fit).show();
 		results.show("FitResults");
 		
 		if (lineFit) {
-			CurveFitter cf=new CurveFitter(results.getColumn("Stage x"),results.getColumn("p2"));
+			CurveFitter cf=new CurveFitter(deltax,deltaShift);
 			cf.doFit(CurveFitter.STRAIGHT_LINE);
 			cf.getPlot().show();
+			summarizeResults(cf.getParams(),cf.getRSquared()).show("Summary Stage Calibration");
 		}
 		
 		
@@ -142,6 +158,24 @@ public class USAF_Test implements Command{
 		
 	
 	
+	}
+	ResultsTable summarizeResults(double [] param, double r) {
+		
+		ResultsTable summary=ResultsTable.getResultsTable("Summary Stage Calibration");
+		if (summary==null) summary=new ResultsTable();
+		summary.addRow();
+		summary.addValue("File",fileImage.getName());
+		summary.addValue("Vendor",brand);
+		summary.addValue("a",param[0]);
+		summary.addValue("b",param[1]);
+		summary.addValue("SSD",param[2]);
+		summary.addValue("R^2",r);
+		summary.setDecimalPlaces(3, 6);
+		
+		
+		
+		
+		return summary;
 	}
 	double [] getArray(ArrayList list) {
 		int len=list.size();
