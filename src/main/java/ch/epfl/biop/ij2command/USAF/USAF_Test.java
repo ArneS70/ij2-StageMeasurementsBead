@@ -67,7 +67,11 @@ public class USAF_Test implements Command{
 			String path=fileImage.getPath();
 			imp=NikonStagePositionReader.openImage(fileImage.getPath());
 		}
-		if (brand.equals("Leica")) reader=new LeicaStagePositionReader(fileXML.getAbsolutePath());		
+		if (brand.equals("Leica")) {
+			reader=new LeicaStagePositionReader(fileXML.getAbsolutePath());
+			String path=fileImage.getPath();
+			imp=LeicaStagePositionReader.openImage(fileImage.getPath());
+		}
 		
 		
 		ArrayList <Double> xpos=reader.getList(StagePositionReader.xPos);
