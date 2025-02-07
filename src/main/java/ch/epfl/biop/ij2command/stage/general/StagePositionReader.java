@@ -1,5 +1,6 @@
 package ch.epfl.biop.ij2command.stage.general;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 

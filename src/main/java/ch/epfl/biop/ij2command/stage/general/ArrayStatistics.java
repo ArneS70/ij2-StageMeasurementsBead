@@ -40,6 +40,20 @@ public class ArrayStatistics {
 		}
 		return min;
 	}
+	public int getMaxPos() {
+		int size=this.array.length;
+		int pos=0;
+		double max=array[0];
+		
+		for (int i=1; i<size;i++) {
+			if (array[i]>max) {
+				max=array[i];
+				pos=i;
+			}
+			
+		}
+		return pos;
+	}
 	public double getMax() {
 		int size=this.array.length;
 		double max=array[0];

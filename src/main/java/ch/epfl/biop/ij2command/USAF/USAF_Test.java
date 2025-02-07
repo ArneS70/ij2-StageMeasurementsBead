@@ -19,6 +19,7 @@ import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ch.epfl.biop.ij2command.stage.general.LeicaStagePositionReader;
 import ch.epfl.biop.ij2command.stage.general.NikonStagePositionReader;
 import ch.epfl.biop.ij2command.stage.general.StagePositionReader;
+import ch.epfl.biop.ij2command.stage.general.ZeissStagePositionReader;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -72,7 +73,11 @@ public class USAF_Test implements Command{
 			String path=fileImage.getPath();
 			imp=LeicaStagePositionReader.openImage(fileImage.getPath());
 		}
-		
+		if (brand.equals("Zeiss")) {
+			reader=new ZeissStagePositionReader(fileXML.getAbsolutePath());
+			String path=fileImage.getPath();
+			imp=ZeissStagePositionReader.openImage(fileImage.getPath());
+		}
 		
 		ArrayList <Double> xpos=reader.getList(StagePositionReader.xPos);
 		ArrayList <Double> ypos=reader.getList(StagePositionReader.yPos);
