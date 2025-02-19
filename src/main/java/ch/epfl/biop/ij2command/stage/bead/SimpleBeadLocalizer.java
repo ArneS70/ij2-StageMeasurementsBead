@@ -45,6 +45,7 @@ public class SimpleBeadLocalizer {
 	private double xc,yc,zc,r2,zoff,zheight,fwhm,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in calibrated coordinates =um
 	private ResultsTable results=new ResultsTable();
+	
 	private ResultsTable summary=new ResultsTable();
 	private ResultsTable resultsRefined=new ResultsTable();
 	private int gap=1;
@@ -73,7 +74,10 @@ public class SimpleBeadLocalizer {
 	}
 	
 	private void showResults() {
-		results.show("Bead Localizing Results--"+methodSelection);
+		results.show("Bead Localizing Results--"+this.ResultTableSimple);
+		if (!methodSelection.contains("Simple")) resultsRefined.show("Bead Localizing Results--"+methodSelection);
+		
+		
 		this.hasResultsWindow=true;
 	}
 	private void pasteImageDimension(int[] dimensions) {
@@ -204,6 +208,9 @@ public class SimpleBeadLocalizer {
 }
 */
 	private void fitXY(ImageProcessor ip,int frame,int slice) {
+			xc/=ImageCalibration.pixelWidth;
+			yc/=ImageCalibration.pixelWidth;
+			
 			double x1=(xc-1.5*diameter);
 			double x2=(xc+1.5*diameter);
 			double y1=yc;
@@ -216,7 +223,7 @@ public class SimpleBeadLocalizer {
 			if (showFit) xpos.showFit();
 			double [] results=xpos.getResults();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			xc=(x1+results[2]);
+			xc=(x1+results[2])*ImageCalibration.pixelWidth;
 			x1=xc;
 			y1=(yc-1.5*diameter);
 			double y2=(yc+1.5*diameter);
@@ -229,7 +236,7 @@ public class SimpleBeadLocalizer {
 			if (showFit) ypos.showFit();
 			results=ypos.getResults();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			yc=(results[2]+y1);
+			yc=(results[2]+y1)*ImageCalibration.pixelWidth;
 			fitDiameter_y=ypos.getDiameter();
 			writeResults(resultsRefined,frame);
 //			imp.close();
