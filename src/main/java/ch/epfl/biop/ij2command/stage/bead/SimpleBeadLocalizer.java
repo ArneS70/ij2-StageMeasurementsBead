@@ -223,7 +223,7 @@ public class SimpleBeadLocalizer {
 			if (showFit) xpos.showFit();
 			double [] results=xpos.getResults();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			xc=(x1+results[2])*ImageCalibration.pixelWidth;
+			xc=(x1+results[2]);//*ImageCalibration.pixelWidth;
 			x1=xc;
 			y1=(yc-1.5*diameter);
 			double y2=(yc+1.5*diameter);

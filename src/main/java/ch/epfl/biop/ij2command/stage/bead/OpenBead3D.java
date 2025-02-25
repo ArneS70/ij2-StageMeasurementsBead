@@ -33,8 +33,8 @@ import net.imagej.ImageJ;
  * </p>
  */
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Localize Bead 3D")
-public class LocalizeBead3D implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Open Bead 3D")
+public class OpenBead3D implements Command {
 
 	private int width;
 	private int height;
@@ -42,6 +42,9 @@ public class LocalizeBead3D implements Command {
 	private int slices;
 	private int frames;
 	private double zRes;
+	
+	@Parameter(style="open")
+    File fileInput;
 	
 	@Parameter(label="Bead size in um")
     int sizeBead;
@@ -61,7 +64,8 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="show Fit Window(s)")
     boolean showFit;
 	
-	
+	@Parameter(label="save results Tables")
+    boolean saveResults;
 	
 	
     
@@ -69,8 +73,9 @@ public class LocalizeBead3D implements Command {
     
     public void run() {
     	
-    	ImagePlus imp=WindowManager.getCurrentImage();
- 		
+    	IJ.open(fileInput.getAbsolutePath());
+    	
+ 		ImagePlus imp=WindowManager.getCurrentImage();
  		imp.show();
  		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
@@ -81,7 +86,7 @@ public class LocalizeBead3D implements Command {
  		track.run();
  		if (showRois) track.showRois("Bead Localizing Results--"+method);
  		if (summarize) track.summarizeResults("Bead Localizing Results--"+method).show("Bead Localizing Results--Summary");
- 		
+ 		if (saveResults) track.saveResults(fileInput.getAbsolutePath(),fileInput.getAbsoluteFile());
  		
  		
     }
@@ -99,6 +104,7 @@ public class LocalizeBead3D implements Command {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-        ij.command().run(LocalizeBead3D.class, true);
+        ij.command().run(OpenBead3D.class, true);
     }
 }
+
