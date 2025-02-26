@@ -41,6 +41,7 @@ public class SimpleBeadLocalizer {
 	private Calibration ImageCalibration;
 	private int width, height,channels,slices,frames;
 	private double diameter,zRes;
+	ImageStack fitPlots=new ImageStack(600,400);
 	
 	private double xc,yc,zc,r2,zoff,zheight,fwhm,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in calibrated coordinates =um
