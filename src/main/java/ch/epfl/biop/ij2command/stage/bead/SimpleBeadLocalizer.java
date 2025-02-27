@@ -4,6 +4,7 @@ import java.awt.Polygon;
 import java.io.File;
 
 import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
+import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ch.epfl.biop.ij2command.stage.general.GaussFitter;
 import ch.epfl.biop.ij2command.stage.general.SuperGaussFitter;
 import ij.IJ;
@@ -41,7 +42,7 @@ public class SimpleBeadLocalizer {
 	private Calibration ImageCalibration;
 	private int width, height,channels,slices,frames;
 	private double diameter,zRes;
-	ImageStack fitPlots=new ImageStack(600,400);
+	ImageStack fitPlots=new ImageStack(694,415);
 	
 	private double xc,yc,zc,r2,zoff,zheight,fwhm,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in calibrated coordinates =um
@@ -72,6 +73,7 @@ public class SimpleBeadLocalizer {
 	public void run() {
 		if (this.frames>0) analyzeTimeStack();
 		showResults();
+		if (showFit) new ImagePlus ("Profie Plots",fitPlots).show();
 	}
 	
 	private void showResults() {
@@ -98,16 +100,20 @@ public class SimpleBeadLocalizer {
 		}
 	}*/
 	public void analyzeTimeStack() {
+		
 		for (int f=0;f<frames;f+=gap) {
 			
 			ImageStack zStack=new ImageStack();
 			for (int s=0;s<slices;s++) {
-	 			toTrack.setSlice(f*slices+s+1);
+	 			int pos=1+(f*slices)+s;
+//	 			IJ.log(""+pos);
+				toTrack.setSlice(pos);
 	 			zStack.addSlice(toTrack.getProcessor());
 	 			
 	 		}
 			
 			ImagePlus toProject=new ImagePlus("Z-stack t="+f,zStack);
+			
 	//		toProject.getProcessor().blurGaussian(2);
 			ZProjector project=new ZProjector();
 			project.setImage(toProject);
@@ -123,8 +129,8 @@ public class SimpleBeadLocalizer {
 			int zpos=(int)Math.round(zc/zRes);
 			if (!methodSelection.contains("Simple")) {
 				toTrack.setZ(zpos);
-				toTrack.setT(f);
-				writeResults(f);
+				toTrack.setT(f+1);
+				writeResults(f+1);
 				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
 			} else writeResults(f); 
@@ -209,37 +215,66 @@ public class SimpleBeadLocalizer {
 }
 */
 	private void fitXY(ImageProcessor ip,int frame,int slice) {
-			xc/=ImageCalibration.pixelWidth;
-			yc/=ImageCalibration.pixelWidth;
 			
-			double x1=(xc-1.5*diameter);
-			double x2=(xc+1.5*diameter);
+			//Position of the bead
+			xc/=ImageCalibration.pixelWidth;   		//convert from um to pixel
+			yc/=ImageCalibration.pixelWidth;		//convert from um to pixel
+			
+			// Intensity Profile of the bead i x direction
+			double x1=(xc-1.5*diameter);			//size of the line profile
+			double x2=(xc+1.5*diameter);			//size of the line profile
 			double y1=yc;
-			Line toFit=new Line (x1,y1,x2,y1);
 			
-			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
-			imp.setRoi(toFit);
-//			imp.show();
-			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
-			if (showFit) xpos.showFit();
-			double [] results=xpos.getResults();
-//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			xc=(x1+results[2]);//*ImageCalibration.pixelWidth;
+
+			
+			double [] line=ip.getLine(x1, y1, x2, y1);  //get the line profile as array of doubles
+			double [] x=new double [line.length];		//create array of doubles for x-values
+			
+			for (int i=0;i<line.length;i++) {			//populate the array via a loop
+				x[i]=i;
+			}
+			
+			FitterFunction maximum=new SuperGaussFitter(x,line);	//Fit function to find the maximum
+			double [] results=maximum.getFitResults();				//get the results of the fit
+			
+			if (showFit)											//show Plots of the fit
+				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
+			
+			xc=(x1+results[2]);							//Redefine center in x direction
+			
+			// Intensity Profile of the bead in y-direction
+			
 			x1=xc;
 			y1=(yc-1.5*diameter);
 			double y2=(yc+1.5*diameter);
-			fitDiameter_x=xpos.getDiameter();
 			
-			toFit=new Line (x1,y1,x1,y2);
-			imp.setRoi(toFit);
-//			imp.show();
-			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
-			if (showFit) ypos.showFit();
-			results=ypos.getResults();
-//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			yc=(results[2]+y1)*ImageCalibration.pixelWidth;
-			fitDiameter_y=ypos.getDiameter();
+			line=ip.getLine(x1, y1, x1, y2);			//get the line profile as array of doubles
+			x=new double [line.length];
+			
+			for (int i=0;i<line.length;i++) {
+				x[i]=i;
+			}
+			
+			maximum=new SuperGaussFitter(x,line);
+			results=maximum.getFitResults();
+			if (showFit) 
+				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
+			
+			yc=(results[2]+y1);
+
+			// Convert maxima to um
+			
+			xc*=ImageCalibration.pixelWidth;
+			yc*=ImageCalibration.pixelWidth;
+			
 			writeResults(resultsRefined,frame);
+
+//			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
+//			imp.show();
+//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+//			fitDiameter_x=xpos.getDiameter();
+//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
+//			fitDiameter_y=ypos.getDiameter();
 //			imp.close();
 	}
 	public void showRois(String tableName) {

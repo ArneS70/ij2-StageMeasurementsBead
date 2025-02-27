@@ -7,9 +7,9 @@ import ij.measure.UserFunction;
 
     public class FitterFunction {
 
-	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25;
-	    public static final String [] methodString= {"Poly3","Poly4","Poly6","Poly8","Gauss","AsymGauss"};
-		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25};
+	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25,SUPERGAUSS=26;
+	    public static final String [] methodString= {"Poly3","Poly4","Poly6","Poly8","Gauss","AsymGauss","SuperGauss"};
+		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25,26};
 		public String function,globalFunction;
 		public int numParam;
 		public double[] initParam; 
@@ -90,6 +90,7 @@ import ij.measure.UserFunction;
 //			cf.doCustomFit(cf, len, function, initParam, variation, false);
 			cf.doCustomFit(this.function, this.initParam,  false);
 		}
+		
 		double [] results=cf.getParams();
 		int num=results.length;
 		double [] allParam=new double [num+1];
@@ -103,6 +104,7 @@ import ij.measure.UserFunction;
 		
 			cf.doCustomFit(function,new double [] {1,1,1},false);
 //			cf.doCustomFit(function,new double [] {1,1},false);
+			
 			double [] results=cf.getParams();
 			int num=results.length;
 			double [] allParam=new double [num+1];
