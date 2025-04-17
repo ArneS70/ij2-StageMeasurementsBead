@@ -2,6 +2,7 @@ package ch.epfl.biop.ij2command.stage.bead;
 
 import java.awt.Polygon;
 import java.io.File;
+import java.util.Vector;
 
 import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
@@ -10,6 +11,7 @@ import ch.epfl.biop.ij2command.stage.general.SuperGaussFitter;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.EllipseRoi;
 import ij.gui.Line;
 import ij.gui.OvalRoi;
 import ij.gui.Overlay;
@@ -37,6 +39,7 @@ public class SimpleBeadLocalizer {
 	public static final String ResultTableGauss ="Bead Localization Results--SuperGauss Fit";
 	
 	private String methodSelection;
+	private Vector <Roi>regions=new Vector<Roi>();
 	
 	private ImagePlus toTrack;
 	private Calibration ImageCalibration;
@@ -64,7 +67,7 @@ public class SimpleBeadLocalizer {
 		if (toTrack==null) return;
 		this.ImageCalibration=imp.getCalibration();
 		pasteImageDimension(imp.getDimensions());
-		zRes=ImageCalibration.pixelHeight;
+		zRes=ImageCalibration.pixelDepth;
 		
 	}
 //	String concat(String []) {
@@ -107,7 +110,7 @@ public class SimpleBeadLocalizer {
 			for (int s=0;s<slices;s++) {
 	 			int pos=1+(f*slices)+s;
 //	 			IJ.log(""+pos);
-				toTrack.setSlice(pos);
+				toTrack.setSliceWithoutUpdate(pos);
 	 			zStack.addSlice(toTrack.getProcessor());
 	 			
 	 		}
@@ -128,8 +131,10 @@ public class SimpleBeadLocalizer {
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
 			if (!methodSelection.contains("Simple")) {
-				toTrack.setZ(zpos);
-				toTrack.setT(f+1);
+				toTrack.setSliceWithoutUpdate(f*slices+1+zpos);
+//				toTrack.setSlice(f*slices+1+zpos);
+//				toTrack.setZ(zpos);
+//				toTrack.setT(f+1);
 				writeResults(f+1);
 				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
@@ -160,10 +165,14 @@ public class SimpleBeadLocalizer {
 		ip.setMask(mask);
 		EllipseFitter ef=new EllipseFitter();
 		ef.fit(ip, null);
+		
 		xc=ef.xCenter*ImageCalibration.pixelWidth;;
 		yc=ef.yCenter*ImageCalibration.pixelHeight;;
 		fitDiameter_x=ef.major*ImageCalibration.pixelWidth;;
-		fitDiameter_y=ef.minor*ImageCalibration.pixelHeight;;
+		fitDiameter_y=ef.minor*ImageCalibration.pixelHeight;
+		regions.add(new OvalRoi(ef.xCenter, ef.yCenter, ef.major, ef.minor));
+		
+		
 		writeResults(frame);
 		
 	}
@@ -241,7 +250,7 @@ public class SimpleBeadLocalizer {
 				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
 			
 			xc=(x1+results[2]);							//Redefine center in x direction
-			
+			fitDiameter_x=2.35*results[3]*ImageCalibration.pixelWidth;
 			// Intensity Profile of the bead in y-direction
 			
 			x1=xc;
@@ -261,7 +270,7 @@ public class SimpleBeadLocalizer {
 				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
 			
 			yc=(results[2]+y1);
-
+			fitDiameter_y=2.35*results[3]*ImageCalibration.pixelWidth;
 			// Convert maxima to um
 			
 			xc*=ImageCalibration.pixelWidth;
@@ -278,10 +287,11 @@ public class SimpleBeadLocalizer {
 //			imp.close();
 	}
 	public void showRois(String tableName) {
-			ResultsTable display=ResultsTable.getResultsTable(tableName);
-			RoiManager rm=RoiManager.getRoiManager();
 			
+			RoiManager rm=RoiManager.getRoiManager();
+			ResultsTable display=ResultsTable.getResultsTable(tableName);
 			if (display==null) return;
+			
 			double [] frame=display.getColumn("Frame"); 
 			double []x=display.getColumn(SimpleBeadLocalizer.header[0]);
 			double []y=display.getColumn(SimpleBeadLocalizer.header[1]);
