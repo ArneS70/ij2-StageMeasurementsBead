@@ -131,14 +131,14 @@ public class SimpleBeadLocalizer {
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
 			if (!methodSelection.contains("Simple")) {
-				toTrack.setSliceWithoutUpdate(f*slices+1+zpos);
+				toTrack.setSliceWithoutUpdate(f*slices+1+zpos);     //check whether +1 is correct
 //				toTrack.setSlice(f*slices+1+zpos);
 //				toTrack.setZ(zpos);
 //				toTrack.setT(f+1);
-				writeResults(f+1);
+				writeSimpleResults(f+1);
 				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
-			} else writeResults(f); 
+			} else writeSimpleResults(f); 
 		}
 		
 	}
@@ -173,7 +173,7 @@ public class SimpleBeadLocalizer {
 		regions.add(new OvalRoi(ef.xCenter, ef.yCenter, ef.major, ef.minor));
 		
 		
-		writeResults(frame);
+		writeResults(resultsRefined,frame);
 		
 	}
 	/*	private void fitXY(ImageProcessor ip,int frame,int slice,int maxIteration, double delta) {
@@ -415,16 +415,16 @@ public class SimpleBeadLocalizer {
 		}
 		
 	}
-	private boolean writeResults(int frame) {
+	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
 		results.incrementCounter();
 		results.addValue("Frame",frame);
 		results.addValue(SimpleBeadLocalizer.header[0], xc);
 		results.addValue(SimpleBeadLocalizer.header[1], yc);
 		results.addValue(SimpleBeadLocalizer.header[2], zc);
-		if (this.methodSelection.contains(methodEllipse)||this.methodSelection.contains(methodGauss)) {
-			results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
-			results.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
-		}
+//		if (this.methodSelection.contains(methodEllipse)||this.methodSelection.contains(methodGauss)) {
+//			results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
+//			results.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
+//		}
 		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
 		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
 		double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
