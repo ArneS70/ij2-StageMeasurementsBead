@@ -7,9 +7,9 @@ import ij.measure.UserFunction;
 
     public class FitterFunction {
 
-	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25,SUPERGAUSS=26,Gauss2D=27;
+	    protected static final int POLY3=3, POLY4=4,POLY6=6,POLY8=8,GAUSS=12, ASYMGAUSS=25,SUPERGAUSS=26,Gauss2D=27,LORENTZ=28;
 	    public static final String [] methodString= {"Poly3","Poly4","Poly6","Poly8","Gauss","AsymGauss","SuperGauss","2DGauss"};
-		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25,26,27};
+		public static final int [] methodInt= {CurveFitter.POLY3,CurveFitter.POLY4,CurveFitter.POLY6,0,CurveFitter.POLY8,CurveFitter.GAUSSIAN,25,26,27,28};
 		public String function,globalFunction;
 		public int numParam;
 		public double[] initParam; 

@@ -10,7 +10,9 @@ import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
 import ch.epfl.biop.ij2command.stage.general.FitterFunction;
 import ch.epfl.biop.ij2command.stage.general.Gauss2DFitter;
 import ch.epfl.biop.ij2command.stage.general.GaussFitter;
+import ch.epfl.biop.ij2command.stage.general.LorentzFitter;
 import ch.epfl.biop.ij2command.stage.general.SuperGaussFitter;
+import ch.epfl.biop.ij2command.stage.general.SymGauss2DFitter;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -25,6 +27,7 @@ import ij.measure.CurveFitter;
 import ij.measure.ResultsTable;
 import ij.plugin.ZProjector;
 import ij.plugin.filter.MaximumFinder;
+import ij.plugin.frame.Fitter;
 import ij.plugin.frame.RoiManager;
 import ij.process.EllipseFitter;
 import ij.process.ImageProcessor;
@@ -134,47 +137,18 @@ public class SimpleBeadLocalizer {
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
 			if (!methodSelection.contains("Simple")) {
-				toTrack.setSliceWithoutUpdate(f*slices+zpos);     
+				toTrack.setSliceWithoutUpdate(f*slices+zpos);
+				preciseZposition(toProject);
 //				toTrack.setSlice(f*slices+1+zpos);
 //				toTrack.setZ(zpos);
 //				toTrack.setT(f+1);
-				writeSimpleResults(f);
+//				writeSimpleResults(f);
 				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
 				if (methodSelection.equals("2DGauss"))fit2D(toTrack.getProcessor(),f,zpos);
 			} else writeSimpleResults(f); 
 		}
 		
-	}
-	void fit2D(ImageProcessor ip,int frame,int zpos) {
-		//Position of the bead
-		xc/=ImageCalibration.pixelWidth;   		//convert from um to pixel
-		yc/=ImageCalibration.pixelWidth;		//convert from um to pixel
-		
-		// Intensity Profile of the bead in the x direction
-		double x1=(xc-1.5*diameter);			//size of the line profile
-		double x2=(xc+1.5*diameter);			//size of the line profile
-		double y1=yc;
-		int length=ip.getLine(x1, y1, x2, y1).length;
-		double [] line =new double[length*length]; 
-
-		for (int i=0;i<length;i++) {
-			for (int j=0;j<length;j++) {
-				double [] profile=ip.getLine(x1, y1-1.5*diameter+j, x2, y1-1.5*diameter+j);
-				line[i*length+j]=profile[j];
-			}
-			
-		}
-		
-		
-		double [] x=new double [length*length];		//create array of doubles for x-values
-		
-		for (int i=0;i<length*length;i++) {			//populate the array via a loop
-			x[i]=i;
-		}
-		
-		FitterFunction maximum=new Gauss2DFitter(x,line, length);	//Fit function to find the maximum
-		double [] results=maximum.getFitResults();				//get the results of the fit
 	}
 	void findMaxima(ImagePlus maxima) {
 		
@@ -191,6 +165,23 @@ public class SimpleBeadLocalizer {
 		this.xc=points.xpoints[0]*ImageCalibration.pixelWidth;
 		this.yc=points.ypoints[0]*ImageCalibration.pixelHeight;
 		
+		
+	}
+	private void preciseZposition (ImagePlus imp) {
+		int len = imp.getStackSize();
+		double [] x=new double [len];
+		double [] y=new double [len];
+		
+		for (int i=0;i<len;i++) {
+			imp.setSliceWithoutUpdate(i);
+			x[i]=i*zRes;
+			y[i]=imp.getStatistics().mean;		
+		}
+		
+		LorentzFitter fitter=new LorentzFitter(x,y);
+		double [] results=fitter.getFitResults();
+		this.zc=results[3];
+//		fitter.getPlot().show();
 		
 	}
 	private void fitEllipse(ImageProcessor ip,int frame) {
@@ -261,6 +252,7 @@ public class SimpleBeadLocalizer {
 	private void fitXY(ImageProcessor ip,int frame,int slice) {
 			
 			fit2D(ip,frame,slice);
+/*
 			//Position of the bead
 			xc/=ImageCalibration.pixelWidth;   		//convert from um to pixel
 			yc/=ImageCalibration.pixelWidth;		//convert from um to pixel
@@ -313,7 +305,7 @@ public class SimpleBeadLocalizer {
 			yc*=ImageCalibration.pixelWidth;
 			
 			writeResults(resultsRefined,frame);
-
+*/
 //			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
 //			imp.show();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
@@ -322,6 +314,54 @@ public class SimpleBeadLocalizer {
 //			fitDiameter_y=ypos.getDiameter();
 //			imp.close();
 	}
+	void fit2D(ImageProcessor ip,int frame,int zpos) {
+		//Position of the bead
+		xc/=ImageCalibration.pixelWidth;   		//convert from um to pixel
+		yc/=ImageCalibration.pixelWidth;		//convert from um to pixel
+		
+		// Intensity Profile of the bead in the x direction
+		double x1=(xc-1.5*diameter);			//size of the line profile
+		double x2=(xc+1.5*diameter);			//size of the line profile
+		double y1=yc;
+		int length=ip.getLine(x1, y1, x2, y1).length;
+		double [] line =new double[length*length]; 
+	
+		for (int i=0;i<length;i++) {
+			double [] profile=ip.getLine(x1, y1-1.5*diameter+i, x2, y1-1.5*diameter+i);
+			for (int j=0;j<length;j++) {
+				line[i*length+j]=profile[j];
+			}
+			
+		}
+		
+		
+		double [] x=new double [length*length];		//create array of doubles for x-values
+		
+		for (int i=0;i<length*length;i++) {			//populate the array via a loop
+			x[i]=i;
+		}
+		
+		FitterFunction maximum=new SymGauss2DFitter(x,line, length);	//Fit function to find the maximum
+		double [] results=maximum.getFitResults();				//get the results of the fit
+
+		
+		if (showFit) 
+			fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
+		
+		xc=(results[2]+x1);
+		yc=(results[3]+y1-1.5*diameter);	//old index 4
+		fitDiameter_x=2.35*Math.sqrt(1/(2*results[1]))*ImageCalibration.pixelWidth;
+		fitDiameter_y=2.35*Math.sqrt(1/(2*results[1]))*ImageCalibration.pixelWidth; //old index3
+		
+		
+		// Convert maxima to um
+		
+		xc*=ImageCalibration.pixelWidth;
+		yc*=ImageCalibration.pixelWidth;
+		
+		writeResults(resultsRefined,frame);
+	}
+
 	public void showRois(String tableName) {
 			
 			RoiManager rm=RoiManager.getRoiManager();
