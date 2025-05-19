@@ -36,15 +36,16 @@ import ij.process.ImageStatistics;
 public class SimpleBeadLocalizer {
 	
 	private static final String [] header= {"x-center/um","y-center/um","z-center/um","x diameter/um","y diameter/um","z-offset","z-height","R^2"};
+	public static final String [] methods={"Simple","Ellipse","Super Gauss","2D Gauss"};
 	public static final String methodSimple= "Simple";
 	public static final String methodEllipse= "Ellipse";
 	public static final String methodGauss="SuperGauss Fit";
+	public static final String method2DGauss="2D Gauss Fit";
 		
-	public static final String ResultTableSimple = "Bead Localization Results--Simple";
-	public static final String ResultTableEllipse="Bead Localization Results--Ellipse Fit";
-	public static final String ResultTableGauss ="Bead Localization Results--SuperGauss Fit";
+	public static final String [] tableTitles= {"Bead Localization Results--Simple","Bead Localization Results--Ellipse Fit","Bead Localization Results--SuperGauss Fit","Bead Localization Results--2DGauss Fit"};
 	
 	private String methodSelection;
+	private String actualResultsTitle;
 	private Vector <Roi>regions=new Vector<Roi>();
 	
 	private ImagePlus toTrack;
@@ -64,7 +65,14 @@ public class SimpleBeadLocalizer {
 	private boolean hasResultsWindow=false;
 	private boolean hasSummary=false;
 	
-	
+	/**
+	 * Constructor SimpleBeadLocalizer. 
+	 * Contains the parameters for the localization.
+	 * @param imp               input image/image stack 
+	 * @param beadDiameter		size of the bead (estimate)
+	 * @param method			method used for the localization
+	 * @param deltat			variable to skip frames
+	 */
 	SimpleBeadLocalizer(ImagePlus imp,double beadDiameter, String method, int deltat){
 		this.toTrack=imp;
 		this.diameter=beadDiameter;
@@ -76,9 +84,7 @@ public class SimpleBeadLocalizer {
 		zRes=ImageCalibration.pixelDepth;
 		
 	}
-//	String concat(String []) {
-		
-//	}
+
 	public void run() {
 		if (this.frames>0) analyzeTimeStack();
 		showResults();
@@ -86,10 +92,8 @@ public class SimpleBeadLocalizer {
 	}
 	
 	private void showResults() {
-		results.show("Bead Localizing Results--"+this.ResultTableSimple);
-		if (!methodSelection.contains("Simple")) resultsRefined.show("Bead Localizing Results--"+methodSelection);
-		
-		
+		results.show(tableTitles[getMethodNumber()]);
+//		if (!methodSelection.contains("Simple")) resultsRefined.show("Bead Localizing Results--"+methodSelection);
 		this.hasResultsWindow=true;
 	}
 	private void pasteImageDimension(int[] dimensions) {
@@ -103,51 +107,51 @@ public class SimpleBeadLocalizer {
     	if (length>3) this.frames=dimensions[4]; else return;
     	
     }
-/*	public void run() {
-		if (methodSelection.contains("Simple")) {
-			findMaxima(toTrack);
-		}
-	}*/
+/**
+ * Tracks a bead in 3D over time.
+ * The variable gap is used to skip frames. 
+ */
 	public void analyzeTimeStack() {
 		
 		for (int f=0;f<frames;f+=gap) {
 			
+			// Create Z-stack per timepoint
 			ImageStack zStack=new ImageStack();
 			for (int s=0;s<slices;s++) {
 	 			int pos=1+(f*slices)+s;
-//	 			IJ.log(""+pos);
 				toTrack.setSliceWithoutUpdate(pos);
 	 			zStack.addSlice(toTrack.getProcessor());
-	 			
 	 		}
-			
+
+			// Localizes the bead in a in a z-projected image. 
 			ImagePlus toProject=new ImagePlus("Z-stack t="+f,zStack);
-			
-	//		toProject.getProcessor().blurGaussian(2);
 			ZProjector project=new ZProjector();
 			project.setImage(toProject);
 			project.setMethod(ZProjector.MAX_METHOD);
 			project.doProjection();
 			ImagePlus zproject=project.getProjection();
 			findMaxima(zproject);
-			
+
+			// Creates a circular Roi and stores it 
 			OvalRoi circle=new OvalRoi((xc/ImageCalibration.pixelWidth)-0.5*diameter,yc/ImageCalibration.pixelHeight-0.5*diameter,diameter,diameter);
-	
+			regions.add(circle);
 			toProject.setRoi(circle);
+
+			// Localizes the bead along the z-axis
 			this.zc=measureZMax(toProject,circle);
 			int zpos=(int)Math.round(zc/zRes);
-			if (!methodSelection.contains("Simple")) {
+
+			if (methodSelection.contains("Simple")) writeSimpleResults(f); 
+			else {
 				toTrack.setSliceWithoutUpdate(f*slices+zpos);
 				preciseZposition(toProject);
-//				toTrack.setSlice(f*slices+1+zpos);
-//				toTrack.setZ(zpos);
-//				toTrack.setT(f+1);
-//				writeSimpleResults(f);
+
 				if (methodSelection.contains("Gauss")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.contains("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
 				if (methodSelection.equals("2DGauss"))fit2D(toTrack.getProcessor(),f,zpos);
-			} else writeSimpleResults(f); 
+			}  
 		}
+//		results.show(actualResultsTitle);
 		
 	}
 	void findMaxima(ImagePlus maxima) {
@@ -199,7 +203,7 @@ public class SimpleBeadLocalizer {
 		regions.add(new OvalRoi(ef.xCenter, ef.yCenter, ef.major, ef.minor));
 		
 		
-		writeResults(resultsRefined,frame);
+		writeResults(results,frame);
 		
 	}
 	/*	private void fitXY(ImageProcessor ip,int frame,int slice,int maxIteration, double delta) {
@@ -249,10 +253,12 @@ public class SimpleBeadLocalizer {
 		imp.close();
 }
 */
+	/**
+	 * Super Gauss Fit
+	 */
+	
 	private void fitXY(ImageProcessor ip,int frame,int slice) {
-			
-			fit2D(ip,frame,slice);
-/*
+
 			//Position of the bead
 			xc/=ImageCalibration.pixelWidth;   		//convert from um to pixel
 			yc/=ImageCalibration.pixelWidth;		//convert from um to pixel
@@ -272,13 +278,13 @@ public class SimpleBeadLocalizer {
 			}
 			
 			FitterFunction maximum=new SuperGaussFitter(x,line);	//Fit function to find the maximum
-			double [] results=maximum.getFitResults();				//get the results of the fit
+			double [] fitResults=maximum.getFitResults();				//get the results of the fit
 			
 			if (showFit)											//show Plots of the fit
 				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
 			
-			xc=(x1+results[2]);							//Redefine center in x direction
-			fitDiameter_x=2.35*results[3]*ImageCalibration.pixelWidth;
+			xc=(x1+fitResults[2]);							//Redefine center in x direction
+			fitDiameter_x=2.35*fitResults[3]*ImageCalibration.pixelWidth;
 			// Intensity Profile of the bead in y-direction
 			
 			x1=xc;
@@ -293,19 +299,19 @@ public class SimpleBeadLocalizer {
 			}
 			
 			maximum=new SuperGaussFitter(x,line);
-			results=maximum.getFitResults();
+			fitResults=maximum.getFitResults();
 			if (showFit) 
 				fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
 			
-			yc=(results[2]+y1);
-			fitDiameter_y=2.35*results[3]*ImageCalibration.pixelWidth;
+			yc=(fitResults[2]+y1);
+			fitDiameter_y=2.35*fitResults[3]*ImageCalibration.pixelWidth;
 			// Convert maxima to um
 			
 			xc*=ImageCalibration.pixelWidth;
 			yc*=ImageCalibration.pixelWidth;
 			
-			writeResults(resultsRefined,frame);
-*/
+			writeResults(results,frame);
+
 //			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
 //			imp.show();
 //			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
@@ -365,7 +371,8 @@ public class SimpleBeadLocalizer {
 	public void showRois(String tableName) {
 			
 			RoiManager rm=RoiManager.getRoiManager();
-			ResultsTable display=ResultsTable.getResultsTable(tableName);
+			
+			ResultsTable display=ResultsTable.getResultsTable(tableTitles[getMethodNumber()]);
 			if (display==null) return;
 			
 			double [] frame=display.getColumn("Frame"); 
@@ -400,6 +407,8 @@ public class SimpleBeadLocalizer {
 						
 			}
 //			toTrack.show();
+//
+ 
 	}
 	private double [] convert(double []input,double convert) {
 		int length=input.length;
@@ -518,5 +527,12 @@ public class SimpleBeadLocalizer {
 		table.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
 		table.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
 		return true;
+	}
+	int getMethodNumber(){
+		int number=0;
+		for (int i=0;i<methods.length;i++) {
+			if (methods[i].equals(methodSelection)) number=i;
+		}
+		return number;
 	}
 }

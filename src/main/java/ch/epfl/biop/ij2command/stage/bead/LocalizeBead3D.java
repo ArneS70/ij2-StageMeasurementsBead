@@ -49,7 +49,7 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="Time gap")
     int gap;
 	
-	@Parameter (choices= {SimpleBeadLocalizer.methodSimple,SimpleBeadLocalizer.methodEllipse,SimpleBeadLocalizer.methodGauss}, style="listBox") 
+	@Parameter (choices= {SimpleBeadLocalizer.methodSimple,SimpleBeadLocalizer.methodEllipse,SimpleBeadLocalizer.methodGauss,SimpleBeadLocalizer.method2DGauss}, style="listBox") 
 	String method;
 	
 	@Parameter(label="show Rois")
@@ -70,6 +70,7 @@ public class LocalizeBead3D implements Command {
     public void run() {
     	
     	ImagePlus imp=WindowManager.getCurrentImage();
+    	
  		
  		imp.show();
  		zRes=imp.getCalibration().pixelDepth;
