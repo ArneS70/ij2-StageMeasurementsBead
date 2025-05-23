@@ -17,7 +17,12 @@ public class SymGauss2DFitter extends FitterFunction implements UserFunction {
 	}
 	
 	public synchronized double [] getFitResults() {
-		cf.doCustomFit(this, 4, "", getInitParameters(),new double [] {0.5,0.5,0.5,0.5,0.5,0.5}, false);
+		cf.doCustomFit(this, 5, "", getInitParameters(),new double [] {0,0,0,0,0}, false);
+		return cf.getParams();
+	}
+	
+	public synchronized double [] getFitResults(double [] init) {
+		cf.doCustomFit(this, 5, "", init,new double [] {0,0,0,0,0}, false);
 		return cf.getParams();
 	}
 
@@ -43,10 +48,12 @@ public class SymGauss2DFitter extends FitterFunction implements UserFunction {
 		double [] param=new double [5];
 		ArrayStatistics statX=new ArrayStatistics(super.x);
 		ArrayStatistics statY=new ArrayStatistics(super.y);
-		param[0]=statY.getMax();
-		param[1]=0.1;
-		param[2]=50;
-		param[4]=50;
+		param[0]=statY.getMin();
+		param[1]=statY.getMax();
+		param[2]=0.04;
+		param[3]=20;
+		param[4]=20;
+		
 		
 		
 		return param;
@@ -54,41 +61,9 @@ public class SymGauss2DFitter extends FitterFunction implements UserFunction {
 	}
 	@Override
 	public double userFunction(double[] p, double x) {
-		double a1=p[1]*Math.pow(x-Math.floor(x/boxwidth)*boxwidth-p[2], 2);
-		double a2=p[3]*Math.pow(Math.floor(x/boxwidth)-p[2], 2);
-		return p[0]*Math.exp(-(a1+a2));
+		double a1=p[2]*Math.pow(x-Math.floor(x/boxwidth)*boxwidth-p[3], 2);
+		double a2=p[2]*Math.pow(Math.floor(x/boxwidth)-p[4], 2);
+		return p[0]+p[1]*Math.exp(-(a1+a2));
 	}
 	
 }
-/* ********************Not needed anymore********************************	
-	
-private void fitLine() {
-	double []x=xValues(line);
-	
-	ArrayStatistics as=new ArrayStatistics(line);
-	double [] intParam= {
-			as.getMean(),
-			as.getMax()-as.getMin(),
-			new ArrayStatistics(x).getMean(),
-			2,2};
-	
-	CurveFitter cf=new CurveFitter(xValues(line), line);
-	cf.doCustomFit(fitFunction, intParam, false);
-	this.parameters=cf.getParams();
-	this.parameters[5]=cf.getRSquared();
-	this.diameter=calcDiameter(0.5);
-}
-
-public double [] getResults() {
-	fitLine();
-	return parameters;
-}
-	
-
-
-public SuperGaussFitter(ImageProcessor ip,Line l){
-this.line_ip=ip;
-this.line=ip.getLine(l.x1d, l.y1d, l.x2d, l.y2d);
-
-}
-*/
