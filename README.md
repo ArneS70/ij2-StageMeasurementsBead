@@ -1,4 +1,4 @@
-# ij2-StageMeasurements
+# ij2-StageMeasurementsBead
 This is an ImageJ2 plugin to report on the position of a (fluorescent) bead in 3D. Goal is to report on the stability performance of a light microscope.
 
 # Citing
