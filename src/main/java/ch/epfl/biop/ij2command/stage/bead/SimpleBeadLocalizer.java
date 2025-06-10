@@ -1,29 +1,20 @@
 package ch.epfl.biop.ij2command.stage.bead;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.io.File;
 import java.util.Vector;
 
-import org.ojalgo.array.Array1D;
-
-import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
-import ch.epfl.biop.ij2command.stage.general.FitterFunction;
-import ch.epfl.biop.ij2command.stage.general.Gauss2DFitter;
-import ch.epfl.biop.ij2command.stage.general.GaussFitter;
-import ch.epfl.biop.ij2command.stage.general.LorentzFitter;
-import ch.epfl.biop.ij2command.stage.general.SuperGaussFitter;
-import ch.epfl.biop.ij2command.stage.general.SymGauss2DFitter;
+import ch.epfl.biop.ij2command.stage.general.*;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.gui.EllipseRoi;
-import ij.gui.Line;
+
 import ij.gui.OvalRoi;
-import ij.gui.Overlay;
 import ij.gui.Plot;
 import ij.gui.Roi;
 import ij.measure.Calibration;
-import ij.measure.CurveFitter;
+
 import ij.measure.ResultsTable;
 import ij.plugin.ZProjector;
 import ij.plugin.filter.MaximumFinder;
@@ -43,11 +34,12 @@ public class SimpleBeadLocalizer {
 	public static final String method2DGauss="2D Gauss Fit";
 	public static final String method2DSymGauss="2D Gauss Sym";
 		
-	public static final String [] tableTitles= {"Bead Localization Results--Simple","Bead Localization Results--Ellipse Fit","Bead Localization Results--SuperGauss Fit","Bead Localization Results--2DGauss Fit","Bead Localization Results--2DGauss Fit (symetric)"};
+	public static final String [] tableTitles= {"BeadLocalizationResults_Simple","BeadLocalizationResults_Ellipse Fit","BeadLocalizationResults_SuperGaussFit","BeadLocalizationResults_2DGaussFit","BeadLocalizationResults_2DGaussFit(symetric)"};
 	
 	private String methodSelection;
 	private String actualResultsTitle;
 	private Vector <Roi>regions=new Vector<Roi>();
+	private String fileName;
 	
 	private ImagePlus toTrack;
 	private Calibration ImageCalibration;
@@ -76,6 +68,7 @@ public class SimpleBeadLocalizer {
 	 */
 	SimpleBeadLocalizer(ImagePlus imp,double beadDiameter, String method, int deltat){
 		this.toTrack=imp;
+		this.fileName=imp.getTitle();
 		this.diameter=beadDiameter;
 		this.methodSelection=method;
 		this.gap=deltat;
@@ -483,14 +476,13 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double [] fitResults=gf.getResults();
 		return fitResults[2];
 	}
-	public ResultsTable summarizeResults(String name) {
+	public ResultsTable summarizeResults() {
 		
-		ResultsTable input=ResultsTable.getResultsTable(name);
-		if (input==null) {IJ.showMessage("No results table found");return null;};
+		if (results==null) {IJ.showMessage("No results table found");return null;};
 		
-		double []x=input.getColumn("delta x");
-		double []y=input.getColumn("delta y");
-		double []z=input.getColumn("delta z");
+		double []x=results.getColumn("delta x");
+		double []y=results.getColumn("delta y");
+		double []z=results.getColumn("delta z");
 		ArrayStatistics as=new ArrayStatistics(x);
 		summary.incrementCounter();
 		summary.addValue("delta x mean/um", as.getMean());
@@ -536,6 +528,7 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
 		results.incrementCounter();
 		results.addValue("Frame",frame);
+		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
 		results.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
 		results.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
 		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
@@ -551,12 +544,44 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		results.addValue("delta z",zc*ImageCalibration.pixelDepth-z0);
 		return true;
 	}
+	Plot getDriftPLot() {
+		
+		double []x= results.getColumn("delta x");
+		double []y= results.getColumn("delta y");
+		double []z= results.getColumn("delta z");
+		double []t= results.getColumn("Time/s");
+		
+		double [] conc=ArrayStatistics.concatArrays(ArrayStatistics.concatArrays(x, y),z);
+		
+		Plot p=new Plot("Drift Plot", "Time/s", "distance/um");
+		p.setFontSize(18);
+		p.setLineWidth(2);
+		p.setColor(new Color(0,255,255));
+		p.add("circle", t,x);
+		p.add("line", t, x);
+		p.setColor(new Color(255,0,255));
+		p.add("square", t, y);
+		p.add("line", t, y);
+		p.setColor(new Color(255,255,0));
+		p.add("circle", t, z);
+		p.add("line", t, z);
+		p.setLimits(new ArrayStatistics(t).getMin(), new ArrayStatistics(t).getMax(), new ArrayStatistics(conc).getMin()*1.1, new ArrayStatistics(conc).getMax()*1.1);
+		return p;
+	}
 	private boolean writeResults(ResultsTable table, int frame) {
 		table.incrementCounter();
+		
 		table.addValue("Frame",frame);
+		table.addValue("Time/s", frame*ImageCalibration.frameInterval);
 		table.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
 		table.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
 		table.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
+		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
+		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
+		double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
+		results.addValue("delta x",xc*ImageCalibration.pixelWidth-x0);
+		results.addValue("delta y",yc*ImageCalibration.pixelHeight-y0);
+		results.addValue("delta z",zc*ImageCalibration.pixelDepth-z0);
 		table.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x*ImageCalibration.pixelWidth);
 		table.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y*ImageCalibration.pixelWidth);
 		return true;

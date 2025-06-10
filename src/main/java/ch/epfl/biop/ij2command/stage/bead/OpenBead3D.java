@@ -33,7 +33,7 @@ import net.imagej.ImageJ;
  * </p>
  */
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Open Bead 3D")
+@Plugin(type = Command.class, menuPath = "Plugins>StabilityMeasurement>Open Bead 3D")
 public class OpenBead3D implements Command {
 
 	private int width;

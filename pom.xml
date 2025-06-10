@@ -13,13 +13,13 @@
 	</parent>
 
 	<groupId>ch.epfl.biop</groupId>
-	<artifactId>StageMeaurement</artifactId>
+	<artifactId>BeadLocalisation</artifactId>
 	<version>0.1.0-SNAPSHOT</version>
 
-	<name>Biop Stage meaurements</name>
-	<description>A Maven project implementing meauring the drift of a microscopy stage.</description>
+	<name>Bead Drift meaurements</name>
+	<description>A Maven project implementing meauring the drift of a light microscope.</description>
 	<url>http://biop.epfl.ch</url>
-	<inceptionYear>2023</inceptionYear>
+	<inceptionYear>2025</inceptionYear>
 	<organization>
 		<name>BIOP</name>
 		<url>http://biop.epfl.ch</url>
@@ -32,48 +32,6 @@
 	</licenses>
 
 	<developers>
-		<developer>
-			<id>lacan</id>
-			<name>Olivier Burri</name>
-			<url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>nicokiaru</id>
-			<name>Nicolas Chiaruttini</name>
-			<url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>romainGuiet</id>
-			<name>Romain Guiet</name>
-			<url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
 		<developer>
 			<id>ArneS70</id>
 			<name>Arne Seitz</name>
@@ -88,40 +46,17 @@
 				<role>maintainer</role>
 			</roles>
 		</developer>
-		<developer>
-			<id>RDornier</id>
-			<name>Rémy Dornier</name>
-			<url>https://www.epfl.ch/research/facilities/ptbiop/staff/</url>
-			<roles>
-				<role>founder</role>
-				<role>lead</role>
-				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
-			</roles>
-		</developer>
+		
 	</developers>
 	<contributors>
-		<contributor>
-			<name>Romain Guiet</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
-			<roles><role>founder</role></roles>
-			<properties><id>romainGuiet</id></properties>
-		</contributor>
+		
 		<contributor>
 			<name>Nicolas Chiaruttini</name>
 			<url>http://biop.epfl.ch/INFO_Facility.html</url>
 			<roles><role>founder</role></roles>
 			<properties><id>NicoKiaru</id></properties>
 		</contributor>
-		<contributor>
-			<name>Olivier Burri</name>
-			<url>http://biop.epfl.ch/INFO_Facility.html</url>
-			<roles><role>founder</role></roles>
-			<properties><id>lacan</id></properties>
-		</contributor>
+		
 		<contributor>
 			<name>Arne Seitz</name>
 			<url>http://biop.epfl.ch/INFO_Facility.html</url>
@@ -162,7 +97,7 @@
 
 	<properties>
 		<package-name>ch.epfl.biop.ij2command</package-name>
-		<main-class>ch.epfl.biop.ij2command.StageMeasurements</main-class>
+		<main-class>ch.epfl.biop.ij2command.BeadTracking</main-class>
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>EPFL</license.copyrightOwners>
 		<scijava.app.directory>C:/Fiji.app</scijava.app.directory>
@@ -249,6 +184,11 @@
     	
 </exclusions> 
 		</dependency>
-		
+
+		<dependency>
+			<groupId>ch.epfl.biop</groupId>
+			<artifactId>StageMeaurementGeneral</artifactId>
+			<version>0.1.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 </project>

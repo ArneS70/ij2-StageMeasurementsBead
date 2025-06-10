@@ -33,7 +33,7 @@ import net.imagej.ImageJ;
  * </p>
  */
 
-@Plugin(type = Command.class, menuPath = "Plugins>BIOP>Localize Bead 3D")
+@Plugin(type = Command.class, menuPath = "Plugins>StabilityMeasurement>Localize Bead 3D")
 public class LocalizeBead3D implements Command {
 
 	private int width;
@@ -61,6 +61,9 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="show Fit Window(s)")
     boolean showFit;
 	
+	@Parameter(label="show Drift Plot")
+    boolean showDrift;
+	
 	
 	
 	
@@ -81,8 +84,8 @@ public class LocalizeBead3D implements Command {
  		if (showFit) track.showFit();
  		track.run();
  		if (showRois) track.showRois("Bead Localizing Results--"+method);
- 		if (summarize) track.summarizeResults("Bead Localizing Results--"+method).show("Bead Localizing Results--Summary");
- 		
+ 		if (summarize) track.summarizeResults().show("BeadLocalizingResults_"+method+"_Summary");
+ 		if (showDrift) track.getDriftPLot().show();
  		
  		
     }
