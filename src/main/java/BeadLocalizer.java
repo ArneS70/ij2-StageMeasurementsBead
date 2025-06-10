@@ -1,4 +1,4 @@
-package ch.epfl.biop.ij2command.stage.bead;
+
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Plugin;

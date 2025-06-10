@@ -1,4 +1,4 @@
-package ch.epfl.biop.ij2command.stage.bead;
+
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,12 +7,6 @@ import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import ch.epfl.biop.ij2command.stage.general.ArrayStatistics;
-import ch.epfl.biop.ij2command.stage.general.BioformatsReader;
-import ch.epfl.biop.ij2command.stage.general.LeicaStagePositionReader;
-import ch.epfl.biop.ij2command.stage.general.NikonStagePositionReader;
-import ch.epfl.biop.ij2command.stage.general.StagePositionReader;
-import ch.epfl.biop.ij2command.stage.general.ZeissStagePositionReader;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;

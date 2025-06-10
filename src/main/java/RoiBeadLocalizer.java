@@ -1,4 +1,4 @@
-package ch.epfl.biop.ij2command.stage.bead;
+
 
 import java.awt.Polygon;
 

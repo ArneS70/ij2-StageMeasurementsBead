@@ -1,4 +1,4 @@
-package ch.epfl.biop.ij2command.stage.bead;
+
 
 import java.awt.Color;
 import java.awt.Polygon;
@@ -26,7 +26,7 @@ import ij.process.ImageStatistics;
 
 public class SimpleBeadLocalizer {
 	
-	private static final String [] header= {"x-center/um","y-center/um","z-center/um","x diameter/um","y diameter/um","z-offset","z-height","R^2"};
+	private static final String [] header= {"x-center/um","y-center/um","z-center/um","x diameter/um","y diameter/um","Euc. Dist./um","z-height","R^2"};
 	public static final String [] methods={"Simple","Ellipse","Super Gauss Fit","2D Gauss Fit","2D Gauss Sym"};
 	public static final String methodSimple= "Simple";
 	public static final String methodEllipse= "Ellipse";
@@ -571,19 +571,24 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 	private boolean writeResults(ResultsTable table, int frame) {
 		table.incrementCounter();
 		
-		table.addValue("Frame",frame);
-		table.addValue("Time/s", frame*ImageCalibration.frameInterval);
-		table.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
-		table.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
-		table.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
+		results.addValue("Frame",frame);
+		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
+		results.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
+		results.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
+		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
 		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
 		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
 		double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
-		results.addValue("delta x",xc*ImageCalibration.pixelWidth-x0);
-		results.addValue("delta y",yc*ImageCalibration.pixelHeight-y0);
-		results.addValue("delta z",zc*ImageCalibration.pixelDepth-z0);
-		table.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x*ImageCalibration.pixelWidth);
-		table.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y*ImageCalibration.pixelWidth);
+		double deltax=xc*ImageCalibration.pixelWidth-x0;
+		double deltay=yc*ImageCalibration.pixelHeight-y0;
+		double deltaz=zc*ImageCalibration.pixelDepth-z0;
+		results.addValue("delta x",deltax);
+		results.addValue("delta y",deltay);
+		results.addValue("delta z",deltaz);
+		results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x*ImageCalibration.pixelWidth);
+		results.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y*ImageCalibration.pixelWidth);
+		double eucDist=Math.sqrt(deltax*deltax+deltay*deltay+deltaz*deltaz);
+		results.addValue(SimpleBeadLocalizer.header[5], eucDist);
 		return true;
 	}
 	int getMethodNumber(){

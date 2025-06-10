@@ -1,12 +1,29 @@
-package ch.epfl.biop.ij2command.stage.bead;
+
+
+import java.awt.Polygon;
+import java.io.File;
 
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
+import ij.IJ;
 import ij.ImagePlus;
+import ij.ImageStack;
 import ij.WindowManager;
+import ij.gui.OvalRoi;
+import ij.gui.Overlay;
+import ij.gui.Plot;
+import ij.measure.CurveFitter;
+import ij.plugin.Projector;
+import ij.plugin.ZAxisProfiler;
+import ij.plugin.ZProjector;
+import ij.plugin.filter.MaximumFinder;
+import ij.plugin.frame.Fitter;
+import ij.process.ImageStatistics;
 import net.imagej.ImageJ;
+
+
 
 /**
  *  
@@ -16,16 +33,26 @@ import net.imagej.ImageJ;
  * </p>
  */
 
-@Plugin(type = Command.class, menuPath = "Plugins>StabilityMeasurement>Localize Bead 3D")
-public class LocalizeBead3D implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>StabilityMeasurement>Open Bead 3D")
+public class OpenBead3D implements Command {
 
+	private int width;
+	private int height;
+	private int channels;
+	private int slices;
+	private int frames;
+	private double zRes;
+	
+	@Parameter(style="open")
+    File fileInput;
+	
 	@Parameter(label="Bead size in um")
     int sizeBead;
 	
 	@Parameter(label="Time gap")
     int gap;
 	
-	@Parameter (choices= {SimpleBeadLocalizer.methodSimple,SimpleBeadLocalizer.methodEllipse,SimpleBeadLocalizer.methodGauss,SimpleBeadLocalizer.method2DGauss,SimpleBeadLocalizer.method2DSymGauss}, style="listBox") 
+	@Parameter (choices= {SimpleBeadLocalizer.methodSimple,SimpleBeadLocalizer.methodEllipse,SimpleBeadLocalizer.methodGauss}, style="listBox") 
 	String method;
 	
 	@Parameter(label="show Rois")
@@ -37,16 +64,20 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="show Fit Window(s)")
     boolean showFit;
 	
-	@Parameter(label="show Drift Plot")
-    boolean showDrift;
+	@Parameter(label="save results Tables")
+    boolean saveResults;
 	
+	
+    
 	@Override
     
     public void run() {
     	
-    	ImagePlus imp=WindowManager.getCurrentImage();
+    	IJ.open(fileInput.getAbsolutePath());
+    	
+ 		ImagePlus imp=WindowManager.getCurrentImage();
  		imp.show();
- 		
+ 		zRes=imp.getCalibration().pixelDepth;
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
  		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method,gap);
@@ -54,8 +85,10 @@ public class LocalizeBead3D implements Command {
  		if (showFit) track.showFit();
  		track.run();
  		if (showRois) track.showRois("Bead Localizing Results--"+method);
- 		if (summarize) track.summarizeResults().show("BeadLocalizingResults_"+method+"_Summary");
- 		if (showDrift) track.getDriftPLot().show();
+ 		if (summarize) track.summarizeResults("Bead Localizing Results--"+method).show("Bead Localizing Results--Summary");
+ 		if (saveResults) track.saveResults(fileInput.getAbsolutePath(),fileInput.getAbsoluteFile());
+ 		
+ 		
     }
    
     /**
@@ -70,6 +103,8 @@ public class LocalizeBead3D implements Command {
         // create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
-        ij.command().run(LocalizeBead3D.class, true);
+
+        ij.command().run(OpenBead3D.class, true);
     }
 }
+
