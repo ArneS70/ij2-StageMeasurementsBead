@@ -1,29 +1,12 @@
 package ch.epfl.biop.ij2command.stage.bead;
 
-import java.awt.Polygon;
-import java.io.File;
-
 import org.scijava.command.Command;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 
-import ij.IJ;
 import ij.ImagePlus;
-import ij.ImageStack;
 import ij.WindowManager;
-import ij.gui.OvalRoi;
-import ij.gui.Overlay;
-import ij.gui.Plot;
-import ij.measure.CurveFitter;
-import ij.plugin.Projector;
-import ij.plugin.ZAxisProfiler;
-import ij.plugin.ZProjector;
-import ij.plugin.filter.MaximumFinder;
-import ij.plugin.frame.Fitter;
-import ij.process.ImageStatistics;
 import net.imagej.ImageJ;
-
-
 
 /**
  *  
@@ -36,13 +19,6 @@ import net.imagej.ImageJ;
 @Plugin(type = Command.class, menuPath = "Plugins>StabilityMeasurement>Localize Bead 3D")
 public class LocalizeBead3D implements Command {
 
-	private int width;
-	private int height;
-	private int channels;
-	private int slices;
-	private int frames;
-	private double zRes;
-	
 	@Parameter(label="Bead size in um")
     int sizeBead;
 	
@@ -64,19 +40,13 @@ public class LocalizeBead3D implements Command {
 	@Parameter(label="show Drift Plot")
     boolean showDrift;
 	
-	
-	
-	
-    
 	@Override
     
     public void run() {
     	
     	ImagePlus imp=WindowManager.getCurrentImage();
-    	
- 		
  		imp.show();
- 		zRes=imp.getCalibration().pixelDepth;
+ 		
  		double diameterBead= (sizeBead/imp.getCalibration().pixelWidth);
  		// calculate the bead diameter in pixels
  		SimpleBeadLocalizer track=new SimpleBeadLocalizer(imp,diameterBead,method,gap);
@@ -86,8 +56,6 @@ public class LocalizeBead3D implements Command {
  		if (showRois) track.showRois("Bead Localizing Results--"+method);
  		if (summarize) track.summarizeResults().show("BeadLocalizingResults_"+method+"_Summary");
  		if (showDrift) track.getDriftPLot().show();
- 		
- 		
     }
    
     /**
@@ -102,7 +70,6 @@ public class LocalizeBead3D implements Command {
         // create the ImageJ application context with all available services
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
-
         ij.command().run(LocalizeBead3D.class, true);
     }
 }
