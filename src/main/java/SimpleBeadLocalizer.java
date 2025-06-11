@@ -5,7 +5,7 @@ import java.awt.Polygon;
 import java.io.File;
 import java.util.Vector;
 
-import ch.epfl.biop.ij2command.stage.general.*;
+
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
@@ -539,9 +539,16 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
 		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
 		double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
-		results.addValue("delta x",xc*ImageCalibration.pixelWidth-x0);
-		results.addValue("delta y",yc*ImageCalibration.pixelHeight-y0);
-		results.addValue("delta z",zc*ImageCalibration.pixelDepth-z0);
+
+		double deltax=xc*ImageCalibration.pixelWidth-x0;
+		double deltay=yc*ImageCalibration.pixelHeight-y0;
+		double deltaz=zc*ImageCalibration.pixelDepth-z0;
+
+		results.addValue("delta x",deltax);
+		results.addValue("delta y",deltay);
+		results.addValue("delta z",deltaz);
+		double eucDist=Math.sqrt(deltax*deltax+deltay*deltay+deltaz*deltaz);
+		results.addValue(SimpleBeadLocalizer.header[5], eucDist);
 		return true;
 	}
 	Plot getDriftPLot() {
@@ -550,21 +557,28 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double []y= results.getColumn("delta y");
 		double []z= results.getColumn("delta z");
 		double []t= results.getColumn("Time/s");
+		double []ed=results.getColumn("Euc. Dist./um");
 		
-		double [] conc=ArrayStatistics.concatArrays(ArrayStatistics.concatArrays(x, y),z);
-		
+		double [] conc=ArrayStatistics.concatArrays(ArrayStatistics.concatArrays(x, y),ArrayStatistics.concatArrays(z,ed));
+		//Colurs follow the recommendations for color blind individuals
+		//https://www.nature.com/articles/nmeth.1618
 		Plot p=new Plot("Drift Plot", "Time/s", "distance/um");
 		p.setFontSize(18);
 		p.setLineWidth(2);
-		p.setColor(new Color(0,255,255));
+		p.setColor(new Color(230,159,0));
 		p.add("circle", t,x);
-		p.add("line", t, x);
-		p.setColor(new Color(255,0,255));
+		
+		p.setColor(new Color(86,180,233));
 		p.add("square", t, y);
-		p.add("line", t, y);
-		p.setColor(new Color(255,255,0));
+		
+		p.setColor(new Color(0,158,115));
 		p.add("circle", t, z);
-		p.add("line", t, z);
+		
+		p.setColor(new Color(240,226,66));
+		p.add("triangle", t, ed);
+		
+		p.addLegend("x\ny\nz\nEuclidian Distance");
+		
 		p.setLimits(new ArrayStatistics(t).getMin(), new ArrayStatistics(t).getMax(), new ArrayStatistics(conc).getMin()*1.1, new ArrayStatistics(conc).getMax()*1.1);
 		return p;
 	}
