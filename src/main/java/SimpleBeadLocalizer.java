@@ -37,22 +37,20 @@ public class SimpleBeadLocalizer {
 	public static final String [] tableTitles= {"BeadLocalizationResults_Simple","BeadLocalizationResults_Ellipse Fit","BeadLocalizationResults_SuperGaussFit","BeadLocalizationResults_2DGaussFit","BeadLocalizationResults_2DGaussFit(symetric)"};
 	
 	private String methodSelection;
-	private String actualResultsTitle;
 	private Vector <Roi>regions=new Vector<Roi>();
 	private String fileName;
 	
 	private ImagePlus toTrack;
 	private Calibration ImageCalibration;
-	private int width, height,channels,slices,frames;
+	private int slices,frames;
 	private double diameter,zRes;
 	ImageStack fitPlots=new ImageStack(694,415);
 	
-	private double xc,yc,zc,amp,r2,zoff,zheight,fwhm,fitDiameter_x,fitDiameter_y;
+	private double xc,yc,zc,amp,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in uncalibrated coordinates
 	private ResultsTable results=new ResultsTable();
 	
 	private ResultsTable summary=new ResultsTable();
-	private ResultsTable resultsRefined=new ResultsTable();
 	private int gap=1;
 	private boolean showFit=false;
 	private boolean hasResultsWindow=false;
@@ -93,10 +91,11 @@ public class SimpleBeadLocalizer {
 	private void pasteImageDimension(int[] dimensions) {
     	int length=dimensions.length;
     	if (dimensions==null) return;
-    	this.width=dimensions[0];
-    	if (length>0) this.height=dimensions[1]; else return;
+    	if (length>0) {
+		} else return;
     	
-    	if (length>1) this.channels=dimensions[2]; else return;
+    	if (length>1) {
+		} else return;
     	if (length>2) this.slices=dimensions[3]; else return;
     	if (length>3) this.frames=dimensions[4]; else return;
     	
