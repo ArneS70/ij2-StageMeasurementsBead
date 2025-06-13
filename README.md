@@ -16,6 +16,7 @@ Please cite this plugin by linking it to this GitHub or to the release you used,
 Copy the following two jar files to the plugins folder of Fiji/ImageJ:
 - StageMeasurementsBead-0.1.0-SNAPSHOT.jar
 - StageMeasurementUtil-0.1.0-SNAPSHOT.jar
+- The jars can be founf here:https://github.com/ArneS70/ij2-StageMeasurementsBead/releases/tag/v0.1-beta.1
 
 ## Workflow
 - Open an image-stack of a fluorescent bead moving in 3D over time.
