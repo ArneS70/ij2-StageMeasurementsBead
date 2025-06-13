@@ -11,3 +11,9 @@ Please cite this plugin by linking it to this GitHub or to the release you used,
 
 **Affiliations**
 (1) EPFL BioImaging and Optics Platform (BIOP)
+
+## Installation
+Copy the following two jar files to the plugins folder of Fiji/ImageJ:
+- StageMeasurementsBead-0.1.0-SNAPSHOT.jar
+- StageMeasurementUtil-0.1.0-SNAPSHOT.jar
+- 
