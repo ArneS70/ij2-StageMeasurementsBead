@@ -22,3 +22,5 @@ https://github.com/ArneS70/ij2-StageMeasurementsBead/releases/tag/v0.1-beta.1
 - Open an image-stack of a fluorescent bead moving in 3D over time.
 - Virtual images are supported by the plugin. This option is recommended for large image datasets.
 - Run the plugin called "Localize Bead 3D". It can be found via the search functionality or in the submenue: Plugings-> StabilityMeasurement
+
+
