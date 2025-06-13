@@ -16,4 +16,8 @@ Please cite this plugin by linking it to this GitHub or to the release you used,
 Copy the following two jar files to the plugins folder of Fiji/ImageJ:
 - StageMeasurementsBead-0.1.0-SNAPSHOT.jar
 - StageMeasurementUtil-0.1.0-SNAPSHOT.jar
-- 
+
+## Workflow
+- Open an image-stack of a fluorescent bead moving in 3D over time.
+- Virtual images are supported by the plugin. This option is recommended for large image datasets.
+- Run the plugin called "Localize Bead 3D". It can be found via the search functionality or in the submenue: Plugings-> StabilityMeasurement
