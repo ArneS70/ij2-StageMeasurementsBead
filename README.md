@@ -40,4 +40,8 @@ https://github.com/ArneS70/ij2-StageMeasurementsBead/releases/tag/v0.1-beta.1
   - "Summarize results" Mean, min, MAx and STDEV will be calculated for all of the timepoints.
   - "show Fit Window(s)" shows the line fits for the methods Super Gauss and 2D Gauss fit.
   - "show Drift Plot" plots the drift along the 3 axis (x,y,z) over time. Additionally the euclidan distance is calculated.
-- Press "ok" to run the plugin.      
+- Press "ok" to run the plugin.
+- With none of the options checked a results table is displayed.   
+<img src="https://github.com/user-attachments/assets/27ad5f77-b414-4f93-9362-2438a5dbf460" width="550" height="350" />
+
+- The plugin can be called from the Fiji/ImageJ maco language, e.g. run("Localize Bead 3D", "sizebead=4 gap=15 method=Ellipse showrois=false summarize=true showfit=false showdrift=false").
