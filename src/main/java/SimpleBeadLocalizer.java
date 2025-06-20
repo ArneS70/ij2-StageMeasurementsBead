@@ -2,6 +2,7 @@
 
 import java.awt.Color;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.io.File;
 import java.util.Vector;
 
@@ -45,6 +46,7 @@ public class SimpleBeadLocalizer {
 	private int slices,frames;
 	private double diameter,zRes;
 	ImageStack fitPlots=new ImageStack(694,415);
+	private Rectangle analysisRoi;
 	
 	private double xc,yc,zc,amp,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in uncalibrated coordinates
@@ -414,8 +416,8 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 			int length=x.length;
 			
 			for (int i=0;i<length;i++) {
-				double xpos=x[i]/ImageCalibration.pixelWidth;
-				double ypos=y[i]/ImageCalibration.pixelHeight;
+				double xpos=(x[i]/ImageCalibration.pixelWidth)+analysisRoi.x;
+				double ypos=(y[i]/ImageCalibration.pixelHeight)+analysisRoi.y;
 				int zpos=(int)Math.round(z[i]/zRes);
 //				toTrack.setT(i);
 //				toTrack.setZ(zpos);
@@ -528,8 +530,8 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		results.incrementCounter();
 		results.addValue("Frame",frame);
 		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
-		results.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
-		results.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
+		results.addValue(SimpleBeadLocalizer.header[0], (xc+analysisRoi.x)*ImageCalibration.pixelWidth);
+		results.addValue(SimpleBeadLocalizer.header[1], (yc+analysisRoi.y)*ImageCalibration.pixelHeight);
 		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
 //		if (this.methodSelection.contains(methodEllipse)||this.methodSelection.contains(methodGauss)) {
 //			results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
@@ -586,8 +588,8 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		
 		results.addValue("Frame",frame);
 		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
-		results.addValue(SimpleBeadLocalizer.header[0], xc*ImageCalibration.pixelWidth);
-		results.addValue(SimpleBeadLocalizer.header[1], yc*ImageCalibration.pixelHeight);
+		results.addValue(SimpleBeadLocalizer.header[0], (xc+analysisRoi.x)*ImageCalibration.pixelWidth);
+		results.addValue(SimpleBeadLocalizer.header[1], (yc+analysisRoi.y)*ImageCalibration.pixelHeight);
 		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
 		double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
 		double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
@@ -610,5 +612,10 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 			if (methods[i].equals(methodSelection)) number=i;
 		}
 		return number;
+	}
+	void setAnalysisRoi(Roi roi) {
+		
+		this.analysisRoi=roi.getBounds();
+		
 	}
 }
