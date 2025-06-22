@@ -31,22 +31,27 @@ public class SimpleBeadLocalizer {
 	public static final String [] methods={"Simple","Ellipse","Super Gauss Fit","2D Gauss Fit","2D Gauss Sym"};
 	public static final String methodSimple= "Simple";
 	public static final String methodEllipse= "Ellipse";
-	public static final String methodGauss="Super Gauss Fit";
-	public static final String method2DGauss="2D Gauss Fit";
-	public static final String method2DSymGauss="2D Gauss Sym";
+	public static final String methodGauss="SuperGaussFit";
+	public static final String method2DGauss="2DGaussFit";
+	public static final String method2DSymGauss="2DGaussSym";
 		
-	public static final String [] tableTitles= {"BeadLocalizationResults_Simple","BeadLocalizationResults_Ellipse Fit","BeadLocalizationResults_SuperGaussFit","BeadLocalizationResults_2DGaussFit","BeadLocalizationResults_2DGaussFit(symetric)"};
+	public static final String [] tableTitles= {"BeadLocalizingResults_Simple","BeadLocalizingResults_Ellipse","BeadLocalizingResults_SuperGaussFit","BeadLocalizingResults_2DGaussFit","BeadLocalizingResults_2DGaussSym"};
 	
 	private String methodSelection;
 	private Vector <Roi>regions=new Vector<Roi>();
 	private String fileName;
+	private String fileNoExt;
 	
 	private ImagePlus toTrack;
 	private Calibration ImageCalibration;
 	private int slices,frames;
 	private double diameter,zRes;
 	ImageStack fitPlots=new ImageStack(694,415);
+<<<<<<< HEAD
+	private Rectangle analysisRoi=new Rectangle(0,0,0,0);
+=======
 	private Rectangle analysisRoi;
+>>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
 	
 	private double xc,yc,zc,amp,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in uncalibrated coordinates
@@ -69,6 +74,7 @@ public class SimpleBeadLocalizer {
 	SimpleBeadLocalizer(ImagePlus imp,double beadDiameter, String method, int deltat){
 		this.toTrack=imp;
 		this.fileName=imp.getTitle();
+		this.fileNoExt=fileName.substring(0, fileName.length()-4);
 		this.diameter=beadDiameter;
 		this.methodSelection=method;
 		this.gap=deltat;
@@ -85,11 +91,6 @@ public class SimpleBeadLocalizer {
 		if (showFit) new ImagePlus ("Profie Plots",fitPlots).show();
 	}
 	
-	private void showResults() {
-		results.show(tableTitles[getMethodNumber()]);
-//		if (!methodSelection.contains("Simple")) resultsRefined.show("Bead Localizing Results--"+methodSelection);
-		this.hasResultsWindow=true;
-	}
 	private void pasteImageDimension(int[] dimensions) {
     	int length=dimensions.length;
     	if (dimensions==null) return;
@@ -395,6 +396,8 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		
 		writeResults(results,frame);
 	}
+<<<<<<< HEAD
+=======
 	public void showRois(String tableName) {
 			
 			RoiManager rm=RoiManager.getRoiManager();
@@ -437,6 +440,7 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 //
  
 	}
+>>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
 	private double [] convert(double []input,double convert) {
 		int length=input.length;
 		
@@ -444,13 +448,6 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 			input[i]=input[i]*convert;
 		}
 		return input;
-	}
-	public void setGap(int delta) {
-		if (delta<frames) gap=delta;
-		else gap=frames;
-	}
-	public void showFit() {
-		this.showFit=true;
 	}
 	public void hideFit() {
 		this.showFit=false;
@@ -477,35 +474,6 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double [] fitResults=gf.getResults();
 		return fitResults[2];
 	}
-	public ResultsTable summarizeResults() {
-		
-		if (results==null) {IJ.showMessage("No results table found");return null;};
-		
-		double []x=results.getColumn("delta x");
-		double []y=results.getColumn("delta y");
-		double []z=results.getColumn("delta z");
-		ArrayStatistics as=new ArrayStatistics(x);
-		summary.incrementCounter();
-		summary.addValue("delta x mean/um", as.getMean());
-		summary.addValue("delta x stdev/um", as.getSTDEV());
-		summary.addValue("delta x min/um", as.getMin());
-		summary.addValue("delta x max/um", as.getMax());
-		
-		as=new ArrayStatistics(y);
-		summary.addValue("delta y mean/um", as.getMean());
-		summary.addValue("delta y stdev/um", as.getSTDEV());
-		summary.addValue("delta y min/um", as.getMean());
-		summary.addValue("delta y max/um", as.getMax());
-		
-		as=new ArrayStatistics(z);
-		summary.addValue("delta z mean/um", as.getMean());
-		summary.addValue("delta z stdev/um", as.getSTDEV());
-		summary.addValue("detla z min/um", as.getMin());
-		summary.addValue("delta z max/um", as.getMax());
-		
-		this.hasSummary=true;
-		return summary;
-	}
 	public void saveResults(String path, File file) {
 		
 		String name=file.getName();
@@ -526,6 +494,17 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		}
 		
 	}
+<<<<<<< HEAD
+	String getFileNoExt() {
+		return this.fileNoExt;
+	}
+	int getMethodNumber(){
+		int number=0;
+		for (int i=0;i<methods.length;i++) {
+			if (methods[i].equals(methodSelection)) number=i;
+		}
+		return number;
+=======
 	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
 		results.incrementCounter();
 		results.addValue("Frame",frame);
@@ -551,7 +530,19 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double eucDist=Math.sqrt(deltax*deltax+deltay*deltay+deltaz*deltaz);
 		results.addValue(SimpleBeadLocalizer.header[5], eucDist);
 		return true;
+>>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
 	}
+	void setAnalysisRoi(Roi roi) {
+		
+		this.analysisRoi=roi.getBounds();
+		
+	}
+	
+	public void setGap(int delta) {
+		if (delta<frames) gap=delta;
+		else gap=frames;
+	}
+
 	Plot getDriftPLot() {
 		
 		double []x= results.getColumn("delta x");
@@ -583,11 +574,55 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		p.setLimits(new ArrayStatistics(t).getMin(), new ArrayStatistics(t).getMax(), new ArrayStatistics(conc).getMin()*1.1, new ArrayStatistics(conc).getMax()*1.1);
 		return p;
 	}
+
+	private void showResults() {
+			
+			results.show(fileNoExt+"_"+tableTitles[getMethodNumber()]);
+			
+	//		if (!methodSelection.contains("Simple")) resultsRefined.show("Bead Localizing Results--"+methodSelection);
+			this.hasResultsWindow=true;
+		}
+
+	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
+			double deltat=ImageCalibration.frameInterval;
+			if (deltat==0) deltat=1;
+			results.incrementCounter();
+			results.addValue("Frame",frame);
+			results.addValue("Time/s", frame*deltat);
+			results.addValue(SimpleBeadLocalizer.header[0], (xc+analysisRoi.x)*ImageCalibration.pixelWidth);
+			results.addValue(SimpleBeadLocalizer.header[1], (yc+analysisRoi.y)*ImageCalibration.pixelHeight);
+			results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
+	//		if (this.methodSelection.contains(methodEllipse)||this.methodSelection.contains(methodGauss)) {
+	//			results.addValue(SimpleBeadLocalizer.header[3], fitDiameter_x);
+	//			results.addValue(SimpleBeadLocalizer.header[4], fitDiameter_y);
+	//		}
+			double x0=results.getValue(SimpleBeadLocalizer.header[0],0);
+			double y0=results.getValue(SimpleBeadLocalizer.header[1],0);
+			double z0=results.getValue(SimpleBeadLocalizer.header[2],0);
+	
+			double deltax=xc*ImageCalibration.pixelWidth-x0;
+			double deltay=yc*ImageCalibration.pixelHeight-y0;
+			double deltaz=zc*ImageCalibration.pixelDepth-z0;
+	
+			results.addValue("delta x",deltax);
+			results.addValue("delta y",deltay);
+			results.addValue("delta z",deltaz);
+			double eucDist=Math.sqrt(deltax*deltax+deltay*deltay+deltaz*deltaz);
+			results.addValue(SimpleBeadLocalizer.header[5], eucDist);
+			return true;
+		}
+
 	private boolean writeResults(ResultsTable table, int frame) {
+		double deltat=ImageCalibration.frameInterval;
+		if (deltat==0) deltat=1;
 		table.incrementCounter();
 		
 		results.addValue("Frame",frame);
+<<<<<<< HEAD
+		results.addValue("Time/s", frame*deltat);
+=======
 		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
+>>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
 		results.addValue(SimpleBeadLocalizer.header[0], (xc+analysisRoi.x)*ImageCalibration.pixelWidth);
 		results.addValue(SimpleBeadLocalizer.header[1], (yc+analysisRoi.y)*ImageCalibration.pixelHeight);
 		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
@@ -606,16 +641,91 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		results.addValue(SimpleBeadLocalizer.header[5], eucDist);
 		return true;
 	}
-	int getMethodNumber(){
-		int number=0;
-		for (int i=0;i<methods.length;i++) {
-			if (methods[i].equals(methodSelection)) number=i;
-		}
-		return number;
+
+	public ResultsTable summarizeResults() {
+		
+		if (results==null) {IJ.showMessage("No results table found");return null;};
+		
+		double []x=results.getColumn("delta x");
+		double []y=results.getColumn("delta y");
+		double []z=results.getColumn("delta z");
+		ArrayStatistics as=new ArrayStatistics(x);
+		summary.incrementCounter();
+		summary.addValue("File",fileName);
+		summary.addValue("delta x mean/um", as.getMean());
+		summary.addValue("delta x stdev/um", as.getSTDEV());
+		summary.addValue("delta x min/um", as.getMin());
+		summary.addValue("delta x max/um", as.getMax());
+		
+		as=new ArrayStatistics(y);
+		summary.addValue("delta y mean/um", as.getMean());
+		summary.addValue("delta y stdev/um", as.getSTDEV());
+		summary.addValue("delta y min/um", as.getMean());
+		summary.addValue("delta y max/um", as.getMax());
+		
+		as=new ArrayStatistics(z);
+		summary.addValue("delta z mean/um", as.getMean());
+		summary.addValue("delta z stdev/um", as.getSTDEV());
+		summary.addValue("detla z min/um", as.getMin());
+		summary.addValue("delta z max/um", as.getMax());
+		
+		this.hasSummary=true;
+		return summary;
 	}
+
+	public void showRois(String tableName) {
+				
+				RoiManager rm=RoiManager.getRoiManager();
+				
+				ResultsTable display=ResultsTable.getResultsTable(tableName);
+				if (display==null) return;
+				
+				double [] frame=display.getColumn("Frame"); 
+				double []x=display.getColumn(SimpleBeadLocalizer.header[0]);
+				double []y=display.getColumn(SimpleBeadLocalizer.header[1]);
+				double []z=display.getColumn(SimpleBeadLocalizer.header[2]);
+				double []diameter_x=null;
+				double []diameter_y=null;
+				OvalRoi circle=null;
+				if (!tableName.contains("Simple")) {
+					diameter_x=convert(display.getColumn(SimpleBeadLocalizer.header[3]),1/ImageCalibration.pixelWidth);
+					diameter_y=convert(display.getColumn(SimpleBeadLocalizer.header[4]),1/ImageCalibration.pixelHeight);
+				}
+				int length=x.length;
+				
+				for (int i=0;i<length;i++) {
+					double xpos=(x[i]/ImageCalibration.pixelWidth)+analysisRoi.x;
+					double ypos=(y[i]/ImageCalibration.pixelHeight)+analysisRoi.y;
+					int zpos=(int)Math.round(z[i]/zRes);
+	//				toTrack.setT(i);
+	//				toTrack.setZ(zpos);
+					if (!tableName.contains("Simple")) {circle=new OvalRoi(xpos-diameter_x[i]/2,ypos-diameter_y[i]/2,diameter_x[i],diameter_y[i]);}
+					else {circle=new OvalRoi(xpos-0.5*diameter,ypos-0.5*diameter,diameter,diameter);};
+					
+					circle.setPosition(1, zpos, (int)frame[i]+1);
+					rm.add(circle, 2);
+	//				Overlay over=new Overlay();
+	//				over.setStrokeWidth(3.0);
+	//				over.add((Roi) circle.clone());
+	//				toTrack.setOverlay(over);
+	//				toTrack.show();
+							
+				}
+	//			toTrack.show();
+	//
+	 
+		}
+
+	public void showFit() {
+		this.showFit=true;
+	}
+<<<<<<< HEAD
+}
+=======
 	void setAnalysisRoi(Roi roi) {
 		
 		this.analysisRoi=roi.getBounds();
 		
 	}
 }
+>>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
