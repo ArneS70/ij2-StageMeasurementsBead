@@ -54,7 +54,7 @@ public class LocalizeBead3D implements Command {
  		if (showFit) track.showFit();
  		track.run();
  		if (showRois) track.showRois(track.getFileNoExt()+"_BeadLocalizingResults_"+method);
- 		if (summarize) track.summarizeResults().show("BeadLocalizingResults_"+method+"_Summary");
+ 		if (summarize) track.summarizeResults("BeadLocalizingResults_Summary").show("BeadLocalizingResults_Summary");
  		if (showDrift) track.getDriftPLot().show();
     }
    

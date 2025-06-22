@@ -47,17 +47,17 @@ public class SimpleBeadLocalizer {
 	private int slices,frames;
 	private double diameter,zRes;
 	ImageStack fitPlots=new ImageStack(694,415);
-<<<<<<< HEAD
+
 	private Rectangle analysisRoi=new Rectangle(0,0,0,0);
-=======
-	private Rectangle analysisRoi;
->>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
+
+	
+
 	
 	private double xc,yc,zc,amp,fitDiameter_x,fitDiameter_y;
 	//xc, yc, zc are stored in uncalibrated coordinates
 	private ResultsTable results=new ResultsTable();
 	
-	private ResultsTable summary=new ResultsTable();
+	private ResultsTable summary;
 	private int gap=1;
 	private boolean showFit=false;
 	private boolean hasResultsWindow=false;
@@ -90,6 +90,7 @@ public class SimpleBeadLocalizer {
 		showResults();
 		if (showFit) new ImagePlus ("Profie Plots",fitPlots).show();
 	}
+	
 	
 	private void pasteImageDimension(int[] dimensions) {
     	int length=dimensions.length;
@@ -142,10 +143,10 @@ public class SimpleBeadLocalizer {
 				toTrack.setSliceWithoutUpdate(f*slices+zpos);
 				preciseZposition(toProject);
 
-				if (methodSelection.equals("Super Gauss Fit")) fitXY(toTrack.getProcessor(),f,zpos);
+				if (methodSelection.equals("SuperGaussFit")) fitXY(toTrack.getProcessor(),f,zpos);
 				if (methodSelection.equals("Ellipse"))fitEllipse(toTrack.getProcessor().duplicate(),f);
-				if (methodSelection.equals("2D Gauss Fit"))fit2D(toTrack.getProcessor(),f,zpos);
-				if (methodSelection.equals("2D Gauss Sym"))fitSym2D(toTrack.getProcessor(),f,zpos);
+				if (methodSelection.equals("2DGaussFit"))fit2D(toTrack.getProcessor(),f,zpos);
+				if (methodSelection.equals("2DGaussSym"))fitSym2D(toTrack.getProcessor(),f,zpos);
 			}  
 		}
 //		results.show(actualResultsTitle);
@@ -205,53 +206,7 @@ public class SimpleBeadLocalizer {
 		writeResults(results,frame);
 		
 	}
-	/*	private void fitXY(ImageProcessor ip,int frame,int slice,int maxIteration, double delta) {
-		double x_init=xc;
-		double y_init=yc;
-		
-		
-		ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
-		
-		for (int i=0;i<maxIteration;i++) {
-			
-			double x1=(xc-1.5*diameter);
-			double x2=(xc+1.5*diameter);
-			double y1=yc;
-			double y2=yc;
-			Line toFit=new Line (x1,y1,x2,y1);
-			imp.setRoi(toFit);
-			imp.show();
-			
-			
-			SuperGaussFitter xpos=new SuperGaussFitter(ip,toFit);
-			if (showFit) xpos.showFit();
-			double [] results=xpos.getResults();
-	//		IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			double xc_new=(x1+results[2]);
-			x1=xc_new;
-			y1=(yc-1.5*diameter);
-			y2=(yc+1.5*diameter);
-			
-			toFit=new Line (xc_new,y1,xc_new,y2);
-			imp.setRoi(toFit);
-			imp.show();
-			SuperGaussFitter ypos=new SuperGaussFitter(ip,toFit);
-			if (showFit) ypos.showFit();
-			results=ypos.getResults();
-	//		IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-			double yc_new=(results[2]+y1);
-			
-			double diff=Math.pow(x_init-xc_new, 2)+Math.pow(y_init-yc_new, 2);
-			IJ.log("x: "+xc_new+"    y: "+yc_new+"   "+diff+"  "+results[5]);
-			xc=xc_new;
-			yc=yc_new;
-			
-			
-		}
-		writeResults(resultsRefined,frame);
-		imp.close();
-}
-*/
+	
 	/**
 	 * Super Gauss Fit
 	 */
@@ -306,18 +261,11 @@ public class SimpleBeadLocalizer {
 			
 			writeResults(results,frame);
 
-//			ImagePlus imp=new ImagePlus("Frame"+frame+"_slice"+slice,ip);
-//			imp.show();
-//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-//			fitDiameter_x=xpos.getDiameter();
-//			IJ.log(""+results[0]+"//"+results[1]+"//"+results[2]);
-//			fitDiameter_y=ypos.getDiameter();
-//			imp.close();
+
 	}
+	
 	void fit2D(ImageProcessor ip,int frame,int zpos) {
-		
-		
-		
+	
 		// Intensity Profile of the bead in the x direction
 		double x1=(xc-1.5*diameter);			//size of the line profile
 		double x2=(xc+1.5*diameter);			//size of the line profile
@@ -355,10 +303,9 @@ public class SimpleBeadLocalizer {
 		
 		writeResults(results,frame);
 	}
-void fitSym2D(ImageProcessor ip,int frame,int zpos) {
-		
-		
-		
+	
+	void fitSym2D(ImageProcessor ip,int frame,int zpos) {
+	
 		// Intensity Profile of the bead in the x direction
 		double x1=(xc-1.5*diameter);			//size of the line profile
 		double x2=(xc+1.5*diameter);			//size of the line profile
@@ -374,7 +321,6 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 			
 		}
 		
-		
 		double [] x=new double [length*length];		//create array of doubles for x-values
 		
 		for (int i=0;i<length*length;i++) {			//populate the array via a loop
@@ -384,7 +330,6 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		FitterFunction maximum=new SymGauss2DFitter(x,line, length);	//Fit function to find the maximum
 		double [] fitResults=maximum.getFitResults(new double []{0,this.amp,fitSigma,3*diameter/2,fitSigma,3*diameter/2});				//get the results of the fit
 
-		
 		if (showFit) 
 			fitPlots.addSlice(maximum.getPlot().getImagePlus().getProcessor());
 		
@@ -393,12 +338,10 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		fitDiameter_x=2.35*Math.sqrt(1/(2*fitResults[2]));
 		fitDiameter_y=2.35*Math.sqrt(1/(2*fitResults[2])); //old index3
 		
-		
 		writeResults(results,frame);
 	}
-<<<<<<< HEAD
-=======
-	public void showRois(String tableName) {
+
+	public void showRois1(String tableName) {
 			
 			RoiManager rm=RoiManager.getRoiManager();
 			
@@ -440,7 +383,7 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 //
  
 	}
->>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
+
 	private double [] convert(double []input,double convert) {
 		int length=input.length;
 		
@@ -494,18 +437,19 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		}
 		
 	}
-<<<<<<< HEAD
+
 	String getFileNoExt() {
 		return this.fileNoExt;
 	}
+	
 	int getMethodNumber(){
 		int number=0;
 		for (int i=0;i<methods.length;i++) {
 			if (methods[i].equals(methodSelection)) number=i;
 		}
 		return number;
-=======
-	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
+	}
+	private boolean writeSimpleResults1(int frame) {						//should only by used for SimpleResults!
 		results.incrementCounter();
 		results.addValue("Frame",frame);
 		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
@@ -530,7 +474,7 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		double eucDist=Math.sqrt(deltax*deltax+deltay*deltay+deltaz*deltaz);
 		results.addValue(SimpleBeadLocalizer.header[5], eucDist);
 		return true;
->>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
+
 	}
 	void setAnalysisRoi(Roi roi) {
 		
@@ -544,17 +488,24 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 	}
 
 	Plot getDriftPLot() {
+		boolean frame=false;
+		double []t= results.getColumn("Time/s");
+		if (new ArrayStatistics(t).getMean()==0) {
+			t=results.getColumn("Frame");
+			frame=true;
+		}
 		
 		double []x= results.getColumn("delta x");
 		double []y= results.getColumn("delta y");
 		double []z= results.getColumn("delta z");
-		double []t= results.getColumn("Time/s");
 		double []ed=results.getColumn("Euc. Dist./um");
 		
 		double [] conc=ArrayStatistics.concatArrays(ArrayStatistics.concatArrays(x, y),ArrayStatistics.concatArrays(z,ed));
 		//Colurs follow the recommendations for color blind individuals
 		//https://www.nature.com/articles/nmeth.1618
-		Plot p=new Plot("Drift Plot", "Time/s", "distance/um");
+		Plot p=null;
+		if (!frame) p=new Plot("Drift Plot", "Time/s", "distance/um");
+		else p=new Plot("Drift Plot", "Frame", "distance/um");
 		p.setFontSize(18);
 		p.setLineWidth(2);
 		p.setColor(new Color(230,159,0));
@@ -585,7 +536,7 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 
 	private boolean writeSimpleResults(int frame) {						//should only by used for SimpleResults!
 			double deltat=ImageCalibration.frameInterval;
-			if (deltat==0) deltat=1;
+			
 			results.incrementCounter();
 			results.addValue("Frame",frame);
 			results.addValue("Time/s", frame*deltat);
@@ -614,15 +565,15 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 
 	private boolean writeResults(ResultsTable table, int frame) {
 		double deltat=ImageCalibration.frameInterval;
-		if (deltat==0) deltat=1;
+		
 		table.incrementCounter();
 		
 		results.addValue("Frame",frame);
-<<<<<<< HEAD
+
 		results.addValue("Time/s", frame*deltat);
-=======
+
 		results.addValue("Time/s", frame*ImageCalibration.frameInterval);
->>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
+
 		results.addValue(SimpleBeadLocalizer.header[0], (xc+analysisRoi.x)*ImageCalibration.pixelWidth);
 		results.addValue(SimpleBeadLocalizer.header[1], (yc+analysisRoi.y)*ImageCalibration.pixelHeight);
 		results.addValue(SimpleBeadLocalizer.header[2], zc*ImageCalibration.pixelDepth);
@@ -672,7 +623,40 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 		this.hasSummary=true;
 		return summary;
 	}
-
+public ResultsTable summarizeResults(String summaryTitle) {
+		
+		if (results==null) {IJ.showMessage("No results table found");return null;};
+		summary=ResultsTable.getResultsTable(summaryTitle);
+		
+		if (summary==null) summary= new ResultsTable();
+		
+		double []x=results.getColumn("delta x");
+		double []y=results.getColumn("delta y");
+		double []z=results.getColumn("delta z");
+		ArrayStatistics as=new ArrayStatistics(x);
+		summary.incrementCounter();
+		summary.addValue("File",fileName);
+		summary.addValue("Method", methodSelection);
+		summary.addValue("delta x mean/um", as.getMean());
+		summary.addValue("delta x stdev/um", as.getSTDEV());
+		summary.addValue("delta x min/um", as.getMin());
+		summary.addValue("delta x max/um", as.getMax());
+		
+		as=new ArrayStatistics(y);
+		summary.addValue("delta y mean/um", as.getMean());
+		summary.addValue("delta y stdev/um", as.getSTDEV());
+		summary.addValue("delta y min/um", as.getMean());
+		summary.addValue("delta y max/um", as.getMax());
+		
+		as=new ArrayStatistics(z);
+		summary.addValue("delta z mean/um", as.getMean());
+		summary.addValue("delta z stdev/um", as.getSTDEV());
+		summary.addValue("detla z min/um", as.getMin());
+		summary.addValue("delta z max/um", as.getMax());
+		
+		this.hasSummary=true;
+		return summary;
+	}
 	public void showRois(String tableName) {
 				
 				RoiManager rm=RoiManager.getRoiManager();
@@ -719,13 +703,9 @@ void fitSym2D(ImageProcessor ip,int frame,int zpos) {
 	public void showFit() {
 		this.showFit=true;
 	}
-<<<<<<< HEAD
+
 }
-=======
-	void setAnalysisRoi(Roi roi) {
-		
-		this.analysisRoi=roi.getBounds();
-		
-	}
-}
->>>>>>> 2d4394a80965a715b661773114dfb9f35e447f09
+
+	
+
+
